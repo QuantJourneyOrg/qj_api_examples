@@ -85,13 +85,14 @@ These examples use live QuantJourney price data and vectorized pandas/numpy diag
 
 ## Buy-Side Candidate Catalog
 
-The flat [`_candidates`](./_candidates/INDEX.md) catalog contains the existing buy-side notebooks plus proposed institutional workflows for construction, liquidity, capacity, stress, attribution, regulatory signals, options overlays and end-to-end PM reporting. New candidate notebooks use real SDK calls such as `qj.eod`, `qj.fmp`, `qj.sec`, `qj.cboe`, `qj.cftc`, `qj.ff`, `qj.bt` and `qj.analytics`, then keep portfolio/risk calculations visible in pandas/numpy.
+The flat [`_candidates`](./_candidates/INDEX.md) catalog contains core notebooks `01-10`, the existing buy-side notebooks, and proposed institutional workflows for construction, liquidity, capacity, stress, attribution, regulatory signals, options overlays and end-to-end PM reporting. Each candidate links to one dark preview chart in [`outputs/candidates`](./outputs/candidates). New candidate notebooks use real SDK calls such as `qj.eod`, `qj.fmp`, `qj.sec`, `qj.cboe`, `qj.cftc`, `qj.ff`, `qj.bt` and `qj.analytics`, then keep portfolio/risk calculations visible in pandas/numpy.
 
 To rebuild the catalog:
 
 ```bash
 export QJ_API_KEY="qj_..."
 PYTHONPATH=/path/to/quantjourney-sdk python scripts/build_candidate_notebooks.py
+python scripts/generate_candidate_charts.py
 ```
 
 ## Core Notebooks

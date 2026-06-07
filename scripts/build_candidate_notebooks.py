@@ -1,7 +1,7 @@
 """Build the flat `_candidates/` notebook catalog.
 
-The candidate catalog is intentionally flat: every buy-side workflow notebook
-lives directly under `_candidates/<number>_<slug>.ipynb`. Existing executed
+The candidate catalog is intentionally flat: every workflow notebook lives
+directly under `_candidates/<number>_<slug>.ipynb`. Existing executed core and
 buy-side notebooks are copied in, and new candidate workflows are generated as
 self-contained notebooks with real QuantJourney SDK calls plus local pandas /
 numpy analytics.
@@ -22,6 +22,20 @@ ROOT = Path(__file__).resolve().parents[1]
 CANDIDATES = ROOT / "_candidates"
 ADVANCED = ROOT / "notebooks" / "buy_side_advanced"
 MANIFEST = ROOT / "outputs" / "manifest.json"
+
+
+EXISTING_CORE = [
+    "01_authentication_methods.ipynb",
+    "02_market_data_basics.ipynb",
+    "03_economic_data_macro.ipynb",
+    "04_fundamental_analysis.ipynb",
+    "05_technical_analysis.ipynb",
+    "06_portfolio_analysis.ipynb",
+    "07_crypto_ccxt.ipynb",
+    "08_cboe_vix.ipynb",
+    "09_multpl_valuation.ipynb",
+    "10_cftc_cot.ipynb",
+]
 
 
 EXISTING_BUY_SIDE = [
@@ -1344,16 +1358,19 @@ def clean_candidates() -> None:
         index.unlink()
 
 
-def copy_existing() -> list[str]:
-    copied: list[str] = []
-    source_dir = ROOT / "notebooks" / "buy_side"
-    for name in EXISTING_BUY_SIDE:
-        src = source_dir / name
-        dst = CANDIDATES / name
-        if not src.exists():
-            raise FileNotFoundError(src)
-        shutil.copy2(src, dst)
-        copied.append(name)
+def copy_existing() -> list[tuple[str, str, str]]:
+    copied: list[tuple[str, str, str]] = []
+    for source_dir, names, category, note in [
+        (ROOT / "notebooks" / "core", EXISTING_CORE, "Existing core notebook", "copied from notebooks/core"),
+        (ROOT / "notebooks" / "buy_side", EXISTING_BUY_SIDE, "Existing executed buy-side notebook", "copied from notebooks/buy_side"),
+    ]:
+        for name in names:
+            src = source_dir / name
+            dst = CANDIDATES / name
+            if not src.exists():
+                raise FileNotFoundError(src)
+            shutil.copy2(src, dst)
+            copied.append((name, category, note))
     return copied
 
 
@@ -1370,10 +1387,26 @@ def write_generated(specs: Iterable[NotebookSpec]) -> list[str]:
     return written
 
 
-def write_index(copied: list[str], generated: list[str]) -> None:
+def preview_cell(name: str) -> dict:
+    stem = Path(name).stem
+    return md(f"""
+    ## Preview Chart
+
+    ![{stem}](../outputs/candidates/{stem}.png)
+    """)
+
+
+def attach_preview_cells() -> None:
+    for path in sorted(CANDIDATES.glob("*.ipynb")):
+        nb = json.loads(path.read_text(encoding="utf-8"))
+        nb["cells"].insert(1, preview_cell(path.name))
+        path.write_text(json.dumps(nb, indent=2) + "\n", encoding="utf-8")
+
+
+def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> None:
     rows = []
-    for name in copied:
-        rows.append((name, "Existing executed buy-side notebook", "copied from notebooks/buy_side"))
+    for name, category, summary in copied:
+        rows.append((name, category, summary))
     for spec in SPECS + ADVANCED_FULL_SPECS:
         rows.append((spec.filename, spec.category, spec.summary))
     rows = sorted(rows, key=lambda row: row[0])
@@ -1382,11 +1415,12 @@ def write_index(copied: list[str], generated: list[str]) -> None:
         "",
         "Flat candidate catalog for institutional workflows. Existing executed notebooks are copied in; new candidates are self-contained notebooks with real QuantJourney SDK data calls and transparent local analytics.",
         "",
-        "| Notebook | Category | What it shows |",
-        "|---|---|---|",
+        "| Notebook | Preview | Category | What it shows |",
+        "|---|---|---|---|",
     ]
     for name, category, summary in rows:
-        lines.append(f"| [{name}]({name}) | {category} | {summary} |")
+        stem = Path(name).stem
+        lines.append(f"| [{name}]({name}) | [PNG](../outputs/candidates/{stem}.png) | {category} | {summary} |")
     lines.extend(
         [
             "",
@@ -1436,6 +1470,7 @@ def main() -> None:
     clean_candidates()
     copied = copy_existing()
     generated = write_generated([*SPECS, *ADVANCED_FULL_SPECS])
+    attach_preview_cells()
     write_index(copied, generated)
     update_manifest_for_advanced()
     print(f"Copied {len(copied)} existing notebooks")
