@@ -93,7 +93,10 @@ To rebuild the catalog:
 export QJ_API_KEY="qj_..."
 PYTHONPATH=/path/to/quantjourney-sdk python scripts/build_candidate_notebooks.py
 python scripts/generate_candidate_charts.py
+python scripts/run_candidate_files.py
 ```
+
+`scripts/run_candidate_files.py` processes every `_candidates/*.ipynb` file and writes one chart per file to `plots/<notebook>_output_01.png`, plus `plots/manifest.json`.
 
 ## Core Notebooks
 

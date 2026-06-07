@@ -7,6 +7,7 @@ separate charts inside the same image.
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import os
 import tempfile
@@ -261,14 +262,34 @@ def plot_one(stem: str, out: Path) -> None:
         plot_nav(stem, title, out)
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output-dir", default=str(OUTPUT), help="Directory for generated PNG files.")
+    parser.add_argument(
+        "--output-style",
+        choices=["preview", "run"],
+        default="preview",
+        help="preview writes <stem>.png; run writes <stem>_output_01.png.",
+    )
+    return parser.parse_args()
+
+
+def output_name(stem: str, style: str) -> str:
+    if style == "run":
+        return f"{stem}_output_01.png"
+    return f"{stem}.png"
+
+
 def main() -> None:
-    OUTPUT.mkdir(parents=True, exist_ok=True)
-    for old in OUTPUT.glob("*.png"):
+    args = parse_args()
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for old in output_dir.glob("*.png"):
         old.unlink()
     notebooks = sorted(CANDIDATES.glob("*.ipynb"))
     for notebook in notebooks:
-        plot_one(notebook.stem, OUTPUT / f"{notebook.stem}.png")
-    print(f"Generated {len(notebooks)} candidate preview charts in {OUTPUT}")
+        plot_one(notebook.stem, output_dir / output_name(notebook.stem, args.output_style))
+    print(f"Generated {len(notebooks)} candidate charts in {output_dir}")
 
 
 if __name__ == "__main__":
