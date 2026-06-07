@@ -1,179 +1,115 @@
-# QuantJourney SDK Examples
+# QuantJourney API Examples
 
-This directory contains Python scripts and Jupyter notebooks demonstrating how to use the QuantJourney SDK.
+Executed, sanitized notebooks for the QuantJourney API and SDK.
 
-## Prerequisites
+This repository shows practical examples for financial data access, governed domain routes, analytics outputs, and buy-side workflows. The notebooks use `QJ_API_KEY` from the environment and do not include vendor credentials or hardcoded QuantJourney tokens.
 
-- Python 3.10+
-- Access to QuantJourney API (https://api.quantjourney.cloud)
-- Demo credentials: `demo@quantjourney.cloud` / `demo123` / tenant: `default`
+Documentation: https://api.quantjourney.cloud/docs
 
-## Required Packages
+API landing: https://api.quantjourney.cloud/_v3
 
-```bash
-pip install pandas numpy plotly
-```
+Examples catalog: https://api.quantjourney.cloud/examples
 
-## Examples
+SDK: `pip install quantjourney`
 
-### 1. Authentication Methods
-**Files:** `01_authentication_methods.py`, `01_authentication_methods.ipynb`
+## Quick Start
 
-Learn different ways to authenticate with the API:
-- Direct token/API key
-- Username/password login
-- Environment variables
-- Config file
-
-### 2. Market Data Basics
-**Files:** `02_market_data_basics.py`, `02_market_data_basics.ipynb`
-
-Basic market data retrieval and visualization:
-- Historical OHLCV prices
-- Company information
-- Multi-stock comparison (FAANG)
-- Basic statistics (returns, volatility)
-- Candlestick charts with volume
-- Performance comparison charts
-
-### 3. Economic/Macro Data
-**Files:** `03_economic_data_macro.py`, `03_economic_data_macro.ipynb`
-
-Macroeconomic analysis with FRED data:
-- GDP and economic growth
-- Inflation (CPI) with Fed target
-- Unemployment rate
-- Treasury yields (2Y, 10Y, 30Y)
-- Federal Funds rate
-- Yield curve analysis
-
-### 4. Fundamental Analysis
-**Files:** `04_fundamental_analysis.py`, `04_fundamental_analysis.ipynb`
-
-Company fundamentals and financial statements:
-- Company profiles
-- Income statements and margins
-- Balance sheet analysis
-- Cash flow statements
-- Key financial ratios (P/E, P/B, ROE, ROA)
-- Peer comparison (FAANG)
-- Valuation summary
-
-### 5. Technical Analysis
-**Files:** `05_technical_analysis.py`, `05_technical_analysis.ipynb`
-
-Quantitative technical indicators:
-- Moving averages (SMA 20/50/200, EMA 12/26)
-- Bollinger Bands
-- RSI (Relative Strength Index)
-- MACD (Moving Average Convergence Divergence)
-- Volatility analysis (20-day, 60-day rolling)
-- Risk metrics (Sharpe, Max Drawdown, VaR)
-
-### 6. Portfolio Analysis
-**Files:** `06_portfolio_analysis.py`, `06_portfolio_analysis.ipynb`
-
-Portfolio construction and analytics:
-- Multi-asset portfolio (9 stocks, diversified sectors)
-- Performance tracking vs individual holdings
-- Correlation matrix / heatmap
-- Risk metrics (Sharpe, Sortino, Calmar)
-- Drawdown analysis
-- Risk contribution by asset
-- Monthly returns heatmap
-
-### 7. Crypto & Alternative Data
-**Files:** `07_crypto_alternative_data.py`, `07_crypto_alternative_data.ipynb`
-
-Alternative data sources:
-- **CCXT**: Cryptocurrency data from exchanges (Binance, etc.)
-- **CBOE**: VIX volatility index
-- **CFTC**: Commitment of Traders (COT) reports
-- **Multpl**: Shiller P/E, S&P 500 metrics
-- **FINRA**: Short interest data
-- **SEC**: Company filings (10-K, 10-Q)
-- **OpenFIGI**: Global instrument identifiers
-
-## Usage
-
-### Python Scripts
-```bash
-python 02_market_data_basics.py
-```
-
-### Jupyter Notebooks
-```bash
-jupyter notebook 02_market_data_basics.ipynb
-```
-
-### Quick Start
 ```python
-import sys
-sys.path.insert(0, '..')
-
 from quantjourney.sdk import QuantJourneyAPI
 
-# Connect
-qj = QuantJourneyAPI(api_url="https://api.quantjourney.cloud")
-qj.auth.login(
-    email="demo@quantjourney.cloud",
-    password="demo123",
-    tenant_id="default"
-)
+qj = QuantJourneyAPI(api_key="qj_...")
 
-# Fetch data
-prices = qj.eod.get_historical_prices(
+prices = qj.equity.pricing.get_historical_prices(
     symbol="AAPL",
-    start_date="2024-01-01",
-    end_date="2024-12-31",
-    frequency="1d"
+    start="2024-01-01",
+    end="2024-12-31",
+    adjusted=True,
 )
 ```
 
-## Available Connectors
+## Run Locally
 
-| Connector | Data Source | Examples |
-|-----------|-------------|----------|
-| `qj.eod` | EOD Historical Data | Prices, fundamentals |
-| `qj.fmp` | Financial Modeling Prep | Profiles, financials, earnings |
-| `qj.fred` | Federal Reserve (FRED) | GDP, CPI, unemployment, rates |
-| `qj.ccxt` | Crypto exchanges | BTC, ETH, SOL from Binance, etc. |
-| `qj.cboe` | CBOE | VIX, options data |
-| `qj.cftc` | CFTC | COT reports, futures positioning |
-| `qj.multpl` | Multpl | Shiller P/E, market metrics |
-| `qj.finra` | FINRA | Short interest |
-| `qj.sec` | SEC EDGAR | Company filings |
-| `qj.openfigi` | OpenFIGI | Instrument identifiers |
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install quantjourney pandas numpy matplotlib plotly nbformat nbclient ipykernel
 
-## Notebook Features
-
-Each Jupyter notebook includes:
-- 📊 Interactive Plotly visualizations
-- 📈 Professional charts (candlestick, heatmaps, subplots)
-- 📋 Summary dashboards
-- 💡 Practical quant analysis examples
-
-## File Structure
-
-```
-_sdk_examples/
-├── 01_authentication_methods.py    # Auth examples
-├── 01_authentication_methods.ipynb
-├── 02_market_data_basics.py        # Market data
-├── 02_market_data_basics.ipynb
-├── 03_economic_data_macro.py       # FRED/macro
-├── 03_economic_data_macro.ipynb
-├── 04_fundamental_analysis.py      # Fundamentals
-├── 04_fundamental_analysis.ipynb
-├── 05_technical_analysis.py        # Technical/quant
-├── 05_technical_analysis.ipynb
-├── 06_portfolio_analysis.py        # Portfolio
-├── 06_portfolio_analysis.ipynb
-├── 07_crypto_alternative_data.py   # Alt data
-├── 07_crypto_alternative_data.ipynb
-└── README.md
+export QJ_API_KEY="qj_..."
+jupyter lab
 ```
 
-## Support
+To re-run one notebook:
 
-For issues or questions, contact: support@quantjourney.pro
+```bash
+jupyter nbconvert --execute --to notebook --inplace notebooks/core/02_market_data_basics.ipynb
+```
+
+To regenerate the six landing-page PNG outputs from live API data:
+
+```bash
+export QJ_API_KEY="qj_..."
+PYTHONPATH=/path/to/quantjourney-sdk python scripts/generate_landing_outputs.py
+```
+
+## Landing Recipes
+
+These are the six notebook outputs used by the QuantJourney API landing page.
+
+| Workflow | Domain | Notebook | Output |
+|---|---|---|---|
+| Market data | `/d/equity/pricing` | [02_market_data_basics](notebooks/core/02_market_data_basics.ipynb) | [PNG](outputs/landing/recipe-market-data-real.png) |
+| Macro dashboard | `/d/macro/rates`, `/d/macro/series` | [03_economic_data_macro](notebooks/core/03_economic_data_macro.ipynb) | [PNG](outputs/landing/recipe-macro-dashboard-real.png) |
+| Peer valuation | `/d/equity/fundamentals` | [04_fundamental_analysis](notebooks/core/04_fundamental_analysis.ipynb) | [PNG](outputs/landing/recipe-peer-valuation-real.png) |
+| Portfolio risk snapshot | `/d/portfolio/analytics` | [06_portfolio_analysis](notebooks/core/06_portfolio_analysis.ipynb) | [PNG](outputs/landing/recipe-portfolio-risk-real.png) |
+| VIX / volatility regime | `/d/derivatives/vol` | [08_cboe_vix](notebooks/core/08_cboe_vix.ipynb) | [PNG](outputs/landing/recipe-vix-regime-real.png) |
+| Risk parity / allocation | `/d/optimizer/portfolio` | [26_risk_parity_portfolio](notebooks/buy_side/26_risk_parity_portfolio.ipynb) | [PNG](outputs/landing/recipe-risk-parity-real.png) |
+
+## Core Notebooks
+
+| # | Notebook | What It Shows | Outputs |
+|---|---|---|---|
+| 01 | [Authentication Methods](notebooks/core/01_authentication_methods.ipynb) | API key setup, environment variables, auth patterns, connection testing. | Embedded text output |
+| 02 | [Market Data Basics](notebooks/core/02_market_data_basics.ipynb) | Historical OHLCV, candlestick chart, multi-symbol comparison, returns, volatility, correlation. | [output folder](outputs/core/02_market_data_basics) |
+| 03 | [Economic Data and Macro](notebooks/core/03_economic_data_macro.ipynb) | GDP, CPI, unemployment, Treasury yields, Fed Funds and macro dashboard. | [output folder](outputs/core/03_economic_data_macro) |
+| 04 | [Fundamental Analysis](notebooks/core/04_fundamental_analysis.ipynb) | Financial statements, ratios, margins, peer valuation and company comparison. | [output folder](outputs/core/04_fundamental_analysis) |
+| 05 | [Technical Analysis](notebooks/core/05_technical_analysis.ipynb) | SMA, Bollinger bands, RSI, MACD, rolling volatility and risk metrics. | [output folder](outputs/core/05_technical_analysis) |
+| 06 | [Portfolio Analysis](notebooks/core/06_portfolio_analysis.ipynb) | Portfolio returns, correlation, drawdown, covariance and risk contribution. | [output folder](outputs/core/06_portfolio_analysis) |
+| 07 | [Crypto CCXT](notebooks/core/07_crypto_ccxt.ipynb) | Crypto exchange data, symbols, OHLCV, order books and funding examples. | Embedded text output |
+| 08 | [CBOE VIX](notebooks/core/08_cboe_vix.ipynb) | VIX history, fear regimes, moving averages and volatility context. | [output folder](outputs/core/08_cboe_vix) |
+| 09 | [Multpl Valuation](notebooks/core/09_multpl_valuation.ipynb) | Shiller P/E, dividend yield and market valuation context. | [output folder](outputs/core/09_multpl_valuation) |
+| 10 | [CFTC COT](notebooks/core/10_cftc_cot.ipynb) | Commitment of Traders positioning and futures sentiment. | [output folder](outputs/core/10_cftc_cot) |
+| 11 | [SEC Filings](notebooks/core/11_sec_filings.ipynb) | Company filings, disclosure search and filing metadata. | Embedded text output |
+| 12 | [FINRA Short Interest](notebooks/core/12_finra_short_interest.ipynb) | Short interest, short-volume context and crowding indicators. | Embedded text output |
+| 13 | [OpenFIGI](notebooks/core/13_openfigi.ipynb) | FIGI lookup, symbol mapping and security identity. | Embedded text output |
+
+## Buy-Side Examples
+
+These examples are closer to hedge fund, family-office and institutional research workflows.
+
+| Notebook | Workflow | Outputs |
+|---|---|---|
+| [20_multi_factor_model](notebooks/buy_side/20_multi_factor_model.ipynb) | Multi-factor exposures, model inputs and factor diagnostics. | [output folder](outputs/buy_side/20_multi_factor_model) |
+| [21_volatility_surface_greeks](notebooks/buy_side/21_volatility_surface_greeks.ipynb) | Options surface, implied volatility and Greeks review. | [output folder](outputs/buy_side/21_volatility_surface_greeks) |
+| [23_cot_positioning_sentiment](notebooks/buy_side/23_cot_positioning_sentiment.ipynb) | Futures positioning, crowded exposure and sentiment context. | [output folder](outputs/buy_side/23_cot_positioning_sentiment) |
+| [24_macro_regime_allocation](notebooks/buy_side/24_macro_regime_allocation.ipynb) | Regime classification, macro allocation and performance comparison. | [output folder](outputs/buy_side/24_macro_regime_allocation) |
+| [25_cross_asset_correlation](notebooks/buy_side/25_cross_asset_correlation.ipynb) | Cross-asset correlations, clustering, stress correlations and PCA. | [output folder](outputs/buy_side/25_cross_asset_correlation) |
+| [26_risk_parity_portfolio](notebooks/buy_side/26_risk_parity_portfolio.ipynb) | Risk parity weights, contribution, volatility targeting and performance. | [output folder](outputs/buy_side/26_risk_parity_portfolio) |
+| [27_var_expected_shortfall](notebooks/buy_side/27_var_expected_shortfall.ipynb) | VaR, expected shortfall, drawdowns and tail-risk diagnostics. | [output folder](outputs/buy_side/27_var_expected_shortfall) |
+| [28_factor_attribution](notebooks/buy_side/28_factor_attribution.ipynb) | Factor attribution, exposure diagnostics and contribution analysis. | [output folder](outputs/buy_side/28_factor_attribution) |
+| [29_pairs_trading_stat_arb](notebooks/buy_side/29_pairs_trading_stat_arb.ipynb) | Pair selection, cointegration, spread z-score and stat-arb diagnostics. | [output folder](outputs/buy_side/29_pairs_trading_stat_arb) |
+| [31_event_study_earnings](notebooks/buy_side/31_event_study_earnings.ipynb) | Earnings event study, abnormal returns and event-window analysis. | [output folder](outputs/buy_side/31_event_study_earnings) |
+| [35_performance_reporting](notebooks/buy_side/35_performance_reporting.ipynb) | Report-ready performance, drawdown, rolling metrics and contribution views. | [output folder](outputs/buy_side/35_performance_reporting) |
+| [40_sector_rotation_momentum](notebooks/buy_side/40_sector_rotation_momentum.ipynb) | Sector momentum, rotation signals and allocation context. | [output folder](outputs/buy_side/40_sector_rotation_momentum) |
+| [43_tail_risk_hedging](notebooks/buy_side/43_tail_risk_hedging.ipynb) | Tail-risk hedging, stress periods and hedge payoff context. | [output folder](outputs/buy_side/43_tail_risk_hedging) |
+| [51_factor_risk_attribution](notebooks/buy_side/51_factor_risk_attribution.ipynb) | Factor risk decomposition, sector/style contributors and risk review. | [output folder](outputs/buy_side/51_factor_risk_attribution) |
+| [59_risk_adjusted_performance](notebooks/buy_side/59_risk_adjusted_performance.ipynb) | Sharpe, Sortino, Calmar, drawdown and risk-adjusted comparison. | [output folder](outputs/buy_side/59_risk_adjusted_performance) |
+
+## Output Manifest
+
+`outputs/manifest.json` records the generated notebooks and extracted PNG counts. Notebooks without PNG charts still retain their executed table/text output inside the notebook.
+
+The six files in `outputs/landing/` are generated from live QuantJourney API calls by `scripts/generate_landing_outputs.py`.
+
+## Data and Licensing
+
+QuantJourney is a software and API control-plane layer. Market data access depends on your own QuantJourney tenant configuration and any required provider licenses or BYOL credentials.

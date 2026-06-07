@@ -1,0 +1,226 @@
+[
+  {
+    "name": "01_authentication_methods.ipynb",
+    "group": "core",
+    "path": "notebooks/core/01_authentication_methods.ipynb",
+    "output_dir": "outputs/core/01_authentication_methods",
+    "images": 0,
+    "cells": 14
+  },
+  {
+    "name": "02_market_data_basics.ipynb",
+    "group": "core",
+    "path": "notebooks/core/02_market_data_basics.ipynb",
+    "output_dir": "outputs/core/02_market_data_basics",
+    "images": 5,
+    "cells": 15
+  },
+  {
+    "name": "03_economic_data_macro.ipynb",
+    "group": "core",
+    "path": "notebooks/core/03_economic_data_macro.ipynb",
+    "output_dir": "outputs/core/03_economic_data_macro",
+    "images": 7,
+    "cells": 22
+  },
+  {
+    "name": "04_fundamental_analysis.ipynb",
+    "group": "core",
+    "path": "notebooks/core/04_fundamental_analysis.ipynb",
+    "output_dir": "outputs/core/04_fundamental_analysis",
+    "images": 7,
+    "cells": 19
+  },
+  {
+    "name": "05_technical_analysis.ipynb",
+    "group": "core",
+    "path": "notebooks/core/05_technical_analysis.ipynb",
+    "output_dir": "outputs/core/05_technical_analysis",
+    "images": 6,
+    "cells": 20
+  },
+  {
+    "name": "06_portfolio_analysis.ipynb",
+    "group": "core",
+    "path": "notebooks/core/06_portfolio_analysis.ipynb",
+    "output_dir": "outputs/core/06_portfolio_analysis",
+    "images": 5,
+    "cells": 21
+  },
+  {
+    "name": "07_crypto_ccxt.ipynb",
+    "group": "core",
+    "path": "notebooks/core/07_crypto_ccxt.ipynb",
+    "output_dir": "outputs/core/07_crypto_ccxt",
+    "images": 0,
+    "cells": 38
+  },
+  {
+    "name": "08_cboe_vix.ipynb",
+    "group": "core",
+    "path": "notebooks/core/08_cboe_vix.ipynb",
+    "output_dir": "outputs/core/08_cboe_vix",
+    "images": 2,
+    "cells": 9
+  },
+  {
+    "name": "09_multpl_valuation.ipynb",
+    "group": "core",
+    "path": "notebooks/core/09_multpl_valuation.ipynb",
+    "output_dir": "outputs/core/09_multpl_valuation",
+    "images": 2,
+    "cells": 11
+  },
+  {
+    "name": "10_cftc_cot.ipynb",
+    "group": "core",
+    "path": "notebooks/core/10_cftc_cot.ipynb",
+    "output_dir": "outputs/core/10_cftc_cot",
+    "images": 1,
+    "cells": 10
+  },
+  {
+    "name": "11_sec_filings.ipynb",
+    "group": "core",
+    "path": "notebooks/core/11_sec_filings.ipynb",
+    "output_dir": "outputs/core/11_sec_filings",
+    "images": 0,
+    "cells": 20
+  },
+  {
+    "name": "12_finra_short_interest.ipynb",
+    "group": "core",
+    "path": "notebooks/core/12_finra_short_interest.ipynb",
+    "output_dir": "outputs/core/12_finra_short_interest",
+    "images": 0,
+    "cells": 11
+  },
+  {
+    "name": "13_openfigi.ipynb",
+    "group": "core",
+    "path": "notebooks/core/13_openfigi.ipynb",
+    "output_dir": "outputs/core/13_openfigi",
+    "images": 0,
+    "cells": 11
+  },
+  {
+    "name": "20_multi_factor_model.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/20_multi_factor_model.ipynb",
+    "output_dir": "outputs/buy_side/20_multi_factor_model",
+    "images": 4,
+    "cells": 24
+  },
+  {
+    "name": "21_volatility_surface_greeks.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/21_volatility_surface_greeks.ipynb",
+    "output_dir": "outputs/buy_side/21_volatility_surface_greeks",
+    "images": 4,
+    "cells": 28
+  },
+  {
+    "name": "23_cot_positioning_sentiment.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/23_cot_positioning_sentiment.ipynb",
+    "output_dir": "outputs/buy_side/23_cot_positioning_sentiment",
+    "images": 5,
+    "cells": 28
+  },
+  {
+    "name": "24_macro_regime_allocation.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/24_macro_regime_allocation.ipynb",
+    "output_dir": "outputs/buy_side/24_macro_regime_allocation",
+    "images": 5,
+    "cells": 30
+  },
+  {
+    "name": "25_cross_asset_correlation.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/25_cross_asset_correlation.ipynb",
+    "output_dir": "outputs/buy_side/25_cross_asset_correlation",
+    "images": 7,
+    "cells": 32
+  },
+  {
+    "name": "26_risk_parity_portfolio.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/26_risk_parity_portfolio.ipynb",
+    "output_dir": "outputs/buy_side/26_risk_parity_portfolio",
+    "images": 4,
+    "cells": 26
+  },
+  {
+    "name": "27_var_expected_shortfall.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/27_var_expected_shortfall.ipynb",
+    "output_dir": "outputs/buy_side/27_var_expected_shortfall",
+    "images": 4,
+    "cells": 26
+  },
+  {
+    "name": "28_factor_attribution.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/28_factor_attribution.ipynb",
+    "output_dir": "outputs/buy_side/28_factor_attribution",
+    "images": 5,
+    "cells": 28
+  },
+  {
+    "name": "29_pairs_trading_stat_arb.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/29_pairs_trading_stat_arb.ipynb",
+    "output_dir": "outputs/buy_side/29_pairs_trading_stat_arb",
+    "images": 4,
+    "cells": 28
+  },
+  {
+    "name": "31_event_study_earnings.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/31_event_study_earnings.ipynb",
+    "output_dir": "outputs/buy_side/31_event_study_earnings",
+    "images": 1,
+    "cells": 28
+  },
+  {
+    "name": "35_performance_reporting.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/35_performance_reporting.ipynb",
+    "output_dir": "outputs/buy_side/35_performance_reporting",
+    "images": 6,
+    "cells": 30
+  },
+  {
+    "name": "40_sector_rotation_momentum.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/40_sector_rotation_momentum.ipynb",
+    "output_dir": "outputs/buy_side/40_sector_rotation_momentum",
+    "images": 4,
+    "cells": 24
+  },
+  {
+    "name": "43_tail_risk_hedging.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/43_tail_risk_hedging.ipynb",
+    "output_dir": "outputs/buy_side/43_tail_risk_hedging",
+    "images": 5,
+    "cells": 24
+  },
+  {
+    "name": "51_factor_risk_attribution.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/51_factor_risk_attribution.ipynb",
+    "output_dir": "outputs/buy_side/51_factor_risk_attribution",
+    "images": 4,
+    "cells": 27
+  },
+  {
+    "name": "59_risk_adjusted_performance.ipynb",
+    "group": "buy_side",
+    "path": "notebooks/buy_side/59_risk_adjusted_performance.ipynb",
+    "output_dir": "outputs/buy_side/59_risk_adjusted_performance",
+    "images": 2,
+    "cells": 18
+  }
+]
