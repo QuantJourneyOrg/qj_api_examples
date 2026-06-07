@@ -19,11 +19,10 @@ from quantjourney.sdk import QuantJourneyAPI
 
 qj = QuantJourneyAPI(api_key="qj_...")
 
-prices = qj.equity.pricing.get_historical_prices(
+prices = qj.eod.get_historical_prices(
     symbol="AAPL",
-    start="2024-01-01",
-    end="2024-12-31",
-    adjusted=True,
+    start_date="2024-01-01",
+    end_date="2024-12-31",
 )
 ```
 
@@ -83,6 +82,17 @@ These examples use live QuantJourney price data and vectorized pandas/numpy diag
 | [64_correlation_regime_lab](notebooks/buy_side_advanced/64_correlation_regime_lab.ipynb) | Cross-asset correlation heatmap, rolling correlation and drawdown context. | [PNG](outputs/buy_side_advanced/advanced-correlation-regime-map.png) |
 | [65_drawdown_diagnostics](notebooks/buy_side_advanced/65_drawdown_diagnostics.ipynb) | Underwater drawdown, rolling volatility and strategy exposure state. | [PNG](outputs/buy_side_advanced/advanced-drawdown-diagnostics.png) |
 | [66_factor_exposure_diagnostics](notebooks/buy_side_advanced/66_factor_exposure_diagnostics.ipynb) | Rolling 126D factor betas and recent factor contribution proxy. | [PNG](outputs/buy_side_advanced/advanced-factor-exposure-diagnostics.png) |
+
+## Buy-Side Candidate Catalog
+
+The flat [`_candidates`](./_candidates/INDEX.md) catalog contains the existing buy-side notebooks plus proposed institutional workflows for construction, liquidity, capacity, stress, attribution, regulatory signals, options overlays and end-to-end PM reporting. New candidate notebooks use real SDK calls such as `qj.eod`, `qj.fmp`, `qj.sec`, `qj.cboe`, `qj.cftc`, `qj.ff`, `qj.bt` and `qj.analytics`, then keep portfolio/risk calculations visible in pandas/numpy.
+
+To rebuild the catalog:
+
+```bash
+export QJ_API_KEY="qj_..."
+PYTHONPATH=/path/to/quantjourney-sdk python scripts/build_candidate_notebooks.py
+```
 
 ## Core Notebooks
 
