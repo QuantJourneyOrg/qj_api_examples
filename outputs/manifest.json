@@ -222,5 +222,53 @@
     "output_dir": "outputs/buy_side/59_risk_adjusted_performance",
     "images": 2,
     "cells": 18
+  },
+  {
+    "name": "61_vectorized_strategy_grid.ipynb",
+    "group": "buy_side_advanced",
+    "path": "notebooks/buy_side_advanced/61_vectorized_strategy_grid.ipynb",
+    "output_dir": "outputs/buy_side_advanced",
+    "images": 1,
+    "cells": 5
+  },
+  {
+    "name": "62_walk_forward_robustness.ipynb",
+    "group": "buy_side_advanced",
+    "path": "notebooks/buy_side_advanced/62_walk_forward_robustness.ipynb",
+    "output_dir": "outputs/buy_side_advanced",
+    "images": 1,
+    "cells": 5
+  },
+  {
+    "name": "63_monte_carlo_tail_risk.ipynb",
+    "group": "buy_side_advanced",
+    "path": "notebooks/buy_side_advanced/63_monte_carlo_tail_risk.ipynb",
+    "output_dir": "outputs/buy_side_advanced",
+    "images": 1,
+    "cells": 5
+  },
+  {
+    "name": "64_correlation_regime_lab.ipynb",
+    "group": "buy_side_advanced",
+    "path": "notebooks/buy_side_advanced/64_correlation_regime_lab.ipynb",
+    "output_dir": "outputs/buy_side_advanced",
+    "images": 1,
+    "cells": 5
+  },
+  {
+    "name": "65_drawdown_diagnostics.ipynb",
+    "group": "buy_side_advanced",
+    "path": "notebooks/buy_side_advanced/65_drawdown_diagnostics.ipynb",
+    "output_dir": "outputs/buy_side_advanced",
+    "images": 1,
+    "cells": 5
+  },
+  {
+    "name": "66_factor_exposure_diagnostics.ipynb",
+    "group": "buy_side_advanced",
+    "path": "notebooks/buy_side_advanced/66_factor_exposure_diagnostics.ipynb",
+    "output_dir": "outputs/buy_side_advanced",
+    "images": 1,
+    "cells": 5
   }
 ]

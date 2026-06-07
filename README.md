@@ -51,6 +51,13 @@ export QJ_API_KEY="qj_..."
 PYTHONPATH=/path/to/quantjourney-sdk python scripts/generate_landing_outputs.py
 ```
 
+To regenerate the advanced buy-side PNG outputs from live API data:
+
+```bash
+export QJ_API_KEY="qj_..."
+PYTHONPATH=/path/to/quantjourney-sdk python scripts/generate_advanced_buy_side_outputs.py
+```
+
 ## Landing Recipes
 
 These are the six notebook outputs used by the QuantJourney API landing page.
@@ -63,6 +70,19 @@ These are the six notebook outputs used by the QuantJourney API landing page.
 | Portfolio risk snapshot | `/d/portfolio/analytics` | [06_portfolio_analysis](notebooks/core/06_portfolio_analysis.ipynb) | [PNG](outputs/landing/recipe-portfolio-risk-real.png) |
 | VIX / volatility regime | `/d/derivatives/vol` | [08_cboe_vix](notebooks/core/08_cboe_vix.ipynb) | [PNG](outputs/landing/recipe-vix-regime-real.png) |
 | Risk parity / allocation | `/d/optimizer/portfolio` | [26_risk_parity_portfolio](notebooks/buy_side/26_risk_parity_portfolio.ipynb) | [PNG](outputs/landing/recipe-risk-parity-real.png) |
+
+## Advanced Buy-Side Labs
+
+These examples use live QuantJourney price data and vectorized pandas/numpy diagnostics for workflows that portfolio teams usually ask for after basic data access is solved: parameter sensitivity, walk-forward validation, tail-risk simulation, drawdown state, correlation regimes and rolling factor exposure.
+
+| Notebook | Workflow | Output |
+|---|---|---|
+| [61_vectorized_strategy_grid](notebooks/buy_side_advanced/61_vectorized_strategy_grid.ipynb) | SMA parameter sweep with transaction costs and Sharpe heatmap. | [PNG](outputs/buy_side_advanced/advanced-sma-grid-heatmap.png) |
+| [62_walk_forward_robustness](notebooks/buy_side_advanced/62_walk_forward_robustness.ipynb) | Rolling train/test parameter selection and out-of-sample equity. | [PNG](outputs/buy_side_advanced/advanced-walk-forward-matrix.png) |
+| [63_monte_carlo_tail_risk](notebooks/buy_side_advanced/63_monte_carlo_tail_risk.ipynb) | Bootstrap fan chart and terminal-return distribution for a portfolio basket. | [PNG](outputs/buy_side_advanced/advanced-monte-carlo-tail-risk.png) |
+| [64_correlation_regime_lab](notebooks/buy_side_advanced/64_correlation_regime_lab.ipynb) | Cross-asset correlation heatmap, rolling correlation and drawdown context. | [PNG](outputs/buy_side_advanced/advanced-correlation-regime-map.png) |
+| [65_drawdown_diagnostics](notebooks/buy_side_advanced/65_drawdown_diagnostics.ipynb) | Underwater drawdown, rolling volatility and strategy exposure state. | [PNG](outputs/buy_side_advanced/advanced-drawdown-diagnostics.png) |
+| [66_factor_exposure_diagnostics](notebooks/buy_side_advanced/66_factor_exposure_diagnostics.ipynb) | Rolling 126D factor betas and recent factor contribution proxy. | [PNG](outputs/buy_side_advanced/advanced-factor-exposure-diagnostics.png) |
 
 ## Core Notebooks
 
