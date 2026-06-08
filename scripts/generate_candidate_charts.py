@@ -1,6 +1,6 @@
-"""Generate one dark preview chart for every notebook in `_candidates/`.
+"""Generate one dark output chart for every example notebook in `_candidates/`.
 
-These are visual previews for the candidate catalog, not notebook execution
+These are visual outputs for the example catalog, not notebook execution
 artifacts. Each output is a single-axes PNG so the catalog never shows two
 separate charts inside the same image.
 """
@@ -29,7 +29,7 @@ import pandas as pd
 
 
 CANDIDATES = ROOT / "_candidates"
-OUTPUT = ROOT / "outputs" / "candidates"
+OUTPUT = ROOT / "_output"
 
 NAVY = "#020817"
 PANEL = "#061641"
@@ -425,12 +425,7 @@ def plot_one(stem: str, out: Path) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", default=str(OUTPUT), help="Directory for generated PNG files.")
-    parser.add_argument(
-        "--output-style",
-        choices=["preview", "run"],
-        default="preview",
-        help="preview writes <stem>.png; run writes <stem>_output_01.png.",
-    )
+    parser.add_argument("--output-style", choices=["preview", "run"], default="run", help="preview writes <stem>.png; run writes <stem>_output_01.png.")
     return parser.parse_args()
 
 
@@ -449,7 +444,7 @@ def main() -> None:
     notebooks = sorted(CANDIDATES.glob("*.ipynb"))
     for notebook in notebooks:
         plot_one(notebook.stem, output_dir / output_name(notebook.stem, args.output_style))
-    print(f"Generated {len(notebooks)} candidate charts in {output_dir}")
+    print(f"Generated {len(notebooks)} example charts in {output_dir}")
 
 
 if __name__ == "__main__":

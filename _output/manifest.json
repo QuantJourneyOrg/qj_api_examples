@@ -1,427 +1,427 @@
 [
   {
     "notebook": "_candidates/01_authentication_methods.ipynb",
-    "output": "plots/01_authentication_methods_output_01.png",
+    "output": "_output/01_authentication_methods_output_01.png",
     "code_cells": 9,
     "markdown_cells": 5,
     "status": "ok"
   },
   {
     "notebook": "_candidates/02_market_data_basics.ipynb",
-    "output": "plots/02_market_data_basics_output_01.png",
+    "output": "_output/02_market_data_basics_output_01.png",
     "code_cells": 8,
     "markdown_cells": 7,
     "status": "ok"
   },
   {
     "notebook": "_candidates/03_economic_data_macro.ipynb",
-    "output": "plots/03_economic_data_macro_output_01.png",
+    "output": "_output/03_economic_data_macro_output_01.png",
     "code_cells": 14,
     "markdown_cells": 8,
     "status": "ok"
   },
   {
     "notebook": "_candidates/04_fundamental_analysis.ipynb",
-    "output": "plots/04_fundamental_analysis_output_01.png",
+    "output": "_output/04_fundamental_analysis_output_01.png",
     "code_cells": 9,
     "markdown_cells": 10,
     "status": "ok"
   },
   {
     "notebook": "_candidates/05_technical_analysis.ipynb",
-    "output": "plots/05_technical_analysis_output_01.png",
+    "output": "_output/05_technical_analysis_output_01.png",
     "code_cells": 10,
     "markdown_cells": 10,
     "status": "ok"
   },
   {
     "notebook": "_candidates/06_portfolio_analysis.ipynb",
-    "output": "plots/06_portfolio_analysis_output_01.png",
+    "output": "_output/06_portfolio_analysis_output_01.png",
     "code_cells": 10,
     "markdown_cells": 11,
     "status": "ok"
   },
   {
     "notebook": "_candidates/07_crypto_ccxt.ipynb",
-    "output": "plots/07_crypto_ccxt_output_01.png",
+    "output": "_output/07_crypto_ccxt_output_01.png",
     "code_cells": 20,
     "markdown_cells": 18,
     "status": "ok"
   },
   {
     "notebook": "_candidates/08_cboe_vix.ipynb",
-    "output": "plots/08_cboe_vix_output_01.png",
+    "output": "_output/08_cboe_vix_output_01.png",
     "code_cells": 5,
     "markdown_cells": 4,
     "status": "ok"
   },
   {
     "notebook": "_candidates/09_multpl_valuation.ipynb",
-    "output": "plots/09_multpl_valuation_output_01.png",
+    "output": "_output/09_multpl_valuation_output_01.png",
     "code_cells": 6,
     "markdown_cells": 5,
     "status": "ok"
   },
   {
     "notebook": "_candidates/10_cftc_cot.ipynb",
-    "output": "plots/10_cftc_cot_output_01.png",
+    "output": "_output/10_cftc_cot_output_01.png",
     "code_cells": 5,
     "markdown_cells": 5,
     "status": "ok"
   },
   {
     "notebook": "_candidates/11_sec_filings.ipynb",
-    "output": "plots/11_sec_filings_output_01.png",
+    "output": "_output/11_sec_filings_output_01.png",
     "code_cells": 9,
     "markdown_cells": 11,
     "status": "ok"
   },
   {
     "notebook": "_candidates/12_finra_short_interest.ipynb",
-    "output": "plots/12_finra_short_interest_output_01.png",
+    "output": "_output/12_finra_short_interest_output_01.png",
     "code_cells": 6,
     "markdown_cells": 5,
     "status": "ok"
   },
   {
     "notebook": "_candidates/13_openfigi.ipynb",
-    "output": "plots/13_openfigi_output_01.png",
+    "output": "_output/13_openfigi_output_01.png",
     "code_cells": 5,
     "markdown_cells": 6,
     "status": "ok"
   },
   {
     "notebook": "_candidates/14_corporate_actions_pit_adjustments.ipynb",
-    "output": "plots/14_corporate_actions_pit_adjustments_output_01.png",
+    "output": "_output/14_corporate_actions_pit_adjustments_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/15_domain_route_discovery_contract.ipynb",
-    "output": "plots/15_domain_route_discovery_contract_output_01.png",
+    "output": "_output/15_domain_route_discovery_contract_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/16_global_macro_sources.ipynb",
-    "output": "plots/16_global_macro_sources_output_01.png",
+    "output": "_output/16_global_macro_sources_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/17_options_vix_skew_term_structure.ipynb",
-    "output": "plots/17_options_vix_skew_term_structure_output_01.png",
+    "output": "_output/17_options_vix_skew_term_structure_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/18_index_constituents_universe_build.ipynb",
-    "output": "plots/18_index_constituents_universe_build_output_01.png",
+    "output": "_output/18_index_constituents_universe_build_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/19_data_contract_lineage_audit.ipynb",
-    "output": "plots/19_data_contract_lineage_audit_output_01.png",
+    "output": "_output/19_data_contract_lineage_audit_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/22_hierarchical_risk_parity_hrp.ipynb",
-    "output": "plots/22_hierarchical_risk_parity_hrp_output_01.png",
+    "output": "_output/22_hierarchical_risk_parity_hrp_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/30_universe_construction_liquidity_screen.ipynb",
-    "output": "plots/30_universe_construction_liquidity_screen_output_01.png",
+    "output": "_output/30_universe_construction_liquidity_screen_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/32_liquidity_capacity_impact.ipynb",
-    "output": "plots/32_liquidity_capacity_impact_output_01.png",
+    "output": "_output/32_liquidity_capacity_impact_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/33_stress_testing_macro_scenarios.ipynb",
-    "output": "plots/33_stress_testing_macro_scenarios_output_01.png",
+    "output": "_output/33_stress_testing_macro_scenarios_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/34_index_replication_tracking_error.ipynb",
-    "output": "plots/34_index_replication_tracking_error_output_01.png",
+    "output": "_output/34_index_replication_tracking_error_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/36_rolling_risk_budgeting_drawdown_control.ipynb",
-    "output": "plots/36_rolling_risk_budgeting_drawdown_control_output_01.png",
+    "output": "_output/36_rolling_risk_budgeting_drawdown_control_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/37_brinson_attribution_benchmark_relative.ipynb",
-    "output": "plots/37_brinson_attribution_benchmark_relative_output_01.png",
+    "output": "_output/37_brinson_attribution_benchmark_relative_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/38_congress_smart_money_overlay.ipynb",
-    "output": "plots/38_congress_smart_money_overlay_output_01.png",
+    "output": "_output/38_congress_smart_money_overlay_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/39_institutional_crowding_13f_flows.ipynb",
-    "output": "plots/39_institutional_crowding_13f_flows_output_01.png",
+    "output": "_output/39_institutional_crowding_13f_flows_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/41_broad_event_study_pead.ipynb",
-    "output": "plots/41_broad_event_study_pead_output_01.png",
+    "output": "_output/41_broad_event_study_pead_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/42_factor_risk_model_construction.ipynb",
-    "output": "plots/42_factor_risk_model_construction_output_01.png",
+    "output": "_output/42_factor_risk_model_construction_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/44_cta_futures_carry_trend_macro.ipynb",
-    "output": "plots/44_cta_futures_carry_trend_macro_output_01.png",
+    "output": "_output/44_cta_futures_carry_trend_macro_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/45_holdings_based_vs_returns_based.ipynb",
-    "output": "plots/45_holdings_based_vs_returns_based_output_01.png",
+    "output": "_output/45_holdings_based_vs_returns_based_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/46_options_overlay_strategies.ipynb",
-    "output": "plots/46_options_overlay_strategies_output_01.png",
+    "output": "_output/46_options_overlay_strategies_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/47_tactical_asset_allocation_macro_valuation.ipynb",
-    "output": "plots/47_tactical_asset_allocation_macro_valuation_output_01.png",
+    "output": "_output/47_tactical_asset_allocation_macro_valuation_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/48_end_to_end_research_to_book.ipynb",
-    "output": "plots/48_end_to_end_research_to_book_output_01.png",
+    "output": "_output/48_end_to_end_research_to_book_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/50_integrated_daily_risk_attribution_report.ipynb",
-    "output": "plots/50_integrated_daily_risk_attribution_report_output_01.png",
+    "output": "_output/50_integrated_daily_risk_attribution_report_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/52_turnover_cost_drag.ipynb",
-    "output": "plots/52_turnover_cost_drag_output_01.png",
+    "output": "_output/52_turnover_cost_drag_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/53_backtest_with_risk_management_full.ipynb",
-    "output": "plots/53_backtest_with_risk_management_full_output_01.png",
+    "output": "_output/53_backtest_with_risk_management_full_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/55_factor_timing_dynamic_exposures.ipynb",
-    "output": "plots/55_factor_timing_dynamic_exposures_output_01.png",
+    "output": "_output/55_factor_timing_dynamic_exposures_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/57_crypto_perps_basis_funding_arbitrage.ipynb",
-    "output": "plots/57_crypto_perps_basis_funding_arbitrage_output_01.png",
+    "output": "_output/57_crypto_perps_basis_funding_arbitrage_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/61_vectorized_strategy_grid.ipynb",
-    "output": "plots/61_vectorized_strategy_grid_output_01.png",
+    "output": "_output/61_vectorized_strategy_grid_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/62_walk_forward_robustness.ipynb",
-    "output": "plots/62_walk_forward_robustness_output_01.png",
+    "output": "_output/62_walk_forward_robustness_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/63_monte_carlo_tail_risk.ipynb",
-    "output": "plots/63_monte_carlo_tail_risk_output_01.png",
+    "output": "_output/63_monte_carlo_tail_risk_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/64_correlation_regime_lab.ipynb",
-    "output": "plots/64_correlation_regime_lab_output_01.png",
+    "output": "_output/64_correlation_regime_lab_output_01.png",
     "code_cells": 3,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/65_drawdown_diagnostics.ipynb",
-    "output": "plots/65_drawdown_diagnostics_output_01.png",
+    "output": "_output/65_drawdown_diagnostics_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/66_factor_exposure_diagnostics.ipynb",
-    "output": "plots/66_factor_exposure_diagnostics_output_01.png",
+    "output": "_output/66_factor_exposure_diagnostics_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/70_macro_regime_cot_cross_asset.ipynb",
-    "output": "plots/70_macro_regime_cot_cross_asset_output_01.png",
+    "output": "_output/70_macro_regime_cot_cross_asset_output_01.png",
     "code_cells": 2,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/71_congress_13f_smart_money_mosaic.ipynb",
-    "output": "plots/71_congress_13f_smart_money_mosaic_output_01.png",
+    "output": "_output/71_congress_13f_smart_money_mosaic_output_01.png",
     "code_cells": 2,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/72_crowding_liquidity_capacity_stress.ipynb",
-    "output": "plots/72_crowding_liquidity_capacity_stress_output_01.png",
+    "output": "_output/72_crowding_liquidity_capacity_stress_output_01.png",
     "code_cells": 2,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/73_conditioned_earnings_pead_multi_source.ipynb",
-    "output": "plots/73_conditioned_earnings_pead_multi_source_output_01.png",
+    "output": "_output/73_conditioned_earnings_pead_multi_source_output_01.png",
     "code_cells": 2,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/74_factor_macro_risk_shock_transmission.ipynb",
-    "output": "plots/74_factor_macro_risk_shock_transmission_output_01.png",
+    "output": "_output/74_factor_macro_risk_shock_transmission_output_01.png",
     "code_cells": 2,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/75_public_signals_book_intelligence.ipynb",
-    "output": "plots/75_public_signals_book_intelligence_output_01.png",
+    "output": "_output/75_public_signals_book_intelligence_output_01.png",
     "code_cells": 1,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/80_investment_evidence_packet.ipynb",
-    "output": "plots/80_investment_evidence_packet_output_01.png",
+    "output": "_output/80_investment_evidence_packet_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/81_pre_trade_liquidity_capacity_check.ipynb",
-    "output": "plots/81_pre_trade_liquidity_capacity_check_output_01.png",
+    "output": "_output/81_pre_trade_liquidity_capacity_check_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/82_earnings_event_pead_research.ipynb",
-    "output": "plots/82_earnings_event_pead_research_output_01.png",
+    "output": "_output/82_earnings_event_pead_research_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/83_portfolio_morning_risk_brief.ipynb",
-    "output": "plots/83_portfolio_morning_risk_brief_output_01.png",
+    "output": "_output/83_portfolio_morning_risk_brief_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/84_crowding_smart_money_flow.ipynb",
-    "output": "plots/84_crowding_smart_money_flow_output_01.png",
+    "output": "_output/84_crowding_smart_money_flow_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/85_macro_shock_cross_asset_scenario.ipynb",
-    "output": "plots/85_macro_shock_cross_asset_scenario_output_01.png",
+    "output": "_output/85_macro_shock_cross_asset_scenario_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/86_macro_regime_allocation_control.ipynb",
-    "output": "plots/86_macro_regime_allocation_control_output_01.png",
+    "output": "_output/86_macro_regime_allocation_control_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/87_inflation_shock_monitor.ipynb",
-    "output": "plots/87_inflation_shock_monitor_output_01.png",
+    "output": "_output/87_inflation_shock_monitor_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"
   },
   {
     "notebook": "_candidates/88_macro_positioning_cot_dashboard.ipynb",
-    "output": "plots/88_macro_positioning_cot_dashboard_output_01.png",
+    "output": "_output/88_macro_positioning_cot_dashboard_output_01.png",
     "code_cells": 4,
     "markdown_cells": 2,
     "status": "ok"

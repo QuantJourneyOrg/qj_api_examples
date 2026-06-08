@@ -1,8 +1,8 @@
-"""Build the flat `_candidates/` notebook catalog.
+"""Build the flat `_candidates/` example notebook catalog.
 
-The candidate catalog is intentionally flat: every workflow notebook lives
+The example catalog is intentionally flat: every workflow notebook lives
 directly under `_candidates/<number>_<slug>.ipynb`. Existing core notebooks are
-copied in, and institutional candidate workflows are generated as
+copied in, and institutional workflows are generated as
 self-contained source notebooks with real QuantJourney SDK calls plus local
 pandas / numpy analytics.
 """
@@ -20,8 +20,6 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 CANDIDATES = ROOT / "_candidates"
-ADVANCED = ROOT / "notebooks" / "buy_side_advanced"
-MANIFEST = ROOT / "outputs" / "manifest.json"
 
 
 EXISTING_CORE = [
@@ -282,8 +280,8 @@ def _contains_qj_call(node: ast.AST) -> bool:
     return False
 
 
-class StrictCandidateTransformer(ast.NodeTransformer):
-    """Normalize generated candidates to strict API calls with no helper fallback."""
+class StrictExampleTransformer(ast.NodeTransformer):
+    """Normalize generated examples to strict API calls with no helper fallback."""
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> ast.AST | None:
         if node.name == "safe_call":
@@ -344,7 +342,7 @@ class StrictCandidateTransformer(ast.NodeTransformer):
 
 def normalize_code_source(source: str) -> str:
     tree = ast.parse(source)
-    tree = StrictCandidateTransformer().visit(tree)
+    tree = StrictExampleTransformer().visit(tree)
     ast.fix_missing_locations(tree)
     return ast.unparse(tree) + "\n"
 
@@ -356,27 +354,42 @@ def code(text: str) -> dict:
     return {"cell_type": "code", "execution_count": None, "metadata": {}, "outputs": [], "source": source.splitlines(keepends=True)}
 
 
-def notebook(spec: NotebookSpec) -> dict:
-    intro = f"""
-    # {spec.title}
+def sentence_case(text: str) -> str:
+    stripped = text.strip()
+    if not stripped:
+        return stripped
+    return stripped[0].lower() + stripped[1:]
 
-    {spec.summary}
 
-    **Category:** {spec.category}
+def example_intro(title: str, summary: str) -> str:
+    return f"""
+    # QuantJourney SDK - {title}
 
-    **Primary API calls used in this candidate:**
-    {chr(10).join(f"- `{call}`" for call in spec.data_calls)}
+    This notebook demonstrates a QuantJourney SDK workflow that {sentence_case(summary).rstrip(".")}.
 
-    **Prepared by:** QuantJourney
+    It covers:
 
-    The notebook is self-contained: QuantJourney SDK calls fetch the data, while the research logic is calculated in pandas/numpy so the assumptions are visible and auditable. Candidate notebooks use direct connector SDK methods when a workflow needs provider-specific data; production systems can expose the same workflows through governed domain routes, tenant scopes and audit metadata.
+    - Direct QuantJourney SDK calls for the required market, macro, regulatory or portfolio data
+    - Transparent pandas/numpy calculations so research assumptions stay visible
+    - Chart-ready output that can be reused in notebooks, reports or API documentation
+
+    ## Prerequisites
+
+    Make sure you have:
+
+    - Access to QuantJourney API (https://api.quantjourney.cloud)
+    - `QJ_API_KEY` configured in your environment
+    - Tenant access to the connectors used by this example
     """
-    cells = [md(intro), code(COMMON_SETUP)]
+
+
+def notebook(spec: NotebookSpec) -> dict:
+    cells = [md(example_intro(spec.title, spec.summary)), code(COMMON_SETUP)]
     cells.extend(code(cell) for cell in spec.cells)
     cells.append(md("""
     ## Notes
 
-    This is a candidate workflow. In production, tenant scopes, connector allowlists,
+    This is an example workflow. In production, tenant scopes, connector allowlists,
     provider metadata, request IDs and audit logs should be retained next to the resulting
     tables or charts.
     """))
@@ -1387,7 +1400,7 @@ SPECS = [
             }).sort_values("weight", ascending=False)
             display(report)
             display(performance_stats(book_ret))
-            plot_nav({"candidate book": book_ret, "equal universe": ret[universe].mean(axis=1)}, "Research-to-book NAV")
+            plot_nav({"research book": book_ret, "equal universe": ret[universe].mean(axis=1)}, "Research-to-book NAV")
             report[["weight", "risk_contribution"]].plot(kind="bar", title="Weight vs risk contribution")
             plt.show()
             """,
@@ -1829,7 +1842,7 @@ MULTI_SOURCE_WORKFLOW_SPECS = get_multisource_workflow_specs(NotebookSpec)
 ALL_GENERATED_SPECS = [*CORE_PRIMITIVE_SPECS, *SPECS, *ADVANCED_FULL_SPECS, *MULTI_SOURCE_WORKFLOW_SPECS]
 
 
-def clean_candidates() -> None:
+def clean_example_notebooks() -> None:
     CANDIDATES.mkdir(parents=True, exist_ok=True)
     for path in CANDIDATES.glob("*.ipynb"):
         if path.name not in PRESERVED_SOURCE_CANDIDATE_NAMES:
@@ -1862,18 +1875,33 @@ def write_generated(specs: Iterable[NotebookSpec]) -> list[str]:
         out = CANDIDATES / spec.filename
         out.write_text(json.dumps(nb, indent=2) + "\n", encoding="utf-8")
         written.append(spec.filename)
-        if spec.mirror_to_advanced:
-            ADVANCED.mkdir(parents=True, exist_ok=True)
-            (ADVANCED / spec.filename).write_text(json.dumps(nb, indent=2) + "\n", encoding="utf-8")
     return written
 
 
 def attach_preview_cells() -> None:
     for path in sorted(CANDIDATES.glob("*.ipynb")):
         nb = json.loads(path.read_text(encoding="utf-8"))
+        preserved_summary = None
+        if path.name in PRESERVED_SOURCE_CANDIDATE_NAMES:
+            preserved_summary = next(summary for name, _, summary in PRESERVED_SOURCE_CANDIDATES if name == path.name)
+            title = path.stem.split("_", 1)[1].replace("_", " ").title() if "_" in path.stem else path.stem
+            for cell in nb.get("cells", []):
+                source = "".join(cell.get("source", []))
+                if cell.get("cell_type") == "markdown":
+                    for line in source.splitlines():
+                        stripped = line.strip()
+                        if stripped.startswith("# "):
+                            title = stripped[2:].strip()
+                            break
+                    break
+            while title.startswith("QuantJourney SDK - "):
+                title = title.removeprefix("QuantJourney SDK - ").strip()
         cleaned_cells = []
-        for cell in nb.get("cells", []):
+        for index, cell in enumerate(nb.get("cells", [])):
             source = "".join(cell.get("source", []))
+            if preserved_summary and index == 0 and cell.get("cell_type") == "markdown":
+                cleaned_cells.append(md(example_intro(title, preserved_summary)))
+                continue
             if cell.get("cell_type") == "markdown" and source.lstrip().startswith(("## Run Output", "## Preview Chart")):
                 continue
             if cell.get("cell_type") == "markdown" and "Prepared by QuantJourney" in source:
@@ -1902,16 +1930,16 @@ def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> Non
         rows.append((spec.filename, spec.category, spec.summary))
     rows = sorted(rows, key=lambda row: row[0])
     lines = [
-        "# Buy-Side Candidate Notebook Catalog",
+        "# QuantJourney SDK Example Catalog",
         "",
-        "Flat candidate catalog for institutional workflows. Candidate notebooks are clean source notebooks; generated plot artifacts are committed under `plots/` and indexed in `plots/manifest.json`. New candidates use direct QuantJourney SDK connector calls plus transparent local analytics. Production systems can wrap the same workflows behind governed domain routes, tenant scopes and audit metadata.",
+        "Flat example catalog for QuantJourney SDK workflows. Example notebooks are clean source files; generated chart artifacts are committed under `_output/` and indexed in `_output/manifest.json`. New examples use direct QuantJourney SDK connector calls plus transparent local analytics. Production systems can wrap the same workflows behind governed domain routes, tenant scopes and audit metadata.",
         "",
-        "| Notebook | Preview | Category | What it shows |",
+        "| Notebook | Output | Type | What it shows |",
         "|---|---|---|---|",
     ]
     for name, category, summary in rows:
         stem = Path(name).stem
-        lines.append(f"| [{name}]({name}) | [PNG](../plots/{stem}_output_01.png) | {category} | {summary} |")
+        lines.append(f"| [{name}]({name}) | [PNG](../_output/{stem}_output_01.png) | {category} | {summary} |")
     lines.extend(
         [
             "",
@@ -1922,50 +1950,20 @@ def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> Non
             "jupyter lab _candidates",
             "```",
             "",
-            "Candidate notebooks use direct SDK calls. Missing tenant access or missing provider coverage should surface as normal API errors during execution.",
+            "These examples use direct SDK calls. Missing tenant access or missing provider coverage should surface as normal API errors during execution.",
         ]
     )
     (CANDIDATES / "INDEX.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def update_manifest_for_advanced() -> None:
-    if not MANIFEST.exists():
-        return
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    existing = {entry["path"]: entry for entry in manifest}
-    for spec in ADVANCED_FULL_SPECS:
-        path = f"notebooks/buy_side_advanced/{spec.filename}"
-        nb_path = ROOT / path
-        if not nb_path.exists():
-            continue
-        nb = json.loads(nb_path.read_text(encoding="utf-8"))
-        entry = existing.get(path)
-        if entry is None:
-            entry = {
-                "name": spec.filename,
-                "group": "buy_side_advanced",
-                "path": path,
-                "output_dir": "outputs/buy_side_advanced",
-                "images": 1,
-                "cells": len(nb.get("cells", [])),
-            }
-            manifest.append(entry)
-        else:
-            entry["cells"] = len(nb.get("cells", []))
-            entry["images"] = entry.get("images", 1)
-            entry["output_dir"] = "outputs/buy_side_advanced"
-    MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-
-
 def main() -> None:
-    clean_candidates()
+    clean_example_notebooks()
     copied = copy_existing()
     generated = write_generated(ALL_GENERATED_SPECS)
     attach_preview_cells()
     write_index(copied, generated)
-    update_manifest_for_advanced()
     print(f"Copied {len(copied)} existing notebooks")
-    print(f"Generated {len(generated)} candidate notebooks")
+    print(f"Generated {len(generated)} example notebooks")
     print(f"Wrote {CANDIDATES / 'INDEX.md'}")
 
 
