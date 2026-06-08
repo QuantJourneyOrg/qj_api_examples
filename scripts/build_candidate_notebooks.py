@@ -276,6 +276,69 @@ def md(text: str) -> dict:
     return {"cell_type": "markdown", "metadata": {}, "source": dedent(text).strip().splitlines(keepends=True)}
 
 
+EMOJI_REPLACEMENTS = {
+    "\u2713": "OK",
+    "\u2705": "OK",
+    "\u26a0\ufe0f": "Warning",
+    "\u26a0": "Warning",
+    "\U0001f534": "",
+    "\U0001f7e2": "",
+    "\U0001f7e1": "",
+    "\U0001f4ca": "",
+    "\U0001f4c8": "",
+    "\U0001f4c9": "",
+    "\U0001f4a1": "",
+    "\U0001f680": "",
+    "\U0001f525": "",
+    "\u2b50": "",
+}
+
+
+def strip_icons(source: str) -> str:
+    for old, new in EMOJI_REPLACEMENTS.items():
+        source = source.replace(old, new)
+    return source
+
+
+def normalize_core_setup_cells(nb: dict, path: Path) -> None:
+    if not path.name[:2].isdigit() or not (2 <= int(path.name[:2]) <= 10):
+        return
+    if len(nb.get("cells", [])) < 2 or nb["cells"][1].get("cell_type") != "code":
+        return
+    source = "".join(nb["cells"][1].get("source", []))
+    if "QuantJourneyAPI" not in source or "sys.path.insert" not in source:
+        return
+
+    import_lines: list[str] = []
+    seen: set[str] = set()
+    for line in source.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("import sys") or stripped.startswith("sys.path.insert"):
+            continue
+        if stripped.startswith("from quantjourney.sdk import QuantJourneyAPI"):
+            continue
+        if stripped.startswith("API_KEY") or stripped.startswith("qj =") or stripped.startswith("print("):
+            continue
+        if stripped not in seen:
+            import_lines.append(stripped)
+            seen.add(stripped)
+
+    client = """
+    from quantjourney.sdk import QuantJourneyAPI
+
+    qj = QuantJourneyAPI(api_key=os.environ["QJ_API_KEY"])
+
+    print("Connected to QuantJourney API")
+    """
+    replacement = [
+        md("## Imports and Plot Style"),
+        code("\n".join(import_lines)),
+        md("## QuantJourney Client"),
+        code(client),
+    ]
+    nb["cells"] = [nb["cells"][0], *replacement, *nb["cells"][2:]]
+
+
 def _root_name(node: ast.AST) -> str | None:
     while isinstance(node, ast.Attribute):
         node = node.value
@@ -361,7 +424,7 @@ def normalize_code_source(source: str) -> str:
 
 
 def code(text: str) -> dict:
-    source = dedent(text).strip() + "\n"
+    source = strip_icons(dedent(text).strip()) + "\n"
     source = normalize_code_source(source)
     ast.parse(source)
     return {"cell_type": "code", "execution_count": None, "metadata": {}, "outputs": [], "source": source.splitlines(keepends=True)}
@@ -2043,9 +2106,14 @@ def attach_preview_cells() -> None:
         for cell in nb.get("cells", []):
             if cell.get("cell_type") == "code":
                 source = "".join(cell.get("source", []))
+                source = strip_icons(source)
                 cell["source"] = normalize_code_source(source).splitlines(keepends=True)
                 cell["execution_count"] = None
                 cell["outputs"] = []
+            elif cell.get("cell_type") == "markdown":
+                source = strip_icons("".join(cell.get("source", [])))
+                cell["source"] = source.splitlines(keepends=True)
+        normalize_core_setup_cells(nb, path)
         if path.name in PRESERVED_SOURCE_CANDIDATE_NAMES:
             split_preserved_leading_cell(nb)
         path.write_text(json.dumps(nb, indent=2) + "\n", encoding="utf-8")
@@ -2071,7 +2139,13 @@ def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> Non
     ]
     for name, category, summary in rows:
         stem = Path(name).stem
-        lines.append(f"| [{name}]({name}) | [PNG](../_output/{stem}_output_01.png) | {category} | {summary} |")
+        if stem == "01_authentication_methods":
+            output_link = "none"
+        elif stem == "02_market_data_basics":
+            output_link = "[01](../_output/02_market_01.png), [02](../_output/02_market_02.png), [03](../_output/02_market_03.png)"
+        else:
+            output_link = f"[PNG](../_output/{stem}_output_01.png)"
+        lines.append(f"| [{name}]({name}) | {output_link} | {category} | {summary} |")
     lines.extend(
         [
             "",

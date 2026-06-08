@@ -43,7 +43,7 @@ To re-run one notebook:
 jupyter nbconvert --execute --to notebook --inplace notebooks/core/02_market_data_basics.ipynb
 ```
 
-To rebuild the example catalog and regenerate one PNG for every `_candidates/*.ipynb` notebook:
+To rebuild the example catalog and regenerate chart artifacts for `_candidates/*.ipynb` notebooks:
 
 ```bash
 export QJ_API_KEY="qj_..."
@@ -59,7 +59,7 @@ The canonical public catalog is flat:
 - generated charts: [`_output`](./_output)
 - output manifest: [`_output/manifest.json`](./_output/manifest.json)
 
-Every `_candidates/*.ipynb` file has a matching `_output/<notebook>_output_01.png` file.
+Most examples have one matching `_output/<notebook>_output_01.png` file. Some examples intentionally have no chart output, and some have multiple dedicated chart files; see `_output/manifest.json`.
 
 ## Example Catalog
 
@@ -77,7 +77,7 @@ PYTHONPATH=/path/to/quantjourney-sdk python scripts/build_candidate_notebooks.py
 PYTHONPATH=/path/to/quantjourney-sdk python scripts/run_candidate_files.py
 ```
 
-`scripts/run_candidate_files.py` processes every `_candidates/*.ipynb` file and writes one chart per file to `_output/<notebook>_output_01.png`, plus `_output/manifest.json`.
+`scripts/run_candidate_files.py` processes every `_candidates/*.ipynb` file and writes chart artifacts to `_output/`, plus `_output/manifest.json`.
 
 ## Source Notebooks
 

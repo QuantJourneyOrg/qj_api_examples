@@ -4,8 +4,8 @@ Flat example catalog for QuantJourney SDK workflows. Example notebooks are clean
 
 | Notebook | Output | Type | What it shows |
 |---|---|---|---|
-| [01_authentication_methods.ipynb](01_authentication_methods.ipynb) | [PNG](../_output/01_authentication_methods_output_01.png) | Existing core notebook | copied from notebooks/core |
-| [02_market_data_basics.ipynb](02_market_data_basics.ipynb) | [PNG](../_output/02_market_data_basics_output_01.png) | Existing core notebook | copied from notebooks/core |
+| [01_authentication_methods.ipynb](01_authentication_methods.ipynb) | none | Existing core notebook | copied from notebooks/core |
+| [02_market_data_basics.ipynb](02_market_data_basics.ipynb) | [01](../_output/02_market_01.png), [02](../_output/02_market_02.png), [03](../_output/02_market_03.png) | Existing core notebook | copied from notebooks/core |
 | [03_economic_data_macro.ipynb](03_economic_data_macro.ipynb) | [PNG](../_output/03_economic_data_macro_output_01.png) | Existing core notebook | copied from notebooks/core |
 | [04_fundamental_analysis.ipynb](04_fundamental_analysis.ipynb) | [PNG](../_output/04_fundamental_analysis_output_01.png) | Existing core notebook | copied from notebooks/core |
 | [05_technical_analysis.ipynb](05_technical_analysis.ipynb) | [PNG](../_output/05_technical_analysis_output_01.png) | Existing core notebook | copied from notebooks/core |
