@@ -22,9 +22,12 @@
   {
     "notebook": "_candidates/03_economic_data_macro.ipynb",
     "outputs": [
-      "_output/03_economic_data_macro_output_01.png"
+      "_output/03_macro_01_yield_curve.png",
+      "_output/03_macro_02_inflation.png",
+      "_output/03_macro_03_unemployment.png",
+      "_output/03_macro_04_sensitivity.png"
     ],
-    "output": "_output/03_economic_data_macro_output_01.png",
+    "output": "_output/03_macro_01_yield_curve.png",
     "code_cells": 15,
     "markdown_cells": 10,
     "status": "ok"
@@ -32,9 +35,11 @@
   {
     "notebook": "_candidates/04_fundamental_analysis.ipynb",
     "outputs": [
-      "_output/04_fundamental_analysis_output_01.png"
+      "_output/04_fundamentals_01_valuation_quality.png",
+      "_output/04_fundamentals_02_peer_pe.png",
+      "_output/04_fundamentals_03_profitability.png"
     ],
-    "output": "_output/04_fundamental_analysis_output_01.png",
+    "output": "_output/04_fundamentals_01_valuation_quality.png",
     "code_cells": 10,
     "markdown_cells": 12,
     "status": "ok"
@@ -52,9 +57,11 @@
   {
     "notebook": "_candidates/06_portfolio_analysis.ipynb",
     "outputs": [
-      "_output/06_portfolio_analysis_output_01.png"
+      "_output/06_portfolio_01_nav_risk.png",
+      "_output/06_portfolio_02_risk_contribution.png",
+      "_output/06_portfolio_03_correlation.png"
     ],
-    "output": "_output/06_portfolio_analysis_output_01.png",
+    "output": "_output/06_portfolio_01_nav_risk.png",
     "code_cells": 11,
     "markdown_cells": 13,
     "status": "ok"
@@ -62,9 +69,11 @@
   {
     "notebook": "_candidates/07_crypto_ccxt.ipynb",
     "outputs": [
-      "_output/07_crypto_ccxt_output_01.png"
+      "_output/07_crypto_01_spot_performance.png",
+      "_output/07_crypto_02_funding_pressure.png",
+      "_output/07_crypto_03_basis_state.png"
     ],
-    "output": "_output/07_crypto_ccxt_output_01.png",
+    "output": "_output/07_crypto_01_spot_performance.png",
     "code_cells": 21,
     "markdown_cells": 20,
     "status": "ok"
@@ -72,9 +81,11 @@
   {
     "notebook": "_candidates/08_cboe_vix.ipynb",
     "outputs": [
-      "_output/08_cboe_vix_output_01.png"
+      "_output/08_vix_01_vol_state.png",
+      "_output/08_vix_02_drawdown_overlay.png",
+      "_output/08_vix_03_regime_mix.png"
     ],
-    "output": "_output/08_cboe_vix_output_01.png",
+    "output": "_output/08_vix_01_vol_state.png",
     "code_cells": 6,
     "markdown_cells": 6,
     "status": "ok"
@@ -82,9 +93,11 @@
   {
     "notebook": "_candidates/09_multpl_valuation.ipynb",
     "outputs": [
-      "_output/09_multpl_valuation_output_01.png"
+      "_output/09_multpl_01_cape.png",
+      "_output/09_multpl_02_rates.png",
+      "_output/09_multpl_03_earnings_yield_spread.png"
     ],
-    "output": "_output/09_multpl_valuation_output_01.png",
+    "output": "_output/09_multpl_01_cape.png",
     "code_cells": 7,
     "markdown_cells": 7,
     "status": "ok"
@@ -102,39 +115,47 @@
   {
     "notebook": "_candidates/11_sec_filings.ipynb",
     "outputs": [
-      "_output/11_sec_filings_output_01.png"
+      "_output/11_sec_01_disclosure_timeline.png",
+      "_output/11_sec_02_form_mix.png",
+      "_output/11_sec_03_disclosure_intensity.png"
     ],
-    "output": "_output/11_sec_filings_output_01.png",
-    "code_cells": 9,
-    "markdown_cells": 11,
+    "output": "_output/11_sec_01_disclosure_timeline.png",
+    "code_cells": 10,
+    "markdown_cells": 13,
     "status": "ok"
   },
   {
     "notebook": "_candidates/12_finra_short_interest.ipynb",
     "outputs": [
-      "_output/12_finra_short_interest_output_01.png"
+      "_output/12_finra_01_short_volume_ratio.png",
+      "_output/12_finra_02_days_to_cover.png",
+      "_output/12_finra_03_crowding_map.png"
     ],
-    "output": "_output/12_finra_short_interest_output_01.png",
-    "code_cells": 6,
-    "markdown_cells": 5,
+    "output": "_output/12_finra_01_short_volume_ratio.png",
+    "code_cells": 7,
+    "markdown_cells": 7,
     "status": "ok"
   },
   {
     "notebook": "_candidates/13_openfigi.ipynb",
     "outputs": [
-      "_output/13_openfigi_output_01.png"
+      "_output/13_openfigi_01_identity_resolution.png",
+      "_output/13_openfigi_02_mapping_coverage.png",
+      "_output/13_openfigi_03_security_type_mix.png"
     ],
-    "output": "_output/13_openfigi_output_01.png",
-    "code_cells": 5,
-    "markdown_cells": 6,
+    "output": "_output/13_openfigi_01_identity_resolution.png",
+    "code_cells": 6,
+    "markdown_cells": 8,
     "status": "ok"
   },
   {
     "notebook": "_candidates/14_corporate_actions_pit_adjustments.ipynb",
     "outputs": [
-      "_output/14_corporate_actions_pit_adjustments_output_01.png"
+      "_output/14_corporate_actions_01_raw_vs_adjusted.png",
+      "_output/14_corporate_actions_02_dividend_timeline.png",
+      "_output/14_corporate_actions_03_split_factor.png"
     ],
-    "output": "_output/14_corporate_actions_pit_adjustments_output_01.png",
+    "output": "_output/14_corporate_actions_01_raw_vs_adjusted.png",
     "code_cells": 6,
     "markdown_cells": 5,
     "status": "ok"
@@ -142,9 +163,11 @@
   {
     "notebook": "_candidates/15_domain_route_discovery_contract.ipynb",
     "outputs": [
-      "_output/15_domain_route_discovery_contract_output_01.png"
+      "_output/15_domain_01_api_surface.png",
+      "_output/15_domain_02_scope_matrix.png",
+      "_output/15_domain_03_route_coverage.png"
     ],
-    "output": "_output/15_domain_route_discovery_contract_output_01.png",
+    "output": "_output/15_domain_01_api_surface.png",
     "code_cells": 6,
     "markdown_cells": 5,
     "status": "ok"
@@ -152,9 +175,11 @@
   {
     "notebook": "_candidates/16_global_macro_sources.ipynb",
     "outputs": [
-      "_output/16_global_macro_sources_output_01.png"
+      "_output/16_macro_sources_01_provider_coverage.png",
+      "_output/16_macro_sources_02_frequency_matrix.png",
+      "_output/16_macro_sources_03_region_coverage.png"
     ],
-    "output": "_output/16_global_macro_sources_output_01.png",
+    "output": "_output/16_macro_sources_01_provider_coverage.png",
     "code_cells": 6,
     "markdown_cells": 5,
     "status": "ok"
@@ -162,9 +187,11 @@
   {
     "notebook": "_candidates/17_options_vix_skew_term_structure.ipynb",
     "outputs": [
-      "_output/17_options_vix_skew_term_structure_output_01.png"
+      "_output/17_vol_01_vix_skew.png",
+      "_output/17_vol_02_term_structure.png",
+      "_output/17_vol_03_surface.png"
     ],
-    "output": "_output/17_options_vix_skew_term_structure_output_01.png",
+    "output": "_output/17_vol_01_vix_skew.png",
     "code_cells": 6,
     "markdown_cells": 5,
     "status": "ok"
@@ -172,9 +199,11 @@
   {
     "notebook": "_candidates/18_index_constituents_universe_build.ipynb",
     "outputs": [
-      "_output/18_index_constituents_universe_build_output_01.png"
+      "_output/18_index_01_universe_scores.png",
+      "_output/18_index_02_sector_weights.png",
+      "_output/18_index_03_liquidity_filter.png"
     ],
-    "output": "_output/18_index_constituents_universe_build_output_01.png",
+    "output": "_output/18_index_01_universe_scores.png",
     "code_cells": 7,
     "markdown_cells": 6,
     "status": "ok"
@@ -182,9 +211,11 @@
   {
     "notebook": "_candidates/19_data_contract_lineage_audit.ipynb",
     "outputs": [
-      "_output/19_data_contract_lineage_audit_output_01.png"
+      "_output/19_lineage_01_evidence_rows.png",
+      "_output/19_lineage_02_metadata_completeness.png",
+      "_output/19_lineage_03_warning_state.png"
     ],
-    "output": "_output/19_data_contract_lineage_audit_output_01.png",
+    "output": "_output/19_lineage_01_evidence_rows.png",
     "code_cells": 6,
     "markdown_cells": 5,
     "status": "ok"

@@ -301,19 +301,19 @@ def strip_icons(source: str) -> str:
 
 
 def normalize_core_setup_cells(nb: dict, path: Path) -> None:
-    if not path.name[:2].isdigit() or not (2 <= int(path.name[:2]) <= 10):
+    if not path.name[:2].isdigit() or not (2 <= int(path.name[:2]) <= 13):
         return
     if len(nb.get("cells", [])) < 2 or nb["cells"][1].get("cell_type") != "code":
         return
     source = "".join(nb["cells"][1].get("source", []))
-    if "QuantJourneyAPI" not in source or "sys.path.insert" not in source:
+    if "QuantJourneyAPI" not in source:
         return
 
     import_lines: list[str] = []
     seen: set[str] = set()
     for line in source.splitlines():
         stripped = line.strip()
-        if not stripped or stripped.startswith("import sys") or stripped.startswith("sys.path.insert"):
+        if not stripped or stripped.startswith("import sys") or (stripped.startswith("sys.path.") and ".insert" in stripped):
             continue
         if stripped.startswith("from quantjourney.sdk import QuantJourneyAPI"):
             continue
@@ -358,6 +358,28 @@ def _contains_qj_call(node: ast.AST) -> bool:
 
 class StrictExampleTransformer(ast.NodeTransformer):
     """Normalize generated examples to strict API calls with no helper fallback."""
+
+    def visit_Import(self, node: ast.Import) -> ast.AST | None:
+        names = [alias for alias in node.names if alias.name != "sys"]
+        if not names:
+            return None
+        node.names = names
+        return node
+
+    def visit_Expr(self, node: ast.Expr) -> ast.AST | None:
+        value = self.visit(node.value)
+        if (
+            isinstance(value, ast.Call)
+            and isinstance(value.func, ast.Attribute)
+            and value.func.attr == "insert"
+            and isinstance(value.func.value, ast.Attribute)
+            and value.func.value.attr == "path"
+            and isinstance(value.func.value.value, ast.Name)
+            and value.func.value.value.id == "sys"
+        ):
+            return None
+        node.value = value
+        return node
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> ast.AST | None:
         if node.name == "safe_call":
@@ -2119,6 +2141,69 @@ def attach_preview_cells() -> None:
         path.write_text(json.dumps(nb, indent=2) + "\n", encoding="utf-8")
 
 
+OUTPUT_LINKS = {
+    "01_authentication_methods": [],
+    "02_market_data_basics": ["02_market_01.png", "02_market_02.png", "02_market_03.png"],
+    "03_economic_data_macro": [
+        "03_macro_01_yield_curve.png",
+        "03_macro_02_inflation.png",
+        "03_macro_03_unemployment.png",
+        "03_macro_04_sensitivity.png",
+    ],
+    "04_fundamental_analysis": [
+        "04_fundamentals_01_valuation_quality.png",
+        "04_fundamentals_02_peer_pe.png",
+        "04_fundamentals_03_profitability.png",
+    ],
+    "06_portfolio_analysis": [
+        "06_portfolio_01_nav_risk.png",
+        "06_portfolio_02_risk_contribution.png",
+        "06_portfolio_03_correlation.png",
+    ],
+    "07_crypto_ccxt": [
+        "07_crypto_01_spot_performance.png",
+        "07_crypto_02_funding_pressure.png",
+        "07_crypto_03_basis_state.png",
+    ],
+    "08_cboe_vix": ["08_vix_01_vol_state.png", "08_vix_02_drawdown_overlay.png", "08_vix_03_regime_mix.png"],
+    "09_multpl_valuation": ["09_multpl_01_cape.png", "09_multpl_02_rates.png", "09_multpl_03_earnings_yield_spread.png"],
+    "11_sec_filings": ["11_sec_01_disclosure_timeline.png", "11_sec_02_form_mix.png", "11_sec_03_disclosure_intensity.png"],
+    "12_finra_short_interest": ["12_finra_01_short_volume_ratio.png", "12_finra_02_days_to_cover.png", "12_finra_03_crowding_map.png"],
+    "13_openfigi": ["13_openfigi_01_identity_resolution.png", "13_openfigi_02_mapping_coverage.png", "13_openfigi_03_security_type_mix.png"],
+    "14_corporate_actions_pit_adjustments": [
+        "14_corporate_actions_01_raw_vs_adjusted.png",
+        "14_corporate_actions_02_dividend_timeline.png",
+        "14_corporate_actions_03_split_factor.png",
+    ],
+    "15_domain_route_discovery_contract": ["15_domain_01_api_surface.png", "15_domain_02_scope_matrix.png", "15_domain_03_route_coverage.png"],
+    "16_global_macro_sources": [
+        "16_macro_sources_01_provider_coverage.png",
+        "16_macro_sources_02_frequency_matrix.png",
+        "16_macro_sources_03_region_coverage.png",
+    ],
+    "17_options_vix_skew_term_structure": ["17_vol_01_vix_skew.png", "17_vol_02_term_structure.png", "17_vol_03_surface.png"],
+    "18_index_constituents_universe_build": [
+        "18_index_01_universe_scores.png",
+        "18_index_02_sector_weights.png",
+        "18_index_03_liquidity_filter.png",
+    ],
+    "19_data_contract_lineage_audit": [
+        "19_lineage_01_evidence_rows.png",
+        "19_lineage_02_metadata_completeness.png",
+        "19_lineage_03_warning_state.png",
+    ],
+}
+
+
+def output_links_for(stem: str) -> str:
+    if stem in OUTPUT_LINKS:
+        names = OUTPUT_LINKS[stem]
+        if not names:
+            return "none"
+        return ", ".join(f"[{index:02d}](../_output/{name})" for index, name in enumerate(names, start=1))
+    return f"[PNG](../_output/{stem}_output_01.png)"
+
+
 def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> None:
     rows = []
     for name, category, summary in copied:
@@ -2139,12 +2224,7 @@ def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> Non
     ]
     for name, category, summary in rows:
         stem = Path(name).stem
-        if stem == "01_authentication_methods":
-            output_link = "none"
-        elif stem == "02_market_data_basics":
-            output_link = "[01](../_output/02_market_01.png), [02](../_output/02_market_02.png), [03](../_output/02_market_03.png)"
-        else:
-            output_link = f"[PNG](../_output/{stem}_output_01.png)"
+        output_link = output_links_for(stem)
         lines.append(f"| [{name}]({name}) | {output_link} | {category} | {summary} |")
     lines.extend(
         [
