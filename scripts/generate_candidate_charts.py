@@ -1,8 +1,8 @@
 """Generate one dark output chart for every example notebook in `_candidates/`.
 
 These are visual outputs for the example catalog, not notebook execution
-artifacts. Each output is a single-axes PNG so the catalog never shows two
-separate charts inside the same image.
+artifacts. The first notebook examples use denser institutional dashboard
+layouts; every figure uses the same dark navy background.
 """
 
 from __future__ import annotations
@@ -31,8 +31,8 @@ import pandas as pd
 CANDIDATES = ROOT / "_candidates"
 OUTPUT = ROOT / "_output"
 
-NAVY = "#020817"
-PANEL = "#061641"
+NAVY = "#020617"
+PANEL = "#020617"
 TEXT = "#eaf1ff"
 MUTED = "#9fb1d1"
 BLUE = "#4da3ff"
@@ -41,7 +41,8 @@ PINK = "#ff6fb3"
 GREEN = "#66e0a3"
 AMBER = "#ffc857"
 RED = "#ff7a7a"
-CORR_CMAP = LinearSegmentedColormap.from_list("qj_corr", [CYAN, PANEL, PINK])
+GRID = "#1f3a68"
+CORR_CMAP = LinearSegmentedColormap.from_list("qj_corr", [CYAN, NAVY, PINK])
 
 
 def rng_for(stem: str) -> np.random.Generator:
@@ -53,19 +54,42 @@ def style_ax(ax: plt.Axes, title: str) -> None:
     fig = ax.figure
     fig.patch.set_facecolor(NAVY)
     ax.set_facecolor(PANEL)
-    ax.set_title(title.replace("_", " "), color=TEXT, fontsize=16, pad=14, weight="medium")
+    ax.set_title(title.replace("_", " "), color=TEXT, fontsize=12, pad=10, weight="medium", loc="left")
     ax.tick_params(colors=MUTED, labelsize=9)
-    ax.grid(True, color="white", alpha=0.10, linewidth=0.8)
+    ax.grid(True, color=GRID, alpha=0.45, linewidth=0.7)
     for spine in ax.spines.values():
         spine.set_color("#17376f")
+        spine.set_alpha(0.65)
     ax.xaxis.label.set_color(MUTED)
     ax.yaxis.label.set_color(MUTED)
 
 
+def dashboard_title(fig: plt.Figure, title: str, subtitle: str) -> None:
+    fig.patch.set_facecolor(NAVY)
+    fig.text(0.035, 0.965, title, color=TEXT, fontsize=18, weight="semibold", va="top")
+    fig.text(0.035, 0.925, subtitle, color=MUTED, fontsize=9, va="top")
+
+
+def api_strip(fig: plt.Figure, text: str) -> None:
+    fig.text(
+        0.035,
+        0.035,
+        text,
+        color="#bcd4ff",
+        fontsize=8.5,
+        family="monospace",
+        bbox={"boxstyle": "round,pad=0.35", "facecolor": "#061641", "edgecolor": "#1a4a88", "alpha": 0.96},
+    )
+
+
+def style_legend(ax: plt.Axes) -> None:
+    legend = ax.legend(facecolor=NAVY, edgecolor="#17376f", labelcolor=TEXT, fontsize=8)
+    if legend:
+        legend.get_frame().set_alpha(0.88)
+
+
 def save(fig: plt.Figure, path: Path) -> None:
-    if len(fig.axes) != 1:
-        raise RuntimeError(f"{path.name} has {len(fig.axes)} axes; expected exactly one")
-    fig.tight_layout(pad=1.6)
+    fig.subplots_adjust(left=0.07, right=0.97, top=0.85, bottom=0.12, hspace=0.46, wspace=0.30)
     fig.savefig(path, dpi=160, facecolor=fig.get_facecolor(), edgecolor="none")
     plt.close(fig)
 
@@ -79,6 +103,328 @@ def dates(n: int = 252) -> pd.DatetimeIndex:
 
 def random_walk(rng: np.random.Generator, n: int = 252, drift: float = 0.0004, vol: float = 0.012) -> pd.Series:
     return pd.Series(np.cumprod(1 + rng.normal(drift, vol, n)), index=dates(n))
+
+
+def plot_01_authentication_methods(stem: str, out: Path) -> None:
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.4, 1], height_ratios=[1, 1])
+    dashboard_title(fig, "Authentication and Scoped Access", "API key exchange, JWT TTL, route scopes and request audit context")
+    ax_flow = fig.add_subplot(gs[:, 0])
+    ax_scope = fig.add_subplot(gs[0, 1])
+    ax_ttl = fig.add_subplot(gs[1, 1])
+    for ax in [ax_flow, ax_scope, ax_ttl]:
+        style_ax(ax, "")
+    ax_flow.set_title("governed request path", color=TEXT, loc="left", fontsize=12)
+    ax_flow.axis("off")
+    steps = ["API key", "JWT access", "scope check", "route call", "request_id"]
+    x = np.linspace(0.08, 0.92, len(steps))
+    for i, (label, xpos) in enumerate(zip(steps, x)):
+        ax_flow.scatter([xpos], [0.58], s=900, color=[BLUE, CYAN, PINK, GREEN, AMBER][i], alpha=0.95)
+        ax_flow.text(xpos, 0.58, str(i + 1), color=NAVY, ha="center", va="center", fontsize=13, weight="bold")
+        ax_flow.text(xpos, 0.38, label, color=TEXT, ha="center", va="center", fontsize=10)
+        if i < len(steps) - 1:
+            ax_flow.annotate("", xy=(x[i + 1] - 0.055, 0.58), xytext=(xpos + 0.055, 0.58), arrowprops={"arrowstyle": "->", "color": MUTED, "lw": 1.8})
+    scopes = ["pricing", "macro", "filings", "portfolio", "admin"]
+    allowed = [1, 1, 1, 0.62, 0.18]
+    ax_scope.barh(scopes, allowed, color=[GREEN, CYAN, BLUE, AMBER, RED], alpha=0.9)
+    ax_scope.set_xlim(0, 1.05)
+    ax_scope.set_title("tenant scope coverage", color=TEXT, loc="left", fontsize=12)
+    ttl = pd.Series([15, 7 * 24 * 60], index=["access token", "refresh token"])
+    ax_ttl.bar(ttl.index, ttl.values, color=[BLUE, PINK], alpha=0.92)
+    ax_ttl.set_yscale("log")
+    ax_ttl.set_ylabel("minutes, log scale")
+    ax_ttl.set_title("token lifetime model", color=TEXT, loc="left", fontsize=12)
+    api_strip(fig, "QuantJourneyAPI(api_key=...) -> JWT -> scoped route execution -> request_id + audit event")
+    save(fig, out)
+
+
+def plot_02_market_data_basics(stem: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = dates(420)
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 3, width_ratios=[1.25, 1.25, 0.9])
+    dashboard_title(fig, "Market Data: Adjusted OHLCV and Provider Evidence", "Normalized performance, liquidity, volatility regime and route metadata")
+    ax_nav = fig.add_subplot(gs[0, :2])
+    ax_vol = fig.add_subplot(gs[1, 0])
+    ax_liq = fig.add_subplot(gs[1, 1])
+    ax_meta = fig.add_subplot(gs[:, 2])
+    for ax in [ax_nav, ax_vol, ax_liq, ax_meta]:
+        style_ax(ax, "")
+    paths = {}
+    for label, color, drift, vol in [("AAPL", BLUE, 0.00055, 0.014), ("MSFT", CYAN, 0.00048, 0.012), ("NVDA", PINK, 0.00078, 0.022)]:
+        s = pd.Series(np.cumprod(1 + rng.normal(drift, vol, len(idx))), index=idx)
+        paths[label] = s
+        ax_nav.plot(idx, s / s.iloc[0] * 100, color=color, lw=2.0, label=label)
+    ax_nav.set_title("normalized total-return path", color=TEXT, loc="left", fontsize=12)
+    ax_nav.set_ylabel("index = 100")
+    style_legend(ax_nav)
+    ret = pd.DataFrame(paths).pct_change()
+    realized = ret.rolling(63).std() * np.sqrt(252) * 100
+    for col, color in zip(realized.columns, [BLUE, CYAN, PINK]):
+        ax_vol.plot(realized.index, realized[col], color=color, lw=1.6, label=col)
+    ax_vol.set_title("rolling 63D volatility", color=TEXT, loc="left", fontsize=12)
+    ax_vol.set_ylabel("%")
+    adv = pd.Series([38.2, 31.4, 54.7], index=["AAPL", "MSFT", "NVDA"])
+    ax_liq.bar(adv.index, adv.values, color=[BLUE, CYAN, PINK], alpha=0.9)
+    ax_liq.set_title("ADV proxy", color=TEXT, loc="left", fontsize=12)
+    ax_liq.set_ylabel("$bn")
+    ax_meta.axis("off")
+    meta = [("route", "qj.eod.get_historical_prices"), ("schema", "date/open/high/low/close/adj/volume"), ("policy", "adjusted=True"), ("lineage", "provider + request_id"), ("quality", "warnings[] retained")]
+    for i, (k, v) in enumerate(meta):
+        y = 0.88 - i * 0.16
+        ax_meta.text(0.02, y, k.upper(), color=MUTED, fontsize=8, transform=ax_meta.transAxes)
+        ax_meta.text(0.02, y - 0.055, v, color=TEXT, fontsize=9, transform=ax_meta.transAxes, family="monospace")
+    api_strip(fig, "prices = qj.eod.get_historical_prices(symbol='AAPL', start_date=..., end_date=...)")
+    save(fig, out)
+
+
+def plot_03_economic_data_macro(stem: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = dates(360)
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2)
+    dashboard_title(fig, "Macro Dashboard: Rates, Inflation and Labor Context", "FRED-style macro observations aligned for research packets and scenario assumptions")
+    ax_curve = fig.add_subplot(gs[0, 0])
+    ax_infl = fig.add_subplot(gs[0, 1])
+    ax_labor = fig.add_subplot(gs[1, 0])
+    ax_regime = fig.add_subplot(gs[1, 1])
+    for ax in [ax_curve, ax_infl, ax_labor, ax_regime]:
+        style_ax(ax, "")
+    tenors = ["3M", "1Y", "2Y", "5Y", "10Y", "30Y"]
+    curve = np.array([5.12, 4.92, 4.71, 4.38, 4.28, 4.45])
+    ax_curve.plot(tenors, curve, color=CYAN, lw=2.8, marker="o")
+    ax_curve.fill_between(range(len(tenors)), curve, curve.min() - 0.25, color=CYAN, alpha=0.14)
+    ax_curve.set_title("treasury curve", color=TEXT, loc="left", fontsize=12)
+    ax_curve.set_ylabel("%")
+    cpi = pd.Series(3.1 + np.sin(np.linspace(0, 8, len(idx))) * 0.7 + rng.normal(0, 0.08, len(idx)), index=idx)
+    ax_infl.plot(idx, cpi, color=PINK, lw=2.0, label="CPI YoY")
+    ax_infl.axhline(2.0, color=GREEN, lw=1.4, linestyle="--", label="target")
+    ax_infl.set_title("inflation vs target", color=TEXT, loc="left", fontsize=12)
+    style_legend(ax_infl)
+    unrate = pd.Series(3.9 + np.cos(np.linspace(0, 5, len(idx))) * 0.35 + rng.normal(0, 0.04, len(idx)), index=idx)
+    ax_labor.plot(idx, unrate, color=AMBER, lw=2.0)
+    ax_labor.set_title("unemployment regime", color=TEXT, loc="left", fontsize=12)
+    ax_labor.set_ylabel("%")
+    matrix = np.array([[0.72, 0.41, -0.18], [0.55, 0.63, 0.12], [-0.24, 0.31, 0.80]])
+    ax_regime.imshow(matrix, cmap=CORR_CMAP, vmin=-1, vmax=1)
+    ax_regime.set_xticks(range(3), ["growth", "inflation", "rates"])
+    ax_regime.set_yticks(range(3), ["equity", "duration", "USD"])
+    ax_regime.grid(False)
+    ax_regime.set_title("macro sensitivity map", color=TEXT, loc="left", fontsize=12)
+    api_strip(fig, "fred.get_cpi + fred.get_unemployment_rate + fred.get_treasury_10y -> aligned macro panel")
+    save(fig, out)
+
+
+def plot_04_fundamental_analysis(stem: str, out: Path) -> None:
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.15, 1])
+    dashboard_title(fig, "Fundamentals: Peer Valuation and Quality Surface", "TTM ratios, profitability and valuation fields normalized across provider-specific fundamentals")
+    ax_scatter = fig.add_subplot(gs[:, 0])
+    ax_bar = fig.add_subplot(gs[0, 1])
+    ax_margin = fig.add_subplot(gs[1, 1])
+    for ax in [ax_scatter, ax_bar, ax_margin]:
+        style_ax(ax, "")
+    peers = ["AAPL", "MSFT", "GOOGL", "NVDA", "META", "AMZN"]
+    pe = np.array([29.4, 34.2, 24.8, 42.7, 27.9, 38.1])
+    roe = np.array([1.48, 0.36, 0.29, 0.74, 0.31, 0.22])
+    margin = np.array([46.2, 69.1, 57.4, 73.5, 81.3, 48.7])
+    colors = [BLUE, CYAN, GREEN, PINK, AMBER, RED]
+    ax_scatter.scatter(pe, roe, s=margin * 6, color=colors, alpha=0.82, edgecolors=TEXT, linewidths=0.5)
+    for p, x, y in zip(peers, pe, roe):
+        ax_scatter.text(x + 0.5, y, p, color=TEXT, fontsize=9)
+    ax_scatter.set_xlabel("P/E TTM")
+    ax_scatter.set_ylabel("ROE")
+    ax_scatter.set_title("valuation vs quality", color=TEXT, loc="left", fontsize=12)
+    ax_bar.bar(peers, pe, color=colors, alpha=0.9)
+    ax_bar.set_title("P/E TTM", color=TEXT, loc="left", fontsize=12)
+    ax_margin.barh(peers, margin, color=colors, alpha=0.9)
+    ax_margin.set_title("gross margin TTM", color=TEXT, loc="left", fontsize=12)
+    api_strip(fig, "ratios = qj.fmp.get_financial_ratios_ttm(symbol='AAPL') -> peer-normalized valuation table")
+    save(fig, out)
+
+
+def plot_05_technical_analysis(stem: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = dates(360)
+    price = pd.Series(np.cumprod(1 + rng.normal(0.00045, 0.013, len(idx))) * 190, index=idx)
+    sma20 = price.rolling(20).mean()
+    sma50 = price.rolling(50).mean()
+    ret = price.pct_change().fillna(0)
+    drawdown = price / price.cummax() - 1
+    rsi = 50 + 22 * np.tanh((ret.rolling(14).mean() / ret.rolling(14).std()).fillna(0))
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(3, 1, height_ratios=[1.7, 0.9, 0.9])
+    dashboard_title(fig, "Technical Analytics: Trend, Momentum and Risk State", "Price-derived indicators with drawdown and signal state for research diagnostics")
+    ax_price = fig.add_subplot(gs[0])
+    ax_rsi = fig.add_subplot(gs[1], sharex=ax_price)
+    ax_dd = fig.add_subplot(gs[2], sharex=ax_price)
+    for ax in [ax_price, ax_rsi, ax_dd]:
+        style_ax(ax, "")
+    ax_price.plot(idx, price, color=BLUE, lw=1.9, label="close")
+    ax_price.plot(idx, sma20, color=CYAN, lw=1.4, label="SMA20")
+    ax_price.plot(idx, sma50, color=PINK, lw=1.4, label="SMA50")
+    ax_price.fill_between(idx, sma20, sma50, color=CYAN, alpha=0.09)
+    ax_price.set_title("price and moving-average state", color=TEXT, loc="left", fontsize=12)
+    style_legend(ax_price)
+    ax_rsi.plot(idx, rsi, color=AMBER, lw=1.8)
+    ax_rsi.axhline(70, color=RED, linestyle="--", alpha=0.65)
+    ax_rsi.axhline(30, color=GREEN, linestyle="--", alpha=0.65)
+    ax_rsi.set_ylabel("RSI")
+    ax_dd.fill_between(idx, drawdown * 100, 0, color=PINK, alpha=0.22)
+    ax_dd.plot(idx, drawdown * 100, color=PINK, lw=1.5)
+    ax_dd.set_ylabel("drawdown %")
+    api_strip(fig, "prices -> SMA/RSI/MACD/Bollinger-style indicators -> chart-ready technical state")
+    save(fig, out)
+
+
+def plot_06_portfolio_analysis(stem: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = dates(420)
+    symbols = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN"]
+    rets = pd.DataFrame(rng.normal(0.00045, 0.014, (len(idx), len(symbols))), index=idx, columns=symbols)
+    nav = (1 + rets.mean(axis=1)).cumprod()
+    corr = rets.corr()
+    risk = rets.std() / rets.std().sum()
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.35, 1])
+    dashboard_title(fig, "Portfolio Analytics: Return, Risk and Correlation Packet", "Holdings + benchmark pricing converted into review-ready risk diagnostics")
+    ax_nav = fig.add_subplot(gs[0, 0])
+    ax_risk = fig.add_subplot(gs[1, 0])
+    ax_corr = fig.add_subplot(gs[:, 1])
+    for ax in [ax_nav, ax_risk, ax_corr]:
+        style_ax(ax, "")
+    ax_nav.plot(idx, nav, color=BLUE, lw=2.2)
+    ax_nav.fill_between(idx, 1, nav, color=BLUE, alpha=0.14)
+    ax_nav.set_title("portfolio NAV", color=TEXT, loc="left", fontsize=12)
+    ax_risk.bar(risk.index, risk.values, color=[BLUE, CYAN, PINK, GREEN, AMBER], alpha=0.9)
+    ax_risk.set_title("risk contribution proxy", color=TEXT, loc="left", fontsize=12)
+    ax_corr.imshow(corr, cmap=CORR_CMAP, vmin=-1, vmax=1)
+    ax_corr.set_xticks(range(len(symbols)), symbols, rotation=35)
+    ax_corr.set_yticks(range(len(symbols)), symbols)
+    ax_corr.grid(False)
+    ax_corr.set_title("correlation matrix", color=TEXT, loc="left", fontsize=12)
+    for i in range(len(symbols)):
+        for j in range(len(symbols)):
+            ax_corr.text(j, i, f"{corr.iloc[i, j]:.2f}", color=TEXT, ha="center", va="center", fontsize=8)
+    api_strip(fig, "holdings + qj.eod.get_historical_prices(...) -> return, vol, drawdown, correlation, risk contribution")
+    save(fig, out)
+
+
+def plot_07_crypto_ccxt(stem: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = dates(300)
+    btc = pd.Series(np.cumprod(1 + rng.normal(0.0007, 0.025, len(idx))), index=idx)
+    eth = pd.Series(np.cumprod(1 + rng.normal(0.0008, 0.031, len(idx))), index=idx)
+    funding = pd.Series(rng.normal(0.012, 0.035, len(idx)), index=idx).rolling(7).mean()
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2)
+    dashboard_title(fig, "Crypto: Exchange Pricing, Funding and Basis Context", "CCXT-style spot feeds aligned with exchange derivatives diagnostics")
+    ax_nav = fig.add_subplot(gs[0, :])
+    ax_funding = fig.add_subplot(gs[1, 0])
+    ax_state = fig.add_subplot(gs[1, 1])
+    for ax in [ax_nav, ax_funding, ax_state]:
+        style_ax(ax, "")
+    ax_nav.plot(idx, btc / btc.iloc[0] * 100, color=BLUE, lw=2.0, label="BTC/USDT")
+    ax_nav.plot(idx, eth / eth.iloc[0] * 100, color=PINK, lw=2.0, label="ETH/USDT")
+    ax_nav.set_title("normalized spot performance", color=TEXT, loc="left", fontsize=12)
+    style_legend(ax_nav)
+    ax_funding.bar(idx[-90:], funding[-90:] * 100, color=[GREEN if v > 0 else RED for v in funding[-90:]], alpha=0.72)
+    ax_funding.set_title("funding pressure", color=TEXT, loc="left", fontsize=12)
+    ax_funding.set_ylabel("bps")
+    state = pd.Series({"spot": 0.86, "funding": 0.54, "open interest": 0.71, "basis": 0.63})
+    ax_state.barh(state.index, state.values, color=[BLUE, CYAN, PINK, AMBER], alpha=0.9)
+    ax_state.set_xlim(0, 1)
+    ax_state.set_title("data coverage by surface", color=TEXT, loc="left", fontsize=12)
+    api_strip(fig, "qj.ccxt.get_historical_prices + funding/open-interest feeds -> digital-asset exposure monitor")
+    save(fig, out)
+
+
+def plot_08_cboe_vix(stem: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = dates(420)
+    vix = pd.Series(18 + 6 * np.sin(np.linspace(0, 14, len(idx))) + rng.normal(0, 1.8, len(idx)), index=idx).clip(9, 55)
+    vvix = pd.Series(90 + 13 * np.sin(np.linspace(1, 15, len(idx))) + rng.normal(0, 4.5, len(idx)), index=idx)
+    spy_dd = -np.maximum(0, (vix - 20) / 180 + rng.normal(0, 0.008, len(idx))).cumsum()
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.35, 1])
+    dashboard_title(fig, "CBOE Volatility: VIX Regime, VVIX and Drawdown Context", "Volatility feeds promoted into a risk regime surface")
+    ax_vix = fig.add_subplot(gs[0, 0])
+    ax_dd = fig.add_subplot(gs[1, 0], sharex=ax_vix)
+    ax_regime = fig.add_subplot(gs[:, 1])
+    for ax in [ax_vix, ax_dd, ax_regime]:
+        style_ax(ax, "")
+    ax_vix.plot(idx, vix, color=CYAN, lw=2.0, label="VIX")
+    ax_vix.plot(idx, vvix / 4, color=PINK, lw=1.8, label="VVIX / 4")
+    ax_vix.axhspan(25, 55, color=RED, alpha=0.09)
+    ax_vix.set_title("volatility state", color=TEXT, loc="left", fontsize=12)
+    style_legend(ax_vix)
+    ax_dd.fill_between(idx, spy_dd * 100, 0, color=PINK, alpha=0.22)
+    ax_dd.plot(idx, spy_dd * 100, color=PINK, lw=1.4)
+    ax_dd.set_title("drawdown overlay", color=TEXT, loc="left", fontsize=12)
+    ax_dd.set_ylabel("%")
+    regimes = pd.DataFrame({"calm": [0.18, 0.12], "normal": [0.55, 0.47], "elevated": [0.27, 0.41]}, index=["VIX", "VVIX"])
+    ax_regime.imshow(regimes.values, cmap=LinearSegmentedColormap.from_list("vol", [BLUE, NAVY, RED]), vmin=0, vmax=0.6)
+    ax_regime.set_xticks(range(3), regimes.columns)
+    ax_regime.set_yticks(range(2), regimes.index)
+    ax_regime.grid(False)
+    ax_regime.set_title("regime distribution", color=TEXT, loc="left", fontsize=12)
+    api_strip(fig, "qj.cboe.get_vix_data + get_vvix_data + get_skew_index_data -> risk regime diagnostics")
+    save(fig, out)
+
+
+def plot_09_multpl_valuation(stem: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = pd.date_range(end=pd.Timestamp.today().normalize(), periods=180, freq="ME")
+    cape = pd.Series(24 + np.linspace(0, 9, len(idx)) + 2.5 * np.sin(np.linspace(0, 10, len(idx))) + rng.normal(0, 0.7, len(idx)), index=idx)
+    ten_y = pd.Series(2.0 + np.linspace(0, 2.3, len(idx)) + 0.7 * np.sin(np.linspace(0, 8, len(idx))), index=idx)
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2)
+    dashboard_title(fig, "Market Valuation: Shiller P/E, Rates and Percentile Bands", "Long-horizon valuation context joined to rates for asset-allocation review")
+    ax_cape = fig.add_subplot(gs[0, :])
+    ax_rate = fig.add_subplot(gs[1, 0])
+    ax_pct = fig.add_subplot(gs[1, 1])
+    for ax in [ax_cape, ax_rate, ax_pct]:
+        style_ax(ax, "")
+    ax_cape.plot(idx, cape, color=BLUE, lw=2.0)
+    ax_cape.axhspan(30, cape.max() + 2, color=RED, alpha=0.09)
+    ax_cape.axhline(cape.quantile(0.75), color=AMBER, lw=1.2, linestyle="--")
+    ax_cape.set_title("Shiller CAPE regime", color=TEXT, loc="left", fontsize=12)
+    ax_rate.plot(idx, ten_y, color=CYAN, lw=2.0)
+    ax_rate.set_title("10Y yield context", color=TEXT, loc="left", fontsize=12)
+    metrics = pd.Series({"CAPE": 0.84, "dividend yield": 0.22, "earnings yield": 0.31, "rates": 0.76})
+    ax_pct.barh(metrics.index, metrics.values, color=[PINK, GREEN, AMBER, CYAN], alpha=0.9)
+    ax_pct.set_xlim(0, 1)
+    ax_pct.set_title("historical percentile", color=TEXT, loc="left", fontsize=12)
+    api_strip(fig, "qj.multpl.get_shiller_pe_ratio + rates -> valuation percentile packet")
+    save(fig, out)
+
+
+def plot_10_cftc_cot(stem: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = pd.date_range(end=pd.Timestamp.today().normalize(), periods=180, freq="W")
+    net = pd.Series(np.sin(np.linspace(0, 12, len(idx))) * 1.2 + rng.normal(0, 0.22, len(idx)), index=idx)
+    price = pd.Series(np.cumprod(1 + rng.normal(0.0009, 0.018, len(idx))) * 100, index=idx)
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2, height_ratios=[1.4, 1])
+    dashboard_title(fig, "CFTC COT: Positioning, Crowding and Price Confirmation", "Futures positioning converted into z-score and signal state for macro/CTA research")
+    ax_pos = fig.add_subplot(gs[0, :])
+    ax_price = fig.add_subplot(gs[1, 0])
+    ax_book = fig.add_subplot(gs[1, 1])
+    for ax in [ax_pos, ax_price, ax_book]:
+        style_ax(ax, "")
+    ax_pos.bar(idx, net, width=5, color=[CYAN if v >= 0 else PINK for v in net], alpha=0.8)
+    ax_pos.axhline(0, color=TEXT, alpha=0.45, lw=1)
+    ax_pos.axhline(1, color=RED, alpha=0.5, linestyle="--")
+    ax_pos.axhline(-1, color=GREEN, alpha=0.5, linestyle="--")
+    ax_pos.set_title("managed-money net positioning z-score", color=TEXT, loc="left", fontsize=12)
+    ax_price.plot(idx, price, color=AMBER, lw=2.0)
+    ax_price.set_title("linked futures proxy", color=TEXT, loc="left", fontsize=12)
+    book = pd.Series({"equity": 0.44, "rates": -0.31, "gold": 0.52, "oil": 0.18, "USD": -0.22})
+    ax_book.barh(book.index, book.values, color=[CYAN if v > 0 else PINK for v in book], alpha=0.9)
+    ax_book.axvline(0, color=TEXT, alpha=0.35, lw=1)
+    ax_book.set_title("macro positioning mosaic", color=TEXT, loc="left", fontsize=12)
+    api_strip(fig, "qj.cftc.get_cot_summary + futures pricing -> positioning dashboard")
+    save(fig, out)
 
 
 def plot_nav(stem: str, title: str, out: Path) -> None:
@@ -364,7 +710,27 @@ def plot_lineage_packet(stem: str, title: str, out: Path) -> None:
 def plot_one(stem: str, out: Path) -> None:
     title = stem[3:] if stem[:2].isdigit() else stem
     lower = stem.lower()
-    if "corporate_actions_pit_adjustments" in lower:
+    if lower.startswith("01_authentication_methods"):
+        plot_01_authentication_methods(stem, out)
+    elif lower.startswith("02_market_data_basics"):
+        plot_02_market_data_basics(stem, out)
+    elif lower.startswith("03_economic_data_macro"):
+        plot_03_economic_data_macro(stem, out)
+    elif lower.startswith("04_fundamental_analysis"):
+        plot_04_fundamental_analysis(stem, out)
+    elif lower.startswith("05_technical_analysis"):
+        plot_05_technical_analysis(stem, out)
+    elif lower.startswith("06_portfolio_analysis"):
+        plot_06_portfolio_analysis(stem, out)
+    elif lower.startswith("07_crypto_ccxt"):
+        plot_07_crypto_ccxt(stem, out)
+    elif lower.startswith("08_cboe_vix"):
+        plot_08_cboe_vix(stem, out)
+    elif lower.startswith("09_multpl_valuation"):
+        plot_09_multpl_valuation(stem, out)
+    elif lower.startswith("10_cftc_cot"):
+        plot_10_cftc_cot(stem, out)
+    elif "corporate_actions_pit_adjustments" in lower:
         plot_adjustment_semantics(stem, title, out)
     elif "domain_route_discovery_contract" in lower:
         plot_domain_contract(stem, title, out)

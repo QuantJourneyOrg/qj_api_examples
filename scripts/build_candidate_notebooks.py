@@ -77,7 +77,7 @@ PRESERVED_SOURCE_CANDIDATES = [
 PRESERVED_SOURCE_CANDIDATE_NAMES = {name for name, _, _ in PRESERVED_SOURCE_CANDIDATES}
 
 
-COMMON_SETUP = r'''
+IMPORTS_AND_PLOT_STYLE = r'''
 import os
 import math
 import json
@@ -90,11 +90,6 @@ import matplotlib.pyplot as plt
 
 from quantjourney.sdk import QuantJourneyAPI
 
-qj = QuantJourneyAPI(api_key=os.environ["QJ_API_KEY"])
-
-START = os.getenv("QJ_EXAMPLE_START", "2020-01-01")
-END = os.getenv("QJ_EXAMPLE_END") or pd.Timestamp.today().normalize().strftime("%Y-%m-%d")
-
 plt.style.use("default")
 plt.rcParams.update({
     "figure.figsize": (12, 6),
@@ -103,8 +98,18 @@ plt.rcParams.update({
     "axes.spines.top": False,
     "axes.spines.right": False,
 })
+'''
 
 
+API_CLIENT_SETUP = r'''
+qj = QuantJourneyAPI(api_key=os.environ["QJ_API_KEY"])
+
+START = os.getenv("QJ_EXAMPLE_START", "2020-01-01")
+END = os.getenv("QJ_EXAMPLE_END") or pd.Timestamp.today().normalize().strftime("%Y-%m-%d")
+'''
+
+
+RESPONSE_HELPERS = r'''
 def unwrap(payload: Any) -> Any:
     """Return the useful data value from common QuantJourney response shapes."""
     if isinstance(payload, dict) and "data" in payload:
@@ -126,8 +131,10 @@ def as_rows(payload: Any) -> list[dict[str, Any]]:
                 return value[key]
         return [value]
     return []
+'''
 
 
+MARKET_DATA_HELPERS = r'''
 def price_frame(symbol: str, start: str = START, end: str = END) -> pd.DataFrame:
     payload = qj.eod.get_historical_prices(symbol=symbol, start_date=start, end_date=end)
     rows = as_rows(payload)
@@ -164,6 +171,12 @@ def returns(prices: pd.DataFrame) -> pd.DataFrame:
     return prices.pct_change().replace([np.inf, -np.inf], np.nan).dropna(how="all")
 
 
+def dollar_adv(prices: pd.DataFrame, volumes: pd.DataFrame, window: int = 63) -> pd.DataFrame:
+    return (prices * volumes).rolling(window).mean()
+'''
+
+
+PORTFOLIO_HELPERS = r'''
 def max_drawdown(nav: pd.Series) -> float:
     drawdown = nav / nav.cummax() - 1
     return float(drawdown.min())
@@ -215,8 +228,10 @@ def risk_contribution(ret: pd.DataFrame, weights: pd.Series) -> pd.Series:
         return pd.Series(0.0, index=cov.columns)
     contrib = w * (cov.to_numpy() @ w) / port_var
     return pd.Series(contrib, index=cov.columns)
+'''
 
 
+FACTOR_HELPERS = r'''
 def rolling_betas(y: pd.Series, x: pd.DataFrame, window: int = 126) -> pd.DataFrame:
     data = pd.concat([y.rename("asset"), x], axis=1).dropna()
     rows = []
@@ -231,12 +246,10 @@ def rolling_betas(y: pd.Series, x: pd.DataFrame, window: int = 126) -> pd.DataFr
 
 def zscore(s: pd.Series, window: int = 252) -> pd.Series:
     return (s - s.rolling(window).mean()) / s.rolling(window).std()
+'''
 
 
-def dollar_adv(prices: pd.DataFrame, volumes: pd.DataFrame, window: int = 63) -> pd.DataFrame:
-    return (prices * volumes).rolling(window).mean()
-
-
+PLOT_HELPERS = r'''
 def plot_nav(ret_map: dict[str, pd.Series], title: str) -> None:
     fig, ax = plt.subplots()
     for label, ret in ret_map.items():
@@ -383,8 +396,52 @@ def example_intro(title: str, summary: str) -> str:
     """
 
 
+def uses_any(source: str, names: Iterable[str]) -> bool:
+    return any(f"{name}(" in source for name in names)
+
+
+def setup_cells_for(spec: NotebookSpec) -> list[dict]:
+    source = "\n".join(spec.cells)
+    cells = [
+        md("## Imports and Plot Style"),
+        code(IMPORTS_AND_PLOT_STYLE),
+        md("## QuantJourney Client"),
+        code(API_CLIENT_SETUP),
+    ]
+
+    needs_response = uses_any(source, ["unwrap", "as_rows", "price_frame", "price_panel"])
+    needs_market = uses_any(source, ["price_frame", "price_panel", "returns", "dollar_adv"])
+    needs_portfolio = uses_any(
+        source,
+        [
+            "max_drawdown",
+            "performance_stats",
+            "inverse_vol_weights",
+            "min_variance_weights",
+            "portfolio_returns",
+            "risk_contribution",
+        ],
+    )
+    needs_factor = uses_any(source, ["rolling_betas", "zscore"])
+    needs_plot = uses_any(source, ["plot_nav"])
+
+    if needs_response or needs_market:
+        cells.extend([md("## Response Helpers"), code(RESPONSE_HELPERS)])
+    if needs_market:
+        cells.extend([md("## Market Data Helpers"), code(MARKET_DATA_HELPERS)])
+    if needs_portfolio:
+        cells.extend([md("## Portfolio and Risk Helpers"), code(PORTFOLIO_HELPERS)])
+    if needs_factor:
+        cells.extend([md("## Factor and Regime Helpers"), code(FACTOR_HELPERS)])
+    if needs_plot:
+        cells.extend([md("## Plot Helpers"), code(PLOT_HELPERS)])
+
+    return cells
+
+
 def notebook(spec: NotebookSpec) -> dict:
-    cells = [md(example_intro(spec.title, spec.summary)), code(COMMON_SETUP)]
+    cells = [md(example_intro(spec.title, spec.summary))]
+    cells.extend(setup_cells_for(spec))
     cells.extend(code(cell) for cell in spec.cells)
     cells.append(md("""
     ## Notes
@@ -1878,6 +1935,79 @@ def write_generated(specs: Iterable[NotebookSpec]) -> list[str]:
     return written
 
 
+def source_for_stmt(source: str, stmt: ast.stmt) -> str:
+    segment = ast.get_source_segment(source, stmt)
+    if segment is None:
+        segment = ast.unparse(stmt)
+    return segment.strip()
+
+
+def is_plot_style_expr(stmt: ast.stmt) -> bool:
+    if not isinstance(stmt, ast.Expr):
+        return False
+    call = stmt.value
+    if not isinstance(call, ast.Call):
+        return False
+    func = call.func
+    return (
+        isinstance(func, ast.Attribute)
+        and isinstance(func.value, ast.Attribute)
+        and isinstance(func.value.value, ast.Name)
+        and func.value.value.id == "plt"
+    )
+
+
+def is_client_assignment(stmt: ast.stmt) -> bool:
+    if not isinstance(stmt, ast.Assign):
+        return False
+    target_names = {target.id for target in stmt.targets if isinstance(target, ast.Name)}
+    return bool(target_names & {"qj", "START", "END"})
+
+
+def split_preserved_leading_cell(nb: dict) -> None:
+    if len(nb.get("cells", [])) < 2:
+        return
+    first_code_index = next((i for i, cell in enumerate(nb["cells"]) if cell.get("cell_type") == "code"), None)
+    if first_code_index is None:
+        return
+    source = "".join(nb["cells"][first_code_index].get("source", []))
+    if "QuantJourneyAPI" not in source or "def unwrap" not in source:
+        return
+
+    tree = ast.parse(source)
+    buckets: dict[str, list[str]] = {
+        "imports": [],
+        "client": [],
+        "response": [],
+        "helpers": [],
+        "workflow": [],
+    }
+    for stmt in tree.body:
+        text = source_for_stmt(source, stmt)
+        if isinstance(stmt, (ast.Import, ast.ImportFrom)) or is_plot_style_expr(stmt):
+            buckets["imports"].append(text)
+        elif is_client_assignment(stmt):
+            buckets["client"].append(text)
+        elif isinstance(stmt, ast.FunctionDef) and stmt.name in {"unwrap", "as_rows"}:
+            buckets["response"].append(text)
+        elif isinstance(stmt, ast.FunctionDef):
+            buckets["helpers"].append(text)
+        else:
+            buckets["workflow"].append(text)
+
+    replacement: list[dict] = []
+    for title, key in [
+        ("## Imports and Plot Style", "imports"),
+        ("## QuantJourney Client", "client"),
+        ("## Response Helpers", "response"),
+        ("## Workflow Helpers", "helpers"),
+        ("## Workflow", "workflow"),
+    ]:
+        if buckets[key]:
+            replacement.extend([md(title), code("\n\n".join(buckets[key]))])
+    nb["cells"] = nb["cells"][:first_code_index] + replacement + nb["cells"][first_code_index + 1 :]
+
+
 def attach_preview_cells() -> None:
     for path in sorted(CANDIDATES.glob("*.ipynb")):
         nb = json.loads(path.read_text(encoding="utf-8"))
@@ -1916,6 +2046,8 @@ def attach_preview_cells() -> None:
                 cell["source"] = normalize_code_source(source).splitlines(keepends=True)
                 cell["execution_count"] = None
                 cell["outputs"] = []
+        if path.name in PRESERVED_SOURCE_CANDIDATE_NAMES:
+            split_preserved_leading_cell(nb)
         path.write_text(json.dumps(nb, indent=2) + "\n", encoding="utf-8")
 
 
