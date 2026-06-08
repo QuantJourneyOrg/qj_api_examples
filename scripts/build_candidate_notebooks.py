@@ -73,7 +73,7 @@ from quantjourney.sdk import QuantJourneyAPI
 qj = QuantJourneyAPI.from_env()
 
 START = os.getenv("QJ_EXAMPLE_START", "2020-01-01")
-END = os.getenv("QJ_EXAMPLE_END", "2026-06-06")
+END = os.getenv("QJ_EXAMPLE_END") or pd.Timestamp.today().normalize().strftime("%Y-%m-%d")
 
 plt.style.use("default")
 plt.rcParams.update({
@@ -271,7 +271,9 @@ def notebook(spec: NotebookSpec) -> dict:
     **Primary API calls used in this candidate:**
     {chr(10).join(f"- `{call}`" for call in spec.data_calls)}
 
-    The notebook is self-contained: QuantJourney SDK calls fetch the data, while the research logic is calculated in pandas/numpy so the assumptions are visible and auditable.
+    **Prepared by:** QuantJourney
+
+    The notebook is self-contained: QuantJourney SDK calls fetch the data, while the research logic is calculated in pandas/numpy so the assumptions are visible and auditable. Candidate notebooks use direct connector SDK methods when a workflow needs provider-specific data; production systems can expose the same workflows through governed domain routes, tenant scopes and audit metadata.
     """
     cells = [md(intro), code(COMMON_SETUP)]
     cells.extend(code(cell) for cell in spec.cells)
@@ -557,10 +559,23 @@ SPECS = [
         ["qj.eod.get_historical_prices", "qj.yf.get_sp500_sectors"],
         [
             """
-            sectors = {
+            fallback_sectors = {
                 "AAPL": "Technology", "MSFT": "Technology", "NVDA": "Technology", "GOOGL": "Communication",
                 "AMZN": "Consumer", "JPM": "Financials", "XOM": "Energy", "LLY": "Health Care",
             }
+            sector_feed = safe_call("S&P 500 sectors", qj.yf.get_sp500_sectors)
+
+            def normalize_sector_map(payload: Any) -> dict[str, str]:
+                rows = as_rows(payload)
+                sector_map = {}
+                for item in rows:
+                    symbol = item.get("symbol") or item.get("ticker") or item.get("Symbol")
+                    sector = item.get("sector") or item.get("Sector") or item.get("gics_sector")
+                    if symbol and sector:
+                        sector_map[str(symbol).upper()] = str(sector)
+                return sector_map
+
+            sectors = {**fallback_sectors, **normalize_sector_map(sector_feed)}
             portfolio_w = pd.Series({"AAPL": 0.18, "MSFT": 0.18, "NVDA": 0.16, "GOOGL": 0.12, "AMZN": 0.12, "JPM": 0.10, "XOM": 0.06, "LLY": 0.08})
             benchmark_w = pd.Series({"AAPL": 0.12, "MSFT": 0.12, "NVDA": 0.10, "GOOGL": 0.09, "AMZN": 0.09, "JPM": 0.08, "XOM": 0.10, "LLY": 0.08})
             benchmark_w = benchmark_w / benchmark_w.sum()
@@ -605,10 +620,23 @@ SPECS = [
                 pd.DataFrame(as_rows(senate)).assign(source="senate"),
                 pd.DataFrame(as_rows(house)).assign(source="house"),
             ], ignore_index=True)
-            date_cols = [c for c in events.columns if "date" in c.lower()] if not events.empty else []
-            if date_cols:
-                events["event_date"] = pd.to_datetime(events[date_cols[0]], errors="coerce")
-                events["symbol"] = events.get("symbol", "AAPL")
+
+            def first_present(columns: list[str], candidates: list[str]) -> str | None:
+                normalized = {str(col).lower(): col for col in columns}
+                for candidate in candidates:
+                    if candidate.lower() in normalized:
+                        return normalized[candidate.lower()]
+                for col in columns:
+                    low = str(col).lower()
+                    if any(candidate.lower() in low for candidate in candidates):
+                        return col
+                return None
+
+            if not events.empty:
+                date_col = first_present(list(events.columns), ["transactionDate", "transaction_date", "disclosureDate", "reportingDate", "filingDate", "date"])
+                symbol_col = first_present(list(events.columns), ["symbol", "ticker", "assetTicker", "asset_ticker"])
+                events["event_date"] = pd.to_datetime(events[date_col], errors="coerce") if date_col else pd.NaT
+                events["symbol"] = events[symbol_col].astype(str).str.upper() if symbol_col else "AAPL"
                 event_returns = []
                 for row in events.dropna(subset=["event_date"]).itertuples():
                     symbol = getattr(row, "symbol", "AAPL")
@@ -1390,9 +1418,15 @@ def write_generated(specs: Iterable[NotebookSpec]) -> list[str]:
 def preview_cell(name: str) -> dict:
     stem = Path(name).stem
     return md(f"""
-    ## Preview Chart
+    ## Run Output
 
-    ![{stem}](../outputs/candidates/{stem}.png)
+    ![{stem}](../plots/{stem}_output_01.png)
+    """)
+
+
+def branding_cell() -> dict:
+    return md("""
+    **Prepared by QuantJourney.** Candidate notebook source is kept clean and unexecuted. Generated run artifacts are committed under `plots/` and indexed in `plots/manifest.json`.
     """)
 
 
@@ -1400,6 +1434,11 @@ def attach_preview_cells() -> None:
     for path in sorted(CANDIDATES.glob("*.ipynb")):
         nb = json.loads(path.read_text(encoding="utf-8"))
         nb["cells"].insert(1, preview_cell(path.name))
+        nb["cells"].insert(2, branding_cell())
+        for cell in nb.get("cells", []):
+            if cell.get("cell_type") == "code":
+                cell["execution_count"] = None
+                cell["outputs"] = []
         path.write_text(json.dumps(nb, indent=2) + "\n", encoding="utf-8")
 
 
@@ -1413,14 +1452,14 @@ def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> Non
     lines = [
         "# Buy-Side Candidate Notebook Catalog",
         "",
-        "Flat candidate catalog for institutional workflows. Existing executed notebooks are copied in; new candidates are self-contained notebooks with real QuantJourney SDK data calls and transparent local analytics.",
+        "Flat candidate catalog for institutional workflows. Candidate notebooks are clean source notebooks; generated run plots are committed under `plots/` and indexed in `plots/manifest.json`. New candidates use real QuantJourney SDK connector calls plus transparent local analytics. Production systems can wrap the same workflows behind governed domain routes, tenant scopes and audit metadata.",
         "",
         "| Notebook | Preview | Category | What it shows |",
         "|---|---|---|---|",
     ]
     for name, category, summary in rows:
         stem = Path(name).stem
-        lines.append(f"| [{name}]({name}) | [PNG](../outputs/candidates/{stem}.png) | {category} | {summary} |")
+        lines.append(f"| [{name}]({name}) | [PNG](../plots/{stem}_output_01.png) | {category} | {summary} |")
     lines.extend(
         [
             "",

@@ -28,10 +28,10 @@ NOTEBOOK_DIR = ROOT / "notebooks" / "buy_side_advanced"
 MANIFEST = ROOT / "outputs" / "manifest.json"
 
 START_DATE = os.environ.get("QJ_ADVANCED_START_DATE", "2020-01-01")
-END_DATE = os.environ.get("QJ_ADVANCED_END_DATE", "2026-06-06")
+END_DATE = os.environ.get("QJ_ADVANCED_END_DATE") or pd.Timestamp.today().normalize().strftime("%Y-%m-%d")
 
-BG = "#051946"
-PANEL = "#06142f"
+BG = "#020817"
+PANEL = "#061641"
 GRID = "#233553"
 TEXT = "#f8fafc"
 MUTED = "#cbd5e1"
@@ -554,7 +554,7 @@ def write_notebooks() -> None:
             "snippet": """raw = qj.eod.get_historical_prices(
     symbol="SPY",
     start_date="2020-01-01",
-    end_date="2026-06-06",
+    end_date=END_DATE,
 )
 
 rows = raw["data"]["value"]
@@ -576,7 +576,7 @@ slow_windows = [60, 80, 100, 125, 150, 200]
             "snippet": """raw = qj.eod.get_historical_prices(
     symbol="SPY",
     start_date="2020-01-01",
-    end_date="2026-06-06",
+    end_date=END_DATE,
 )
 
 train_days = 504
@@ -598,7 +598,7 @@ prices = {
     symbol: qj.eod.get_historical_prices(
         symbol=symbol,
         start_date="2020-01-01",
-        end_date="2026-06-06",
+        end_date=END_DATE,
     )
     for symbol in symbols
 }
@@ -616,7 +616,7 @@ prices = {
     symbol: qj.eod.get_historical_prices(
         symbol=symbol,
         start_date="2020-01-01",
-        end_date="2026-06-06",
+        end_date=END_DATE,
     )
     for symbol in symbols
 }
@@ -632,7 +632,7 @@ prices = {
             "snippet": """raw = qj.eod.get_historical_prices(
     symbol="SPY",
     start_date="2020-01-01",
-    end_date="2026-06-06",
+    end_date=END_DATE,
 )
 
 # Compute SMA 5/125 equity, underwater drawdown, rolling 63D vol and exposure state.""",
@@ -650,7 +650,7 @@ prices = {
     symbol: qj.eod.get_historical_prices(
         symbol=symbol,
         start_date="2020-01-01",
-        end_date="2026-06-06",
+        end_date=END_DATE,
     )
     for symbol in holdings + factors
 }
@@ -665,9 +665,11 @@ prices = {
                 markdown(f"# {spec['title']}\n\n{spec['summary']}\n\nDomain: `{spec['domain']}`"),
                 code(
                     """import os
+import pandas as pd
 from quantjourney.sdk import QuantJourneyAPI
 
 qj = QuantJourneyAPI(api_key=os.environ["QJ_API_KEY"])
+END_DATE = os.environ.get("QJ_ADVANCED_END_DATE") or pd.Timestamp.today().normalize().strftime("%Y-%m-%d")
 """
                 ),
                 code(spec["snippet"]),

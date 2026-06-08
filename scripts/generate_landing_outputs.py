@@ -20,9 +20,10 @@ from quantjourney.sdk import QuantJourneyAPI
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = ROOT / "outputs" / "landing"
+END_DATE = os.environ.get("QJ_LANDING_END_DATE") or pd.Timestamp.today().normalize().strftime("%Y-%m-%d")
 
-BG = "#051946"
-PANEL = "#06142f"
+BG = "#020817"
+PANEL = "#061641"
 GRID = "#233553"
 TEXT = "#f8fafc"
 MUTED = "#cbd5e1"
@@ -235,7 +236,7 @@ def portfolio_risk(qj: QuantJourneyAPI) -> None:
 
 
 def vix_regime(qj: QuantJourneyAPI) -> None:
-    raw = value(qj.cboe.get_vix_data(start_date="2020-01-01", end_date="2026-06-06"))
+    raw = value(qj.cboe.get_vix_data(start_date="2020-01-01", end_date=END_DATE))
     df = pd.DataFrame(raw)
     df["date"] = pd.to_datetime(df["date"])
     df["close"] = pd.to_numeric(df["close"], errors="coerce")

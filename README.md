@@ -2,7 +2,7 @@
 
 Executed, sanitized notebooks for the QuantJourney API and SDK.
 
-This repository shows practical examples for financial data access, governed domain routes, analytics outputs, and buy-side workflows. The notebooks use `QJ_API_KEY` from the environment and do not include vendor credentials or hardcoded QuantJourney tokens.
+This repository shows practical examples for financial data access, direct SDK connector calls, analytics outputs, governed workflow patterns, and buy-side research. The notebooks use `QJ_API_KEY` from the environment and do not include vendor credentials or hardcoded QuantJourney tokens.
 
 Documentation: https://api.quantjourney.cloud/docs
 
@@ -85,7 +85,7 @@ These examples use live QuantJourney price data and vectorized pandas/numpy diag
 
 ## Buy-Side Candidate Catalog
 
-The flat [`_candidates`](./_candidates/INDEX.md) catalog contains core notebooks `01-10`, the existing buy-side notebooks, and proposed institutional workflows for construction, liquidity, capacity, stress, attribution, regulatory signals, options overlays and end-to-end PM reporting. Each candidate links to one dark preview chart in [`outputs/candidates`](./outputs/candidates). New candidate notebooks use real SDK calls such as `qj.eod`, `qj.fmp`, `qj.sec`, `qj.cboe`, `qj.cftc`, `qj.ff`, `qj.bt` and `qj.analytics`, then keep portfolio/risk calculations visible in pandas/numpy.
+The flat [`_candidates`](./_candidates/INDEX.md) catalog contains core notebooks `01-10`, the existing buy-side notebooks, and proposed institutional workflows for construction, liquidity, capacity, stress, attribution, regulatory signals, options overlays and end-to-end PM reporting. Candidate notebooks are clean source files; generated run plots live in [`plots`](./plots) and are indexed by [`plots/manifest.json`](./plots/manifest.json). New candidate notebooks use real SDK calls such as `qj.eod`, `qj.fmp`, `qj.sec`, `qj.cboe`, `qj.cftc`, `qj.ff`, `qj.bt` and `qj.analytics`, then keep portfolio/risk calculations visible in pandas/numpy. Production systems can wrap the same workflows behind governed domain routes, tenant scopes and audit metadata.
 
 To rebuild the catalog:
 

@@ -31,8 +31,8 @@ import pandas as pd
 CANDIDATES = ROOT / "_candidates"
 OUTPUT = ROOT / "outputs" / "candidates"
 
-NAVY = "#051946"
-PANEL = "#071f55"
+NAVY = "#020817"
+PANEL = "#061641"
 TEXT = "#eaf1ff"
 MUTED = "#9fb1d1"
 BLUE = "#4da3ff"
@@ -71,7 +71,10 @@ def save(fig: plt.Figure, path: Path) -> None:
 
 
 def dates(n: int = 252) -> pd.DatetimeIndex:
-    return pd.bdate_range(end="2026-06-05", periods=n)
+    end = pd.Timestamp.today().normalize()
+    if end.weekday() >= 5:
+        end = end - pd.offsets.BDay(1)
+    return pd.bdate_range(end=end, periods=n)
 
 
 def random_walk(rng: np.random.Generator, n: int = 252, drift: float = 0.0004, vol: float = 0.012) -> pd.Series:
