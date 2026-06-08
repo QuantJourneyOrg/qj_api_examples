@@ -756,37 +756,20 @@ def plot_09_multpl_03(stem: str, out: Path) -> None:
 
 def plot_11_sec_01(stem: str, out: Path) -> None:
     rng = rng_for(stem)
-    idx = pd.date_range(end=pd.Timestamp.today().normalize(), periods=16, freq="QE")
-    filings = pd.Series(np.maximum(2, 8 + np.sin(np.linspace(0, 6, len(idx))) * 3 + rng.normal(0, 1.2, len(idx))), index=idx)
+    idx = dates(300)
+    price = pd.Series(np.cumprod(1 + rng.normal(0.00045, 0.014, len(idx))) * 175, index=idx)
+    filing_dates = idx[[48, 112, 176, 241]]
+    filing_labels = ["10-K", "10-Q", "8-K", "10-Q"]
     fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "SEC Filings: Disclosure Timeline", "Quarterly filing activity for diligence workflows")
+    dashboard_title(fig, "SEC Filings: AAPL Filing Events", "Price path with material SEC filing dates retained for diligence review")
     style_ax(ax, "")
-    ax.bar(filings.index, filings.values, width=45, color=CYAN, alpha=0.86)
-    ax.plot(filings.index, filings.rolling(4).mean(), color=PINK, lw=2.1)
-    ax.set_ylabel("filings")
-    save(fig, out)
-
-
-def plot_11_sec_02(stem: str, out: Path) -> None:
-    forms = pd.Series({"10-K": 4, "10-Q": 12, "8-K": 36, "Form 4": 28, "13F": 8})
-    fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "SEC Filings: Form Mix", "Disclosure types summarized for evidence packets")
-    style_ax(ax, "")
-    ax.bar(forms.index, forms.values, color=[BLUE, CYAN, PINK, GREEN, AMBER], alpha=0.9)
-    ax.set_ylabel("count")
-    save(fig, out)
-
-
-def plot_11_sec_03(stem: str, out: Path) -> None:
-    rng = rng_for(stem)
-    data = np.abs(rng.normal(0.6, 0.22, (5, 6)))
-    fig, ax = plt.subplots(figsize=(9.5, 6.2), facecolor=NAVY)
-    dashboard_title(fig, "SEC Filings: Disclosure Intensity", "Issuer-by-topic review surface")
-    style_ax(ax, "")
-    ax.grid(False)
-    ax.imshow(data, cmap=CORR_CMAP, vmin=0, vmax=1.2)
-    ax.set_xticks(range(6), ["risk", "capital", "M&A", "guidance", "legal", "insider"], rotation=35, ha="right")
-    ax.set_yticks(range(5), ["AAPL", "MSFT", "NVDA", "AMZN", "META"])
+    ax.plot(idx, price, color=CYAN, lw=2.2, label="adjusted close")
+    ax.fill_between(idx, price.rolling(21).mean(), price, color=CYAN, alpha=0.12)
+    for event_date, label in zip(filing_dates, filing_labels):
+        ax.axvline(event_date, color=PINK, lw=1.3, alpha=0.85)
+        ax.text(event_date, price.max() * 0.985, label, color=TEXT, fontsize=8, rotation=90, va="top", ha="right")
+    ax.set_ylabel("price")
+    style_legend(ax)
     save(fig, out)
 
 
@@ -828,35 +811,25 @@ def plot_12_finra_03(stem: str, out: Path) -> None:
 
 
 def plot_13_openfigi_01(stem: str, out: Path) -> None:
-    symbols = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "JPM", "XOM"]
-    confidence = pd.Series([0.99, 0.99, 0.98, 0.97, 0.98, 0.96, 0.95, 0.94], index=symbols)
+    fields = [
+        ("ticker", "AAPL"),
+        ("name", "Apple Inc."),
+        ("composite FIGI", "BBG000B9XRY4"),
+        ("share class FIGI", "BBG001S5N8V8"),
+        ("security type", "Common Stock"),
+        ("exchange", "XNAS"),
+        ("currency", "USD"),
+    ]
     fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "OpenFIGI: Identity Resolution", "Ticker-to-security identity confidence for security-master joins")
+    dashboard_title(fig, "OpenFIGI: AAPL Security Identity", "Resolved identifiers for security-master joins and cross-vendor reconciliation")
     style_ax(ax, "")
-    ax.bar(symbols, confidence.values * 100, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED, BLUE, CYAN], alpha=0.9)
-    ax.set_ylim(90, 100.5)
-    ax.set_ylabel("% confidence")
-    save(fig, out)
-
-
-def plot_13_openfigi_02(stem: str, out: Path) -> None:
-    fields = pd.Series({"composite FIGI": 1.0, "share class": 0.98, "exchange": 0.97, "currency": 1.0, "security type": 0.96})
-    fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "OpenFIGI: Mapping Coverage", "Reference fields resolved for downstream joins")
-    style_ax(ax, "")
-    ax.barh(fields.index, fields.values * 100, color=[BLUE, CYAN, PINK, GREEN, AMBER], alpha=0.9)
-    ax.set_xlim(90, 101)
-    ax.set_xlabel("% resolved")
-    save(fig, out)
-
-
-def plot_13_openfigi_03(stem: str, out: Path) -> None:
-    mix = pd.Series({"common stock": 72, "ETF": 11, "ADR": 7, "preferred": 3, "other": 7})
-    fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "OpenFIGI: Security-Type Mix", "Instrument identity distribution in a research universe")
-    style_ax(ax, "")
-    ax.bar(mix.index, mix.values, color=[BLUE, CYAN, PINK, GREEN, AMBER], alpha=0.9)
-    ax.set_ylabel("% universe")
+    ax.axis("off")
+    y = 0.82
+    for label, value in fields:
+        ax.text(0.08, y, label.upper(), color=MUTED, fontsize=9, transform=ax.transAxes)
+        ax.text(0.38, y, value, color=TEXT, fontsize=15, weight="semibold", transform=ax.transAxes)
+        ax.plot([0.08, 0.92], [y - 0.045, y - 0.045], color=GRID, lw=0.8, alpha=0.65, transform=ax.transAxes)
+        y -= 0.105
     save(fig, out)
 
 
@@ -878,96 +851,74 @@ def plot_14_actions_01(stem: str, out: Path) -> None:
     save(fig, out)
 
 
-def plot_14_actions_02(stem: str, out: Path) -> None:
-    idx = pd.date_range(end=pd.Timestamp.today().normalize(), periods=24, freq="QE")
-    div = pd.Series(np.linspace(0.21, 0.31, len(idx)) + np.sin(np.linspace(0, 4, len(idx))) * 0.015, index=idx)
-    fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "Corporate Actions: Dividend Timeline", "Cash-distribution events attached to price history")
-    style_ax(ax, "")
-    ax.bar(idx, div, width=40, color=GREEN, alpha=0.88)
-    ax.set_ylabel("dividend")
-    save(fig, out)
-
-
-def plot_14_actions_03(stem: str, out: Path) -> None:
-    idx = dates(420)
-    factor = pd.Series(1.0, index=idx)
-    factor.iloc[:120] = 0.25
-    factor.iloc[120:260] = 0.50
-    fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "Corporate Actions: Split Factor", "Adjustment factor history used for replay consistency")
-    style_ax(ax, "")
-    ax.step(idx, factor, where="post", color=CYAN, lw=2.4)
-    ax.fill_between(idx, 0, factor, step="post", color=CYAN, alpha=0.12)
-    ax.set_ylabel("adjustment factor")
-    save(fig, out)
-
-
 def plot_15_domain_01(stem: str, out: Path) -> None:
-    labels = ["domains", "routes", "aliases", "schemas", "errors"]
-    values = [16, 540, 120, 540, 38]
+    rng = rng_for(stem)
+    idx = dates(252)
+    price = pd.Series(np.cumprod(1 + rng.normal(0.00052, 0.0135, len(idx))) * 190, index=idx)
+    pe = pd.Series(27.5 + np.sin(np.linspace(0, 8, len(idx))) * 3.2 + rng.normal(0, 0.45, len(idx)), index=idx)
     fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "Domain Contract: API Surface", "Route objects exposed for humans, SDKs and agents")
+    dashboard_title(fig, "Domain Route: AAPL Pricing + Fundamentals", "One ticker routed into adjusted price and valuation data for research review")
     style_ax(ax, "")
-    ax.bar(labels, values, color=[BLUE, CYAN, PINK, GREEN, AMBER], alpha=0.92)
-    ax.set_ylabel("objects")
-    save(fig, out)
-
-
-def plot_15_domain_02(stem: str, out: Path) -> None:
-    matrix = np.array([[1, 1, 1, 0], [1, 1, 0, 0], [1, 1, 1, 1], [1, 0, 1, 0]])
-    fig, ax = plt.subplots(figsize=(9.5, 6.2), facecolor=NAVY)
-    dashboard_title(fig, "Domain Contract: Scope Matrix", "Feature and connector checks before route execution")
-    style_ax(ax, "")
-    ax.grid(False)
-    ax.imshow(matrix, cmap=LinearSegmentedColormap.from_list("scope", [NAVY, CYAN]), vmin=0, vmax=1)
-    ax.set_xticks(range(4), ["pricing", "fundamentals", "filings", "MCP"], rotation=30, ha="right")
-    ax.set_yticks(range(4), ["analyst", "service", "PM", "agent"])
-    save(fig, out)
-
-
-def plot_15_domain_03(stem: str, out: Path) -> None:
-    domains = pd.Series({"equity": 132, "macro": 88, "regulatory": 74, "reference": 51, "derivatives": 46, "risk": 39, "portfolio": 34})
-    fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "Domain Contract: Route Coverage", "Financial API coverage by domain family")
-    style_ax(ax, "")
-    ax.barh(domains.index, domains.values, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED, BLUE], alpha=0.9)
-    ax.set_xlabel("routes")
+    ax.plot(idx, price, color=CYAN, lw=2.1, label="adjusted close")
+    ax.fill_between(idx, price.rolling(21).mean(), price, color=CYAN, alpha=0.10)
+    ax.set_ylabel("price")
+    ax2 = ax.twinx()
+    ax2.plot(idx, pe, color=PINK, lw=1.8, label="P/E TTM")
+    ax2.tick_params(colors=MUTED, labelsize=9)
+    ax2.spines["right"].set_color("#17376f")
+    ax2.set_ylabel("P/E TTM", color=MUTED)
     save(fig, out)
 
 
 def plot_16_sources_01(stem: str, out: Path) -> None:
-    labels = ["FRED", "IMF", "OECD", "WorldBank", "DBnomics", "Eurostat", "BEA", "EIA"]
-    values = [1.0, 0.82, 0.74, 0.86, 0.68, 0.59, 0.72, 0.64]
+    rng = rng_for(stem)
+    idx = pd.date_range(end=pd.Timestamp.today().normalize(), periods=96, freq="ME")
+    cpi = pd.Series(2.4 + np.sin(np.linspace(0, 10, len(idx))) * 0.9 + rng.normal(0, 0.10, len(idx)), index=idx)
+    fed = pd.Series(1.8 + np.linspace(0, 3.0, len(idx)) + np.sin(np.linspace(0, 6, len(idx))) * 0.55, index=idx).clip(0, 5.6)
     fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "Macro Sources: Provider Coverage", "Global macro feeds normalized for research workflows")
+    dashboard_title(fig, "Macro: CPI and Fed Funds", "Inflation and policy-rate path aligned for regime analysis")
     style_ax(ax, "")
-    ax.bar(labels, values, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED, BLUE, CYAN], alpha=0.92)
-    ax.set_ylim(0, 1.05)
-    ax.set_ylabel("coverage score")
-    ax.tick_params(axis="x", rotation=30)
+    ax.plot(idx, cpi, color=PINK, lw=2.1, label="CPI YoY")
+    ax.plot(idx, fed, color=CYAN, lw=2.1, label="fed funds")
+    ax.axhline(2.0, color=GREEN, lw=1.2, linestyle="--", alpha=0.8)
+    ax.set_ylabel("%")
+    style_legend(ax)
     save(fig, out)
 
 
 def plot_16_sources_02(stem: str, out: Path) -> None:
-    matrix = np.array([[1, 1, 1, 1], [1, 1, 0.6, 0.2], [1, 0.8, 0.5, 0.2], [0.7, 0.8, 1, 0.4], [0.6, 0.7, 0.8, 0.3]])
-    fig, ax = plt.subplots(figsize=(9.5, 6.2), facecolor=NAVY)
-    dashboard_title(fig, "Macro Sources: Frequency Matrix", "Daily, monthly, quarterly and annual availability")
+    rng = rng_for(stem)
+    idx = pd.date_range(end=pd.Timestamp.today().normalize(), periods=72, freq="ME")
+    us_pmi = pd.Series(51 + np.sin(np.linspace(0, 8, len(idx))) * 4.2 + rng.normal(0, 0.65, len(idx)), index=idx)
+    eu_pmi = pd.Series(49 + np.sin(np.linspace(1, 9, len(idx))) * 3.4 + rng.normal(0, 0.70, len(idx)), index=idx)
+    china_pmi = pd.Series(50 + np.sin(np.linspace(2, 10, len(idx))) * 2.8 + rng.normal(0, 0.55, len(idx)), index=idx)
+    fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
+    dashboard_title(fig, "Macro: Global Growth Pulse", "Regional PMI-style series for cross-market allocation context")
     style_ax(ax, "")
-    ax.grid(False)
-    ax.imshow(matrix, cmap=CORR_CMAP, vmin=0, vmax=1)
-    ax.set_xticks(range(4), ["daily", "monthly", "quarterly", "annual"])
-    ax.set_yticks(range(5), ["rates", "inflation", "labor", "growth", "energy"])
+    ax.plot(idx, us_pmi, color=BLUE, lw=2.0, label="US")
+    ax.plot(idx, eu_pmi, color=CYAN, lw=2.0, label="Europe")
+    ax.plot(idx, china_pmi, color=PINK, lw=2.0, label="China")
+    ax.axhline(50, color=TEXT, lw=1.0, alpha=0.35)
+    ax.set_ylabel("PMI")
+    style_legend(ax)
     save(fig, out)
 
 
 def plot_16_sources_03(stem: str, out: Path) -> None:
-    regions = pd.Series({"US": 94, "EU": 78, "UK": 63, "Japan": 58, "Global": 86, "EM": 49})
+    rng = rng_for(stem)
+    idx = dates(360)
+    oil = pd.Series(np.cumprod(1 + rng.normal(0.00020, 0.018, len(idx))) * 82, index=idx)
+    breakeven = pd.Series(2.25 + np.sin(np.linspace(0, 9, len(idx))) * 0.32 + rng.normal(0, 0.035, len(idx)), index=idx)
     fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "Macro Sources: Region Coverage", "Regional macro availability for cross-market research")
+    dashboard_title(fig, "Macro: Energy and Inflation Expectations", "Oil proxy beside 10Y breakeven-style inflation expectations")
     style_ax(ax, "")
-    ax.bar(regions.index, regions.values, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED], alpha=0.9)
-    ax.set_ylabel("coverage score")
+    ax.plot(idx, oil, color=AMBER, lw=2.0, label="oil proxy")
+    ax.set_ylabel("oil")
+    ax2 = ax.twinx()
+    ax2.plot(idx, breakeven, color=CYAN, lw=1.8, label="10Y breakeven")
+    ax2.tick_params(colors=MUTED, labelsize=9)
+    ax2.spines["right"].set_color("#17376f")
+    ax2.set_ylabel("%", color=MUTED)
     save(fig, out)
 
 
@@ -1014,7 +965,7 @@ def plot_17_vol_03(stem: str, out: Path) -> None:
 
 
 def plot_18_index_01(stem: str, out: Path) -> None:
-    labels = ["liquidity", "float", "size", "profitability", "coverage", "tradability"]
+    labels = ["liquidity", "float", "size", "profitability", "data quality", "tradability"]
     values = [0.92, 0.86, 0.88, 0.71, 0.96, 0.90]
     fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
     dashboard_title(fig, "Index Constituents: Universe Scores", "Constituent metadata converted into investability checks")
@@ -1050,35 +1001,25 @@ def plot_18_index_03(stem: str, out: Path) -> None:
 
 
 def plot_19_lineage_01(stem: str, out: Path) -> None:
-    labels = ["prices", "ratios", "filings", "identity", "vol", "macro"]
-    values = [252, 38, 12, 1, 420, 360]
+    rng = rng_for(stem)
+    idx = dates(260)
+    price = pd.Series(np.cumprod(1 + rng.normal(0.00050, 0.014, len(idx))) * 185, index=idx)
+    pe = pd.Series(28 + np.sin(np.linspace(0, 7, len(idx))) * 2.7 + rng.normal(0, 0.35, len(idx)), index=idx)
+    event_dates = idx[[55, 132, 205]]
+    event_labels = ["10-Q", "Form 4", "8-K"]
     fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "Lineage: Evidence Rows", "Rows and objects attached to a research output")
+    dashboard_title(fig, "Lineage: AAPL Evidence Over Time", "Price, valuation and filing events kept together for audit-ready research output")
     style_ax(ax, "")
-    ax.bar(labels, values, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED], alpha=0.9)
-    ax.set_yscale("log")
-    ax.set_ylabel("rows / objects")
-    save(fig, out)
-
-
-def plot_19_lineage_02(stem: str, out: Path) -> None:
-    fields = pd.Series({"request id": 1.0, "provider": 1.0, "route": 1.0, "tenant scope": 1.0, "warnings": 0.72, "cache state": 0.86})
-    fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "Lineage: Metadata Completeness", "Governance fields retained beside output data")
-    style_ax(ax, "")
-    ax.barh(fields.index, fields.values * 100, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED], alpha=0.9)
-    ax.set_xlim(0, 105)
-    ax.set_xlabel("% populated")
-    save(fig, out)
-
-
-def plot_19_lineage_03(stem: str, out: Path) -> None:
-    states = pd.Series({"clean": 84, "stale field": 9, "partial": 5, "vendor note": 2})
-    fig, ax = plt.subplots(figsize=(11, 6), facecolor=NAVY)
-    dashboard_title(fig, "Lineage: Warning State", "Data-quality flags summarized for audit review")
-    style_ax(ax, "")
-    ax.bar(states.index, states.values, color=[GREEN, AMBER, PINK, RED], alpha=0.9)
-    ax.set_ylabel("% calls")
+    ax.plot(idx, price, color=CYAN, lw=2.1, label="adjusted close")
+    ax.set_ylabel("price")
+    for event_date, label in zip(event_dates, event_labels):
+        ax.axvline(event_date, color=PINK, lw=1.2, alpha=0.85)
+        ax.text(event_date, price.max() * 0.99, label, color=TEXT, fontsize=8, rotation=90, va="top", ha="right")
+    ax2 = ax.twinx()
+    ax2.plot(idx, pe, color=GREEN, lw=1.7, alpha=0.9, label="P/E TTM")
+    ax2.tick_params(colors=MUTED, labelsize=9)
+    ax2.spines["right"].set_color("#17376f")
+    ax2.set_ylabel("P/E TTM", color=MUTED)
     save(fig, out)
 
 
@@ -1233,7 +1174,7 @@ def plot_evidence_packet(stem: str, title: str, out: Path) -> None:
     fig, ax = plt.subplots(figsize=(10, 5.4))
     style_ax(ax, title, )
     ax.bar(labels, values, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED, "#8ab4ff"], alpha=0.92)
-    ax.set_ylabel("evidence coverage")
+    ax.set_ylabel("evidence strength")
     ax.set_ylim(0, 1.05)
     save(fig, out)
 
@@ -1288,6 +1229,59 @@ def plot_positioning_dashboard(stem: str, title: str, out: Path) -> None:
     save(fig, out)
 
 
+def plot_weight_bar(stem: str, title: str, out: Path) -> None:
+    labels = ["SPY", "TLT", "GLD", "DBC", "UUP"]
+    values = [0.24, 0.28, 0.20, 0.16, 0.12]
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.bar(labels, values, color=[BLUE, CYAN, PINK, GREEN, AMBER], alpha=0.92)
+    ax.set_ylabel("portfolio weight")
+    ax.set_ylim(0, 0.34)
+    save(fig, out)
+
+
+def plot_risk_contributors(stem: str, title: str, out: Path) -> None:
+    labels = ["NVDA", "MSFT", "AAPL", "AMZN", "GOOGL", "META", "JPM"]
+    values = [0.31, 0.18, 0.16, 0.12, 0.10, 0.08, 0.05]
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.barh(labels[::-1], values[::-1], color=[BLUE, CYAN, PINK, GREEN, AMBER, RED, "#8ab4ff"][::-1], alpha=0.92)
+    ax.set_xlabel("risk contribution")
+    save(fig, out)
+
+
+def plot_flow_mosaic(stem: str, title: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = dates(260)
+    institutional_flow = pd.Series(rng.normal(0.02, 0.18, len(idx)), index=idx).rolling(10).mean().fillna(0).cumsum()
+    congress_flow = pd.Series(rng.normal(0.01, 0.10, len(idx)), index=idx).rolling(15).mean().fillna(0).cumsum()
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.plot(idx, institutional_flow, color=CYAN, linewidth=2.1, label="13F flow proxy")
+    ax.plot(idx, congress_flow, color=PINK, linewidth=2.1, label="congress flow proxy")
+    ax.axhline(0, color=TEXT, alpha=0.35, linewidth=1)
+    ax.set_ylabel("cumulative signal")
+    style_legend(ax)
+    save(fig, out)
+
+
+def plot_investment_evidence_timeline(stem: str, title: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = dates(300)
+    price = pd.Series(np.cumprod(1 + rng.normal(0.00055, 0.014, len(idx))) * 180, index=idx)
+    events = idx[[45, 96, 154, 219, 262]]
+    labels = ["10-K", "Form 4", "ratio update", "VIX spike", "13F"]
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.plot(idx, price, color=CYAN, linewidth=2.2, label="adjusted close")
+    ax.fill_between(idx, price.rolling(21).mean(), price, color=CYAN, alpha=0.10)
+    for event_date, label in zip(events, labels):
+        ax.axvline(event_date, color=PINK, lw=1.2, alpha=0.8)
+        ax.text(event_date, price.max() * 0.985, label, color=TEXT, fontsize=8, rotation=90, va="top", ha="right")
+    ax.set_ylabel("price")
+    save(fig, out)
+
+
 def plot_adjustment_semantics(stem: str, title: str, out: Path) -> None:
     rng = rng_for(stem)
     x = dates(420)
@@ -1322,7 +1316,7 @@ def plot_macro_sources(stem: str, title: str, out: Path) -> None:
     style_ax(ax, title)
     ax.bar(labels, values, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED], alpha=0.92)
     ax.set_ylim(0, 1.05)
-    ax.set_ylabel("coverage score")
+    ax.set_ylabel("data score")
     save(fig, out)
 
 
@@ -1396,17 +1390,25 @@ def plot_one(stem: str, out: Path) -> None:
     elif "index_constituents_universe_build" in lower:
         plot_universe_build(stem, title, out)
     elif "data_contract_lineage_audit" in lower:
-        plot_lineage_packet(stem, title, out)
+        plot_investment_evidence_timeline(stem, title, out)
     elif "investment_evidence_packet" in lower:
-        plot_evidence_packet(stem, title, out)
-    elif "macro_shock_cross_asset" in lower:
+        plot_investment_evidence_timeline(stem, title, out)
+    elif "stress_testing_macro_scenarios" in lower or "macro_shock_cross_asset" in lower or "factor_macro_risk_shock_transmission" in lower:
         plot_scenario_bars(stem, title, out)
-    elif "macro_regime_allocation_control" in lower:
+    elif "cta_futures_carry_trend_macro" in lower or "macro_positioning_cot" in lower:
+        plot_positioning_dashboard(stem, title, out)
+    elif "macro_regime_cot_cross_asset" in lower or "tactical_asset_allocation_macro_valuation" in lower or "macro_regime_allocation_control" in lower:
         plot_regime_timeline(stem, title, out)
     elif "inflation_shock_monitor" in lower:
         plot_inflation_monitor(stem, title, out)
-    elif "macro_positioning_cot" in lower:
-        plot_positioning_dashboard(stem, title, out)
+    elif "institutional_crowding_13f_flows" in lower or "crowding_smart_money_flow" in lower:
+        plot_flow_mosaic(stem, title, out)
+    elif "crowding_liquidity_capacity_stress" in lower:
+        plot_scatter(stem, title, out)
+    elif "portfolio_morning_risk_brief" in lower or "integrated_daily_risk_attribution_report" in lower:
+        plot_risk_contributors(stem, title, out)
+    elif "hierarchical_risk_parity" in lower or "risk_parity" in lower:
+        plot_weight_bar(stem, title, out)
     elif "market_data" in lower or "pricing" in lower:
         plot_multi_nav(stem, title, out)
     elif "macro" in lower or "economic" in lower or "rates" in lower:
@@ -1419,6 +1421,8 @@ def plot_one(stem: str, out: Path) -> None:
         plot_bar(stem, title, out, ["SPY", "TLT", "GLD", "DBC", "UUP"])
     elif "crypto" in lower or "ccxt" in lower:
         plot_nav(stem, title, out)
+    elif "monte_carlo" in lower:
+        plot_monte_carlo(stem, title, out)
     elif "vix" in lower or "volatility" in lower or "tail_risk" in lower or "var_" in lower:
         plot_drawdown(stem, title, out)
     elif "cot" in lower or "positioning" in lower:
@@ -1431,8 +1435,6 @@ def plot_one(stem: str, out: Path) -> None:
         plot_event_curve(stem, title, out)
     elif "options" in lower or "greeks" in lower or "overlay" in lower:
         plot_payoff(stem, title, out)
-    elif "monte_carlo" in lower:
-        plot_monte_carlo(stem, title, out)
     elif "drawdown" in lower or "performance" in lower:
         plot_drawdown(stem, title, out)
     elif "attribution" in lower or "factor" in lower or "brinson" in lower:
@@ -1521,13 +1523,9 @@ def plot_outputs(stem: str, output_dir: Path) -> list[Path]:
         return outputs
     if lower.startswith("11_sec_filings"):
         outputs = [
-            output_dir / "11_sec_01_disclosure_timeline.png",
-            output_dir / "11_sec_02_form_mix.png",
-            output_dir / "11_sec_03_disclosure_intensity.png",
+            output_dir / "11_sec_01_filing_event_reaction.png",
         ]
         plot_11_sec_01(stem, outputs[0])
-        plot_11_sec_02(stem, outputs[1])
-        plot_11_sec_03(stem, outputs[2])
         return outputs
     if lower.startswith("12_finra_short_interest"):
         outputs = [
@@ -1541,39 +1539,27 @@ def plot_outputs(stem: str, output_dir: Path) -> list[Path]:
         return outputs
     if lower.startswith("13_openfigi"):
         outputs = [
-            output_dir / "13_openfigi_01_identity_resolution.png",
-            output_dir / "13_openfigi_02_mapping_coverage.png",
-            output_dir / "13_openfigi_03_security_type_mix.png",
+            output_dir / "13_openfigi_01_aapl_identity.png",
         ]
         plot_13_openfigi_01(stem, outputs[0])
-        plot_13_openfigi_02(stem, outputs[1])
-        plot_13_openfigi_03(stem, outputs[2])
         return outputs
     if lower.startswith("14_corporate_actions_pit_adjustments"):
         outputs = [
             output_dir / "14_corporate_actions_01_raw_vs_adjusted.png",
-            output_dir / "14_corporate_actions_02_dividend_timeline.png",
-            output_dir / "14_corporate_actions_03_split_factor.png",
         ]
         plot_14_actions_01(stem, outputs[0])
-        plot_14_actions_02(stem, outputs[1])
-        plot_14_actions_03(stem, outputs[2])
         return outputs
     if lower.startswith("15_domain_route_discovery_contract"):
         outputs = [
-            output_dir / "15_domain_01_api_surface.png",
-            output_dir / "15_domain_02_scope_matrix.png",
-            output_dir / "15_domain_03_route_coverage.png",
+            output_dir / "15_domain_01_aapl_equity_packet.png",
         ]
         plot_15_domain_01(stem, outputs[0])
-        plot_15_domain_02(stem, outputs[1])
-        plot_15_domain_03(stem, outputs[2])
         return outputs
     if lower.startswith("16_global_macro_sources"):
         outputs = [
-            output_dir / "16_macro_sources_01_provider_coverage.png",
-            output_dir / "16_macro_sources_02_frequency_matrix.png",
-            output_dir / "16_macro_sources_03_region_coverage.png",
+            output_dir / "16_macro_01_cpi_fed_funds.png",
+            output_dir / "16_macro_02_global_growth.png",
+            output_dir / "16_macro_03_energy_inflation.png",
         ]
         plot_16_sources_01(stem, outputs[0])
         plot_16_sources_02(stem, outputs[1])
@@ -1601,13 +1587,9 @@ def plot_outputs(stem: str, output_dir: Path) -> list[Path]:
         return outputs
     if lower.startswith("19_data_contract_lineage_audit"):
         outputs = [
-            output_dir / "19_lineage_01_evidence_rows.png",
-            output_dir / "19_lineage_02_metadata_completeness.png",
-            output_dir / "19_lineage_03_warning_state.png",
+            output_dir / "19_lineage_01_aapl_evidence_timeline.png",
         ]
         plot_19_lineage_01(stem, outputs[0])
-        plot_19_lineage_02(stem, outputs[1])
-        plot_19_lineage_03(stem, outputs[2])
         return outputs
     output = output_dir / f"{stem}_output_01.png"
     plot_one(stem, output)

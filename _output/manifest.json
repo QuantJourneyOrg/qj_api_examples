@@ -115,11 +115,9 @@
   {
     "notebook": "_candidates/11_sec_filings.ipynb",
     "outputs": [
-      "_output/11_sec_01_disclosure_timeline.png",
-      "_output/11_sec_02_form_mix.png",
-      "_output/11_sec_03_disclosure_intensity.png"
+      "_output/11_sec_01_filing_event_reaction.png"
     ],
-    "output": "_output/11_sec_01_disclosure_timeline.png",
+    "output": "_output/11_sec_01_filing_event_reaction.png",
     "code_cells": 10,
     "markdown_cells": 13,
     "status": "ok"
@@ -139,11 +137,9 @@
   {
     "notebook": "_candidates/13_openfigi.ipynb",
     "outputs": [
-      "_output/13_openfigi_01_identity_resolution.png",
-      "_output/13_openfigi_02_mapping_coverage.png",
-      "_output/13_openfigi_03_security_type_mix.png"
+      "_output/13_openfigi_01_aapl_identity.png"
     ],
-    "output": "_output/13_openfigi_01_identity_resolution.png",
+    "output": "_output/13_openfigi_01_aapl_identity.png",
     "code_cells": 6,
     "markdown_cells": 8,
     "status": "ok"
@@ -151,9 +147,7 @@
   {
     "notebook": "_candidates/14_corporate_actions_pit_adjustments.ipynb",
     "outputs": [
-      "_output/14_corporate_actions_01_raw_vs_adjusted.png",
-      "_output/14_corporate_actions_02_dividend_timeline.png",
-      "_output/14_corporate_actions_03_split_factor.png"
+      "_output/14_corporate_actions_01_raw_vs_adjusted.png"
     ],
     "output": "_output/14_corporate_actions_01_raw_vs_adjusted.png",
     "code_cells": 6,
@@ -163,11 +157,9 @@
   {
     "notebook": "_candidates/15_domain_route_discovery_contract.ipynb",
     "outputs": [
-      "_output/15_domain_01_api_surface.png",
-      "_output/15_domain_02_scope_matrix.png",
-      "_output/15_domain_03_route_coverage.png"
+      "_output/15_domain_01_aapl_equity_packet.png"
     ],
-    "output": "_output/15_domain_01_api_surface.png",
+    "output": "_output/15_domain_01_aapl_equity_packet.png",
     "code_cells": 6,
     "markdown_cells": 5,
     "status": "ok"
@@ -175,11 +167,11 @@
   {
     "notebook": "_candidates/16_global_macro_sources.ipynb",
     "outputs": [
-      "_output/16_macro_sources_01_provider_coverage.png",
-      "_output/16_macro_sources_02_frequency_matrix.png",
-      "_output/16_macro_sources_03_region_coverage.png"
+      "_output/16_macro_01_cpi_fed_funds.png",
+      "_output/16_macro_02_global_growth.png",
+      "_output/16_macro_03_energy_inflation.png"
     ],
-    "output": "_output/16_macro_sources_01_provider_coverage.png",
+    "output": "_output/16_macro_01_cpi_fed_funds.png",
     "code_cells": 6,
     "markdown_cells": 5,
     "status": "ok"
@@ -211,11 +203,9 @@
   {
     "notebook": "_candidates/19_data_contract_lineage_audit.ipynb",
     "outputs": [
-      "_output/19_lineage_01_evidence_rows.png",
-      "_output/19_lineage_02_metadata_completeness.png",
-      "_output/19_lineage_03_warning_state.png"
+      "_output/19_lineage_01_aapl_evidence_timeline.png"
     ],
-    "output": "_output/19_lineage_01_evidence_rows.png",
+    "output": "_output/19_lineage_01_aapl_evidence_timeline.png",
     "code_cells": 6,
     "markdown_cells": 5,
     "status": "ok"

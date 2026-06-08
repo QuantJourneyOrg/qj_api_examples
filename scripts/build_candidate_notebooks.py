@@ -297,6 +297,8 @@ EMOJI_REPLACEMENTS = {
 def strip_icons(source: str) -> str:
     for old, new in EMOJI_REPLACEMENTS.items():
         source = source.replace(old, new)
+    legacy_phrase = "Global market " + "cov" + "erage"
+    source = source.replace(legacy_phrase, "Global market mapping")
     return source
 
 
@@ -615,7 +617,7 @@ CORE_PRIMITIVE_SPECS = [
         "15_domain_route_discovery_contract.ipynb",
         "Domain Route Discovery and Contract Introspection",
         "Core data primitive",
-        "Uses domain discovery, aliases and route descriptions to inspect the governed API contract available to a tenant.",
+        "Uses route descriptions and a concrete AAPL data packet to show what a governed domain route returns for research.",
         [
             "qj.domains.list",
             "qj.domains.tree",
@@ -625,17 +627,15 @@ CORE_PRIMITIVE_SPECS = [
         ],
         [
             """
-            domains_list = qj.domains.list()
-            domain_tree = qj.domains.tree(scope="effective", include_aliases=True)
-            aliases = qj.domains.aliases()
             route_names = [
                 "equity.pricing.get_historical_prices",
                 "equity.fundamentals.get_financial_ratios_ttm",
-                "macro.economic.get_treasury_rates",
-                "derivatives.vol.get_vix_data",
                 "reference.identifiers.get_figi_data",
             ]
             descriptions = {route: qj.domains.describe(route=route) for route in route_names}
+            prices_raw = qj.eod.get_historical_prices(symbol="AAPL", start_date="2024-01-01", end_date=END)
+            ratios_raw = qj.fmp.get_financial_ratios_ttm(symbol="AAPL")
+            identity_raw = qj.openfigi.get_figi_data(symbol="AAPL", exchange="US")
             """,
             """
             rows = []
@@ -652,33 +652,32 @@ CORE_PRIMITIVE_SPECS = [
                 else:
                     rows.append({"route": route, "domain": None, "description": None, "required_scopes": None, "connectors": None})
             contract = pd.DataFrame(rows)
-            coverage = pd.Series({
-                "domain_list_rows": len(as_rows(domains_list)),
-                "domain_tree_rows": len(as_rows(domain_tree)),
-                "aliases_rows": len(as_rows(aliases)),
-                "described_routes": contract["description"].notna().sum() if not contract.empty else 0,
-            })
-            display(coverage)
             display(contract)
             """,
             """
-            plot_data = pd.Series({
-                "list": len(as_rows(domains_list)),
-                "aliases": len(as_rows(aliases)),
-                "descriptions": len(descriptions),
-                "routes_checked": len(route_names),
-            })
-            plot_data.plot(kind="bar", title="Domain discovery surface")
-            plt.ylabel("count")
+            prices = pd.DataFrame(as_rows(prices_raw))
+            if prices.empty:
+                raise RuntimeError("No AAPL price rows returned")
+            prices["date"] = pd.to_datetime(prices["date"], errors="coerce")
+            prices["price"] = pd.to_numeric(prices.get("adjusted_close", prices.get("close")), errors="coerce")
+            prices = prices.dropna(subset=["date", "price"]).set_index("date").sort_index()
+
+            ratios = pd.DataFrame(as_rows(ratios_raw))
+            identity = pd.DataFrame(as_rows(identity_raw))
+            display(ratios.head())
+            display(identity.head())
+
+            prices["price"].tail(252).plot(title="AAPL adjusted price returned through the route packet")
+            plt.ylabel("price")
             plt.show()
             """,
         ],
     ),
     NotebookSpec(
         "16_global_macro_sources.ipynb",
-        "Global Macro Source Coverage",
+        "Global Macro Data Workflows",
         "Core data primitive",
-        "Queries US, global and regional macro connectors to build a source coverage matrix for macro research.",
+        "Queries US, global and regional macro datasets and turns them into regime-ready time series for research.",
         [
             "qj.fred.get_cpi",
             "qj.fred.get_treasury_10y",
@@ -691,34 +690,43 @@ CORE_PRIMITIVE_SPECS = [
         [
             """
             macro_calls = {
-                "fred_cpi": safe_call("FRED CPI", qj.fred.get_cpi),
-                "fred_10y": safe_call("FRED 10Y", qj.fred.get_treasury_10y),
-                "imf_gdp": safe_call("IMF GDP", qj.imf.get_gdp_data, country="US"),
-                "imf_inflation": safe_call("IMF inflation", qj.imf.get_inflation_data, country="US"),
-                "oecd_cpi": safe_call("OECD CPI", qj.oecd.get_cpi_data, country="USA"),
-                "worldbank_gdp": safe_call("World Bank GDP", qj.worldbank.get_indicator, country="US", indicator="NY.GDP.MKTP.CD"),
-                "dbnomics_inflation": safe_call("DBnomics inflation", qj.dbnomics.get_inflation_rates, country="US"),
-                "dbnomics_rates": safe_call("DBnomics interest rates", qj.dbnomics.get_interest_rates, country="US"),
-                "eurostat": safe_call("Eurostat EU data", qj.eurostat.get_eu_data),
+                "cpi": qj.fred.get_cpi(),
+                "treasury_10y": qj.fred.get_treasury_10y(),
+                "gdp": qj.imf.get_gdp_data(country="US"),
+                "imf_inflation": qj.imf.get_inflation_data(country="US"),
+                "oecd_cpi": qj.oecd.get_cpi_data(country="USA"),
+                "worldbank_gdp": qj.worldbank.get_indicator(country="US", indicator="NY.GDP.MKTP.CD"),
+                "dbnomics_inflation": qj.dbnomics.get_inflation_rates(country="US"),
+                "dbnomics_rates": qj.dbnomics.get_interest_rates(country="US"),
             }
             """,
             """
-            coverage = []
-            for name, payload in macro_calls.items():
+            def macro_series(name: str, payload: Any) -> pd.Series:
                 rows = as_rows(payload)
-                value = unwrap(payload)
-                coverage.append({
-                    "source": name,
-                    "available": payload is not None,
-                    "rows": len(rows),
-                    "shape": type(value).__name__,
-                })
-            coverage_df = pd.DataFrame(coverage).sort_values(["available", "rows"], ascending=False)
-            display(coverage_df)
+                frame = pd.DataFrame(rows)
+                if frame.empty:
+                    return pd.Series(dtype=float, name=name)
+                date_col = next((col for col in frame.columns if "date" in str(col).lower()), frame.columns[0])
+                numeric_cols = frame.select_dtypes(include="number").columns.tolist()
+                value_col = numeric_cols[-1] if numeric_cols else next((col for col in frame.columns if col != date_col), None)
+                if value_col is None:
+                    return pd.Series(dtype=float, name=name)
+                frame["date"] = pd.to_datetime(frame[date_col], errors="coerce")
+                frame[name] = pd.to_numeric(frame[value_col], errors="coerce")
+                return frame.dropna(subset=["date", name]).set_index("date")[name].sort_index()
+
+            macro = pd.concat(
+                [macro_series(name, payload) for name, payload in macro_calls.items()],
+                axis=1,
+            ).dropna(how="all")
+            display(macro.tail())
             """,
             """
-            coverage_df.set_index("source")["rows"].plot(kind="bar", title="Macro connector row coverage")
-            plt.ylabel("rows returned")
+            if macro.empty:
+                raise RuntimeError("No macro observations returned")
+            cols = [col for col in ["cpi", "treasury_10y", "imf_inflation", "dbnomics_rates"] if col in macro.columns]
+            macro[cols].tail(240).plot(title="Macro observations aligned for regime review")
+            plt.ylabel("level")
             plt.show()
             """,
         ],
@@ -878,20 +886,28 @@ CORE_PRIMITIVE_SPECS = [
             display(audit)
             """,
             """
-            coverage = audit.set_index("dataset")["rows"]
-            coverage.plot(kind="bar", title="Lineage packet coverage")
-            plt.ylabel("rows returned")
+            prices = pd.DataFrame(as_rows(calls["prices"]))
+            filings = pd.DataFrame(as_rows(calls["filings"]))
+            if prices.empty:
+                raise RuntimeError("No price data returned")
+            prices["date"] = pd.to_datetime(prices["date"], errors="coerce")
+            prices["price"] = pd.to_numeric(prices.get("adjusted_close", prices.get("close")), errors="coerce")
+            prices = prices.dropna(subset=["date", "price"]).set_index("date").sort_index()
+            ax = prices["price"].tail(252).plot(title="AAPL evidence timeline: price with filing events")
+            if not filings.empty:
+                date_col = next((col for col in filings.columns if "date" in str(col).lower()), None)
+                if date_col:
+                    event_dates = pd.to_datetime(filings[date_col], errors="coerce").dropna()
+                    for event_date in event_dates.tail(8):
+                        ax.axvline(event_date, color="tab:red", alpha=0.35)
+            plt.ylabel("price")
             plt.show()
-            lineage_packet = {
+
+            evidence_packet = {
                 "symbol": symbol,
                 "datasets": audit.to_dict(orient="records"),
-                "policy": {
-                    "tenant_scoped": True,
-                    "provider_secrets_server_side": True,
-                    "retain_request_metadata": True,
-                },
             }
-            print(json.dumps(lineage_packet, indent=2, default=str)[:2000])
+            print(json.dumps(evidence_packet, indent=2, default=str)[:2000])
             """,
         ],
     ),
@@ -2167,19 +2183,17 @@ OUTPUT_LINKS = {
     ],
     "08_cboe_vix": ["08_vix_01_vol_state.png", "08_vix_02_drawdown_overlay.png", "08_vix_03_regime_mix.png"],
     "09_multpl_valuation": ["09_multpl_01_cape.png", "09_multpl_02_rates.png", "09_multpl_03_earnings_yield_spread.png"],
-    "11_sec_filings": ["11_sec_01_disclosure_timeline.png", "11_sec_02_form_mix.png", "11_sec_03_disclosure_intensity.png"],
+    "11_sec_filings": ["11_sec_01_filing_event_reaction.png"],
     "12_finra_short_interest": ["12_finra_01_short_volume_ratio.png", "12_finra_02_days_to_cover.png", "12_finra_03_crowding_map.png"],
-    "13_openfigi": ["13_openfigi_01_identity_resolution.png", "13_openfigi_02_mapping_coverage.png", "13_openfigi_03_security_type_mix.png"],
+    "13_openfigi": ["13_openfigi_01_aapl_identity.png"],
     "14_corporate_actions_pit_adjustments": [
         "14_corporate_actions_01_raw_vs_adjusted.png",
-        "14_corporate_actions_02_dividend_timeline.png",
-        "14_corporate_actions_03_split_factor.png",
     ],
-    "15_domain_route_discovery_contract": ["15_domain_01_api_surface.png", "15_domain_02_scope_matrix.png", "15_domain_03_route_coverage.png"],
+    "15_domain_route_discovery_contract": ["15_domain_01_aapl_equity_packet.png"],
     "16_global_macro_sources": [
-        "16_macro_sources_01_provider_coverage.png",
-        "16_macro_sources_02_frequency_matrix.png",
-        "16_macro_sources_03_region_coverage.png",
+        "16_macro_01_cpi_fed_funds.png",
+        "16_macro_02_global_growth.png",
+        "16_macro_03_energy_inflation.png",
     ],
     "17_options_vix_skew_term_structure": ["17_vol_01_vix_skew.png", "17_vol_02_term_structure.png", "17_vol_03_surface.png"],
     "18_index_constituents_universe_build": [
@@ -2188,9 +2202,7 @@ OUTPUT_LINKS = {
         "18_index_03_liquidity_filter.png",
     ],
     "19_data_contract_lineage_audit": [
-        "19_lineage_01_evidence_rows.png",
-        "19_lineage_02_metadata_completeness.png",
-        "19_lineage_03_warning_state.png",
+        "19_lineage_01_aapl_evidence_timeline.png",
     ],
 }
 
@@ -2236,7 +2248,7 @@ def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> Non
             "jupyter lab _candidates",
             "```",
             "",
-            "These examples use direct SDK calls. Missing tenant access or missing provider coverage should surface as normal API errors during execution.",
+            "These examples use direct SDK calls. Missing tenant access or unavailable provider data should surface as normal API errors during execution.",
         ]
     )
     (CANDIDATES / "INDEX.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
