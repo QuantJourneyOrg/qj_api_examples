@@ -49,11 +49,53 @@ def rng_for(stem: str) -> np.random.Generator:
     return np.random.default_rng(seed)
 
 
+def human_title(title: str) -> str:
+    words = title.replace("_", " ").replace("-", " ").split()
+    acronyms = {
+        "adv": "ADV",
+        "api": "API",
+        "bt": "BT",
+        "cot": "COT",
+        "cta": "CTA",
+        "ff": "FF",
+        "figi": "FIGI",
+        "hrp": "HRP",
+        "nav": "NAV",
+        "pead": "PEAD",
+        "pmi": "PMI",
+        "pm": "PM",
+        "sec": "SEC",
+        "sma": "SMA",
+        "spy": "SPY",
+        "var": "VaR",
+        "vix": "VIX",
+    }
+    return " ".join(acronyms.get(word.lower(), word.capitalize()) for word in words)
+
+
+def subtitle_for_title(title: str) -> str:
+    lower = title.lower()
+    if any(token in lower for token in ["event", "earnings", "pead", "congress"]):
+        return "Event-aligned market response from the example workflow"
+    if any(token in lower for token in ["liquidity", "capacity", "universe"]):
+        return "Liquidity and investability diagnostics from the example workflow"
+    if any(token in lower for token in ["portfolio", "allocation", "parity", "hrp"]):
+        return "Portfolio construction output from the example workflow"
+    if any(token in lower for token in ["factor", "attribution", "brinson"]):
+        return "Factor and attribution diagnostics from the example workflow"
+    if any(token in lower for token in ["macro", "inflation", "cot", "cta"]):
+        return "Macro, positioning and regime context from the example workflow"
+    if any(token in lower for token in ["risk", "drawdown", "stress", "tail"]):
+        return "Risk, drawdown and scenario output from the example workflow"
+    return "Research output generated from the example workflow"
+
+
 def style_ax(ax: plt.Axes, title: str) -> None:
     fig = ax.figure
     fig.patch.set_facecolor(NAVY)
     ax.set_facecolor(PANEL)
-    ax.set_title(title.replace("_", " "), color=TEXT, fontsize=12, pad=10, weight="medium", loc="left")
+    if title:
+        dashboard_title(fig, human_title(title), subtitle_for_title(title))
     ax.tick_params(colors=MUTED, labelsize=9)
     ax.grid(True, color=GRID, alpha=0.45, linewidth=0.7)
     for spine in ax.spines.values():
