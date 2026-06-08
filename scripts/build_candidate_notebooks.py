@@ -57,6 +57,41 @@ EXISTING_BUY_SIDE = [
 ]
 
 
+PRESERVED_SOURCE_CANDIDATES = [
+    (
+        "70_macro_regime_cot_cross_asset.ipynb",
+        "Multi-source macro / positioning / allocation",
+        "Fuses macro indicators, CFTC positioning, cross-asset pricing and volatility context into a tactical allocation view.",
+    ),
+    (
+        "71_congress_13f_smart_money_mosaic.ipynb",
+        "Multi-source regulatory / alt-data / flow analysis",
+        "Combines congressional trades, institutional holdings and price reaction into a smart-money overlay signal.",
+    ),
+    (
+        "72_crowding_liquidity_capacity_stress.ipynb",
+        "Multi-source crowding / liquidity / risk",
+        "Combines ownership, ADV, short-interest and stress context into a crowding and capacity screen.",
+    ),
+    (
+        "73_conditioned_earnings_pead_multi_source.ipynb",
+        "Multi-source event study / alpha research",
+        "Conditions post-earnings drift analysis on earnings surprises, liquidity, short-interest and macro context.",
+    ),
+    (
+        "74_factor_macro_risk_shock_transmission.ipynb",
+        "Multi-source risk model / stress testing",
+        "Maps macro shocks through factor exposures and volatility context into stress P&L diagnostics.",
+    ),
+    (
+        "75_public_signals_book_intelligence.ipynb",
+        "Multi-source daily intelligence / decision support",
+        "Overlays public signals across earnings, congress, 13F, macro, COT and volatility for a book-level watchlist.",
+    ),
+]
+PRESERVED_SOURCE_CANDIDATE_NAMES = {name for name, _, _ in PRESERVED_SOURCE_CANDIDATES}
+
+
 COMMON_SETUP = r'''
 import os
 import math
@@ -1387,7 +1422,8 @@ ALL_GENERATED_SPECS = [*SPECS, *ADVANCED_FULL_SPECS, *MULTI_SOURCE_WORKFLOW_SPEC
 def clean_candidates() -> None:
     CANDIDATES.mkdir(parents=True, exist_ok=True)
     for path in CANDIDATES.glob("*.ipynb"):
-        path.unlink()
+        if path.name not in PRESERVED_SOURCE_CANDIDATE_NAMES:
+            path.unlink()
     index = CANDIDATES / "INDEX.md"
     if index.exists():
         index.unlink()
@@ -1440,6 +1476,15 @@ def branding_cell() -> dict:
 def attach_preview_cells() -> None:
     for path in sorted(CANDIDATES.glob("*.ipynb")):
         nb = json.loads(path.read_text(encoding="utf-8"))
+        cleaned_cells = []
+        for cell in nb.get("cells", []):
+            source = "".join(cell.get("source", []))
+            if cell.get("cell_type") == "markdown" and source.lstrip().startswith(("## Run Output", "## Preview Chart")):
+                continue
+            if cell.get("cell_type") == "markdown" and "Prepared by QuantJourney" in source:
+                continue
+            cleaned_cells.append(cell)
+        nb["cells"] = cleaned_cells
         nb["cells"].insert(1, preview_cell(path.name))
         nb["cells"].insert(2, branding_cell())
         for cell in nb.get("cells", []):
@@ -1453,6 +1498,9 @@ def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> Non
     rows = []
     for name, category, summary in copied:
         rows.append((name, category, summary))
+    for name, category, summary in PRESERVED_SOURCE_CANDIDATES:
+        if (CANDIDATES / name).exists():
+            rows.append((name, category, summary))
     for spec in ALL_GENERATED_SPECS:
         rows.append((spec.filename, spec.category, spec.summary))
     rows = sorted(rows, key=lambda row: row[0])
