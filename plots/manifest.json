@@ -362,5 +362,68 @@
     "code_cells": 4,
     "markdown_cells": 4,
     "status": "ok"
+  },
+  {
+    "notebook": "_candidates/80_investment_evidence_packet.ipynb",
+    "output": "plots/80_investment_evidence_packet_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/81_pre_trade_liquidity_capacity_check.ipynb",
+    "output": "plots/81_pre_trade_liquidity_capacity_check_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/82_earnings_event_pead_research.ipynb",
+    "output": "plots/82_earnings_event_pead_research_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/83_portfolio_morning_risk_brief.ipynb",
+    "output": "plots/83_portfolio_morning_risk_brief_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/84_crowding_smart_money_flow.ipynb",
+    "output": "plots/84_crowding_smart_money_flow_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/85_macro_shock_cross_asset_scenario.ipynb",
+    "output": "plots/85_macro_shock_cross_asset_scenario_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/86_macro_regime_allocation_control.ipynb",
+    "output": "plots/86_macro_regime_allocation_control_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/87_inflation_shock_monitor.ipynb",
+    "output": "plots/87_inflation_shock_monitor_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/88_macro_positioning_cot_dashboard.ipynb",
+    "output": "plots/88_macro_positioning_cot_dashboard_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
   }
 ]

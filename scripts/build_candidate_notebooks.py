@@ -1377,6 +1377,13 @@ ADVANCED_FULL_SPECS = [
 ]
 
 
+from multisource_candidate_specs import get_multisource_workflow_specs
+
+
+MULTI_SOURCE_WORKFLOW_SPECS = get_multisource_workflow_specs(NotebookSpec)
+ALL_GENERATED_SPECS = [*SPECS, *ADVANCED_FULL_SPECS, *MULTI_SOURCE_WORKFLOW_SPECS]
+
+
 def clean_candidates() -> None:
     CANDIDATES.mkdir(parents=True, exist_ok=True)
     for path in CANDIDATES.glob("*.ipynb"):
@@ -1446,7 +1453,7 @@ def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> Non
     rows = []
     for name, category, summary in copied:
         rows.append((name, category, summary))
-    for spec in SPECS + ADVANCED_FULL_SPECS:
+    for spec in ALL_GENERATED_SPECS:
         rows.append((spec.filename, spec.category, spec.summary))
     rows = sorted(rows, key=lambda row: row[0])
     lines = [
@@ -1508,7 +1515,7 @@ def update_manifest_for_advanced() -> None:
 def main() -> None:
     clean_candidates()
     copied = copy_existing()
-    generated = write_generated([*SPECS, *ADVANCED_FULL_SPECS])
+    generated = write_generated(ALL_GENERATED_SPECS)
     attach_preview_cells()
     write_index(copied, generated)
     update_manifest_for_advanced()

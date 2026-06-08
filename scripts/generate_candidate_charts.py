@@ -226,10 +226,81 @@ def plot_grid(stem: str, title: str, out: Path) -> None:
     save(fig, out)
 
 
+def plot_evidence_packet(stem: str, title: str, out: Path) -> None:
+    labels = ["price", "ratios", "filings", "insiders", "identity", "shorts", "vol"]
+    values = [0.92, 0.78, 0.64, 0.48, 0.86, 0.52, 0.71]
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title, )
+    ax.bar(labels, values, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED, "#8ab4ff"], alpha=0.92)
+    ax.set_ylabel("evidence coverage")
+    ax.set_ylim(0, 1.05)
+    save(fig, out)
+
+
+def plot_scenario_bars(stem: str, title: str, out: Path) -> None:
+    labels = ["inflation", "hard landing", "USD squeeze", "risk-on"]
+    values = [-3.8, -5.6, -2.9, 4.4]
+    colors = [RED if value < 0 else GREEN for value in values]
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.bar(labels, values, color=colors, alpha=0.9)
+    ax.axhline(0, color=TEXT, alpha=0.35, linewidth=1)
+    ax.set_ylabel("portfolio impact (%)")
+    save(fig, out)
+
+
+def plot_regime_timeline(stem: str, title: str, out: Path) -> None:
+    rng = rng_for(stem)
+    x = dates(420)
+    growth = np.sin(np.linspace(0, 10, len(x))) + rng.normal(0, 0.12, len(x))
+    inflation = np.cos(np.linspace(0, 8, len(x))) + rng.normal(0, 0.12, len(x))
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.plot(x, growth, color=CYAN, linewidth=2.1, label="growth composite")
+    ax.plot(x, inflation, color=PINK, linewidth=2.1, label="inflation pressure")
+    ax.fill_between(x, -2, 2, where=(growth < 0), color=RED, alpha=0.08)
+    ax.fill_between(x, -2, 2, where=(inflation > 0), color=AMBER, alpha=0.08)
+    ax.legend(facecolor=PANEL, edgecolor="#17376f", labelcolor=TEXT)
+    ax.set_ylabel("regime score")
+    save(fig, out)
+
+
+def plot_inflation_monitor(stem: str, title: str, out: Path) -> None:
+    labels = ["XLE", "XLK", "XLF", "XLU", "XLP", "XLY"]
+    values = [0.82, -0.21, 0.18, -0.33, -0.08, 0.27]
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.bar(labels, values, color=[GREEN if value > 0 else PINK for value in values], alpha=0.92)
+    ax.axhline(0, color=TEXT, alpha=0.35, linewidth=1)
+    ax.set_ylabel("inflation beta proxy")
+    save(fig, out)
+
+
+def plot_positioning_dashboard(stem: str, title: str, out: Path) -> None:
+    labels = ["SPX", "gold", "crude", "USD", "10Y"]
+    values = [1.4, -0.7, 0.9, 1.1, -1.2]
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.bar(labels, values, color=[CYAN if value >= 0 else PINK for value in values], alpha=0.92)
+    ax.axhline(0, color=TEXT, alpha=0.35, linewidth=1)
+    ax.set_ylabel("positioning z-score")
+    save(fig, out)
+
+
 def plot_one(stem: str, out: Path) -> None:
     title = stem[3:] if stem[:2].isdigit() else stem
     lower = stem.lower()
-    if "market_data" in lower or "pricing" in lower:
+    if "investment_evidence_packet" in lower:
+        plot_evidence_packet(stem, title, out)
+    elif "macro_shock_cross_asset" in lower:
+        plot_scenario_bars(stem, title, out)
+    elif "macro_regime_allocation_control" in lower:
+        plot_regime_timeline(stem, title, out)
+    elif "inflation_shock_monitor" in lower:
+        plot_inflation_monitor(stem, title, out)
+    elif "macro_positioning_cot" in lower:
+        plot_positioning_dashboard(stem, title, out)
+    elif "market_data" in lower or "pricing" in lower:
         plot_multi_nav(stem, title, out)
     elif "macro" in lower or "economic" in lower or "rates" in lower:
         plot_yield_curve(stem, title, out)
