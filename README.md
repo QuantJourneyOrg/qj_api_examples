@@ -87,6 +87,8 @@ These examples use live QuantJourney price data and vectorized pandas/numpy diag
 
 The flat [`_candidates`](./_candidates/INDEX.md) catalog contains core notebooks `01-10`, the existing buy-side notebooks, and proposed institutional workflows for construction, liquidity, capacity, stress, attribution, regulatory signals, options overlays and end-to-end PM reporting. Candidate notebooks are clean source files; generated run plots live in [`plots`](./plots) and are indexed by [`plots/manifest.json`](./plots/manifest.json). New candidate notebooks use real SDK calls such as `qj.eod`, `qj.fmp`, `qj.sec`, `qj.cboe`, `qj.cftc`, `qj.ff`, `qj.bt` and `qj.analytics`, then keep portfolio/risk calculations visible in pandas/numpy. Production systems can wrap the same workflows behind governed domain routes, tenant scopes and audit metadata.
 
+Notebooks `11-19` focus on core institutional data primitives: SEC filings, FINRA short interest, OpenFIGI identity, adjustment semantics, domain route discovery, global macro sources, volatility feeds, index universe construction and lineage/audit packets.
+
 Notebooks `80-88` focus on multi-source institutional workflows: evidence packets, pre-trade capacity, PEAD research, PM risk briefs, crowding flows, cross-asset macro scenarios, macro regime allocation, inflation shocks and COT positioning.
 
 To rebuild the catalog:

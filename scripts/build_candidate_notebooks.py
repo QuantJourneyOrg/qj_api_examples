@@ -35,6 +35,9 @@ EXISTING_CORE = [
     "08_cboe_vix.ipynb",
     "09_multpl_valuation.ipynb",
     "10_cftc_cot.ipynb",
+    "11_sec_filings.ipynb",
+    "12_finra_short_interest.ipynb",
+    "13_openfigi.ipynb",
 ]
 
 
@@ -330,6 +333,368 @@ def notebook(spec: NotebookSpec) -> dict:
     }
 
 
+CORE_PRIMITIVE_SPECS = [
+    NotebookSpec(
+        "14_corporate_actions_pit_adjustments.ipynb",
+        "Corporate Actions and Adjustment Semantics",
+        "Core data primitive",
+        "Checks adjusted price consistency, dividend history and corporate-action evidence around a single equity.",
+        [
+            "qj.eod.get_historical_prices",
+            "qj.fmp.get_dividends_historical",
+            "qj.fmp.get_last_dividend",
+            "qj.eod.get_shares_stats",
+            "qj.fmp.get_company_profile",
+        ],
+        [
+            """
+            symbol = "AAPL"
+            prices_raw = safe_call("EOD historical adjusted prices", qj.eod.get_historical_prices, symbol=symbol, start_date="2018-01-01", end_date=END)
+            dividends_raw = safe_call("FMP historical dividends", qj.fmp.get_dividends_historical, symbol=symbol)
+            last_dividend_raw = safe_call("FMP last dividend", qj.fmp.get_last_dividend, symbol=symbol)
+            shares_raw = safe_call("EOD shares stats", qj.eod.get_shares_stats, symbol=symbol)
+            profile_raw = safe_call("FMP company profile", qj.fmp.get_company_profile, symbol=symbol)
+            """,
+            """
+            prices = pd.DataFrame(as_rows(prices_raw))
+            if not prices.empty:
+                prices["date"] = pd.to_datetime(prices.get("date"), errors="coerce")
+                for col in ["open", "high", "low", "close", "adjusted_close", "volume"]:
+                    if col in prices:
+                        prices[col] = pd.to_numeric(prices[col], errors="coerce")
+                prices = prices.dropna(subset=["date"]).sort_values("date").set_index("date")
+                if "adjusted_close" in prices and "close" in prices:
+                    prices["adjustment_ratio"] = prices["adjusted_close"] / prices["close"]
+                    prices["adjustment_gap"] = prices["adjusted_close"] - prices["close"]
+
+            dividends = pd.DataFrame(as_rows(dividends_raw))
+            if not dividends.empty:
+                date_col = next((col for col in dividends.columns if "date" in str(col).lower()), dividends.columns[0])
+                value_col = next((col for col in dividends.columns if "dividend" in str(col).lower() or "adj" in str(col).lower()), None)
+                dividends["date"] = pd.to_datetime(dividends[date_col], errors="coerce")
+                if value_col:
+                    dividends["dividend"] = pd.to_numeric(dividends[value_col], errors="coerce")
+                dividends = dividends.dropna(subset=["date"]).sort_values("date")
+            """,
+            """
+            audit = pd.Series({
+                "price_rows": len(prices),
+                "dividend_rows": len(dividends),
+                "last_dividend_available": bool(as_rows(last_dividend_raw)),
+                "shares_stats_available": bool(as_rows(shares_raw)),
+                "profile_available": bool(as_rows(profile_raw)),
+                "has_adjusted_close": "adjusted_close" in prices.columns if not prices.empty else False,
+                "adjustment_changes": int(prices["adjustment_ratio"].diff().abs().gt(0.001).sum()) if "adjustment_ratio" in prices else 0,
+            })
+            display(audit)
+            if not prices.empty and {"close", "adjusted_close"}.issubset(prices.columns):
+                prices[["close", "adjusted_close"]].dropna().tail(1000).plot(title="Close vs adjusted close")
+                plt.ylabel("price")
+                plt.show()
+            if not dividends.empty and "dividend" in dividends:
+                dividends.tail(40).set_index("date")["dividend"].plot(kind="bar", title="Recent dividend events")
+                plt.ylabel("cash dividend")
+                plt.show()
+            """,
+        ],
+    ),
+    NotebookSpec(
+        "15_domain_route_discovery_contract.ipynb",
+        "Domain Route Discovery and Contract Introspection",
+        "Core data primitive",
+        "Uses domain discovery, aliases and route descriptions to inspect the governed API contract available to a tenant.",
+        [
+            "qj.domains.list",
+            "qj.domains.tree",
+            "qj.domains.aliases",
+            "qj.domains.describe",
+            "qj.domains.call",
+        ],
+        [
+            """
+            def safe_method(label: str, root: Any, dotted_path: str, **kwargs) -> Any:
+                try:
+                    fn = root
+                    for part in dotted_path.split("."):
+                        fn = getattr(fn, part)
+                except Exception as exc:
+                    print(f"{label}: unavailable ({type(exc).__name__}: {exc})")
+                    return None
+                return safe_call(label, fn, **kwargs)
+
+            domains_list = safe_method("domain list", qj, "domains.list")
+            domain_tree = safe_method("domain tree", qj, "domains.tree", scope="effective", include_aliases=True, include_unavailable=False)
+            aliases = safe_method("domain aliases", qj, "domains.aliases")
+            route_names = [
+                "equity.pricing.get_historical_prices",
+                "equity.fundamentals.get_financial_ratios_ttm",
+                "macro.economic.get_treasury_rates",
+                "derivatives.vol.get_vix_data",
+                "reference.identifiers.get_figi_data",
+            ]
+            descriptions = {route: safe_method(f"describe {route}", qj, "domains.describe", route=route) for route in route_names}
+            """,
+            """
+            rows = []
+            for route, payload in descriptions.items():
+                value = unwrap(payload)
+                if isinstance(value, dict):
+                    rows.append({
+                        "route": route,
+                        "domain": value.get("domain") or value.get("domain_path"),
+                        "description": value.get("description"),
+                        "required_scopes": value.get("required_scopes") or value.get("scopes"),
+                        "connectors": value.get("connectors") or value.get("providers"),
+                    })
+                else:
+                    rows.append({"route": route, "domain": None, "description": None, "required_scopes": None, "connectors": None})
+            contract = pd.DataFrame(rows)
+            coverage = pd.Series({
+                "domain_list_rows": len(as_rows(domains_list)),
+                "tree_is_available": domain_tree is not None,
+                "aliases_rows": len(as_rows(aliases)),
+                "described_routes": contract["description"].notna().sum() if not contract.empty else 0,
+            })
+            display(coverage)
+            display(contract)
+            """,
+            """
+            plot_data = pd.Series({
+                "list": len(as_rows(domains_list)),
+                "aliases": len(as_rows(aliases)),
+                "descriptions": len([payload for payload in descriptions.values() if payload is not None]),
+                "routes_checked": len(route_names),
+            })
+            plot_data.plot(kind="bar", title="Domain discovery surface")
+            plt.ylabel("count")
+            plt.show()
+            """,
+        ],
+    ),
+    NotebookSpec(
+        "16_global_macro_sources.ipynb",
+        "Global Macro Source Coverage",
+        "Core data primitive",
+        "Queries US, global and regional macro connectors to build a source coverage matrix for macro research.",
+        [
+            "qj.fred.get_cpi",
+            "qj.fred.get_treasury_10y",
+            "qj.imf.get_gdp_data",
+            "qj.oecd.get_cpi_data",
+            "qj.worldbank.get_indicator",
+            "qj.dbnomics.get_inflation_rates",
+            "qj.eurostat.get_eu_data",
+        ],
+        [
+            """
+            macro_calls = {
+                "fred_cpi": safe_call("FRED CPI", qj.fred.get_cpi),
+                "fred_10y": safe_call("FRED 10Y", qj.fred.get_treasury_10y),
+                "imf_gdp": safe_call("IMF GDP", qj.imf.get_gdp_data, country="US"),
+                "imf_inflation": safe_call("IMF inflation", qj.imf.get_inflation_data, country="US"),
+                "oecd_cpi": safe_call("OECD CPI", qj.oecd.get_cpi_data, country="USA"),
+                "worldbank_gdp": safe_call("World Bank GDP", qj.worldbank.get_indicator, country="US", indicator="NY.GDP.MKTP.CD"),
+                "dbnomics_inflation": safe_call("DBnomics inflation", qj.dbnomics.get_inflation_rates, country="US"),
+                "dbnomics_rates": safe_call("DBnomics interest rates", qj.dbnomics.get_interest_rates, country="US"),
+                "eurostat": safe_call("Eurostat EU data", qj.eurostat.get_eu_data),
+            }
+            """,
+            """
+            coverage = []
+            for name, payload in macro_calls.items():
+                rows = as_rows(payload)
+                value = unwrap(payload)
+                coverage.append({
+                    "source": name,
+                    "available": payload is not None,
+                    "rows": len(rows),
+                    "shape": type(value).__name__,
+                })
+            coverage_df = pd.DataFrame(coverage).sort_values(["available", "rows"], ascending=False)
+            display(coverage_df)
+            """,
+            """
+            coverage_df.set_index("source")["rows"].plot(kind="bar", title="Macro connector row coverage")
+            plt.ylabel("rows returned")
+            plt.show()
+            """,
+        ],
+    ),
+    NotebookSpec(
+        "17_options_vix_skew_term_structure.ipynb",
+        "Options, VIX, SKEW and Term Structure",
+        "Core data primitive",
+        "Inspects volatility feeds and options context around VIX, VVIX, SKEW, term structure and option-chain metadata.",
+        [
+            "qj.cboe.get_vix_data",
+            "qj.cboe.get_vvix_data",
+            "qj.cboe.get_skew_index_data",
+            "qj.cboe.get_vix_term_structure",
+            "qj.cboe.get_options_expirations",
+            "qj.cboe.get_options_chain",
+        ],
+        [
+            """
+            symbol = "SPY"
+            vix_raw = safe_call("CBOE VIX", qj.cboe.get_vix_data, start_date="2020-01-01", end_date=END)
+            vvix_raw = safe_call("CBOE VVIX", qj.cboe.get_vvix_data, start_date="2020-01-01", end_date=END)
+            skew_raw = safe_call("CBOE SKEW", qj.cboe.get_skew_index_data, start_date="2020-01-01", end_date=END)
+            term_raw = safe_call("CBOE VIX term structure", qj.cboe.get_vix_term_structure)
+            expirations_raw = safe_call("CBOE options expirations", qj.cboe.get_options_expirations, symbol=symbol)
+            chain_raw = safe_call("CBOE options chain", qj.cboe.get_options_chain, symbol=symbol)
+            """,
+            """
+            def series_from_rows(payload: Any, name: str) -> pd.Series:
+                rows = pd.DataFrame(as_rows(payload))
+                if rows.empty:
+                    return pd.Series(dtype=float, name=name)
+                date_col = next((col for col in rows.columns if "date" in str(col).lower()), rows.columns[0])
+                numeric_cols = rows.select_dtypes(include="number").columns.tolist()
+                value_col = "close" if "close" in rows.columns else (numeric_cols[-1] if numeric_cols else None)
+                if value_col is None:
+                    return pd.Series(dtype=float, name=name)
+                rows["date"] = pd.to_datetime(rows[date_col], errors="coerce")
+                rows[name] = pd.to_numeric(rows[value_col], errors="coerce")
+                return rows.dropna(subset=["date", name]).set_index("date")[name].sort_index()
+
+            vol = pd.concat([
+                series_from_rows(vix_raw, "vix"),
+                series_from_rows(vvix_raw, "vvix"),
+                series_from_rows(skew_raw, "skew"),
+            ], axis=1).dropna(how="all")
+            feed_summary = pd.Series({
+                "vix_rows": len(as_rows(vix_raw)),
+                "vvix_rows": len(as_rows(vvix_raw)),
+                "skew_rows": len(as_rows(skew_raw)),
+                "term_structure_rows": len(as_rows(term_raw)),
+                "expiration_rows": len(as_rows(expirations_raw)),
+                "chain_rows": len(as_rows(chain_raw)),
+            })
+            display(feed_summary)
+            """,
+            """
+            if not vol.empty:
+                vol.tail(1000).plot(title="Volatility feed context")
+                plt.ylabel("index level")
+                plt.show()
+                latest = vol.tail(252).describe().T
+                display(latest)
+            """,
+        ],
+    ),
+    NotebookSpec(
+        "18_index_constituents_universe_build.ipynb",
+        "Index Constituents and Universe Build",
+        "Core data primitive",
+        "Builds a research universe from index constituents, sector metadata, exchange symbols and price/liquidity filters.",
+        [
+            "qj.yf.get_sp500_stocks_info",
+            "qj.yf.get_sp500_sectors",
+            "qj.yf.get_sp500_index",
+            "qj.eod.get_exchange_symbols",
+            "qj.eod.get_historical_prices",
+        ],
+        [
+            """
+            sp500_info_raw = safe_call("YF S&P 500 stocks info", qj.yf.get_sp500_stocks_info)
+            sectors_raw = safe_call("YF S&P 500 sectors", qj.yf.get_sp500_sectors)
+            index_raw = safe_call("YF S&P 500 index", qj.yf.get_sp500_index)
+            exchange_symbols_raw = safe_call("EOD exchange symbols", qj.eod.get_exchange_symbols, exchange="US")
+            seed_symbols = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "JPM", "XOM", "LLY", "AVGO"]
+            prices, volumes = price_panel(seed_symbols, start="2023-01-01", end=END)
+            """,
+            """
+            info = pd.DataFrame(as_rows(sp500_info_raw))
+            sectors = pd.DataFrame(as_rows(sectors_raw))
+            exchange_symbols = pd.DataFrame(as_rows(exchange_symbols_raw))
+            ret = returns(prices)
+            universe = pd.DataFrame(index=seed_symbols)
+            universe["adv_usd_63d"] = dollar_adv(prices, volumes).iloc[-1].reindex(seed_symbols)
+            universe["momentum_126d"] = prices.pct_change(126).iloc[-1].reindex(seed_symbols)
+            universe["volatility_63d"] = ret.tail(63).std().reindex(seed_symbols) * np.sqrt(252)
+            universe["liquid"] = universe["adv_usd_63d"] > 50_000_000
+            universe["score"] = universe["momentum_126d"].rank(pct=True) - universe["volatility_63d"].rank(pct=True) * 0.35
+            display(pd.Series({
+                "sp500_info_rows": len(info),
+                "sector_rows": len(sectors),
+                "exchange_symbol_rows": len(exchange_symbols),
+                "seed_symbols": len(seed_symbols),
+            }))
+            display(universe.sort_values("score", ascending=False))
+            """,
+            """
+            universe[["adv_usd_63d", "momentum_126d", "volatility_63d"]].plot(kind="bar", subplots=True, layout=(1, 3), figsize=(15, 4), title="Universe build diagnostics")
+            plt.tight_layout()
+            plt.show()
+            """,
+        ],
+    ),
+    NotebookSpec(
+        "19_data_contract_lineage_audit.ipynb",
+        "Data Contract, Lineage and Audit Pattern",
+        "Core data primitive",
+        "Shows how to retain provider, route, warnings, request metadata and source evidence next to normalized data outputs.",
+        [
+            "qj.eod.get_historical_prices",
+            "qj.fmp.get_financial_ratios_ttm",
+            "qj.sec.get_company_filings",
+            "qj.openfigi.get_figi_data",
+        ],
+        [
+            """
+            symbol = "AAPL"
+            calls = {
+                "prices": safe_call("EOD historical prices", qj.eod.get_historical_prices, symbol=symbol, start_date="2024-01-01", end_date=END),
+                "ratios": safe_call("FMP TTM ratios", qj.fmp.get_financial_ratios_ttm, symbol=symbol),
+                "filings": safe_call("SEC company filings", qj.sec.get_company_filings, symbol=symbol, limit=10),
+                "identity": safe_call("OpenFIGI identity", qj.openfigi.get_figi_data, symbol=symbol, exchange="US"),
+            }
+            """,
+            """
+            def audit_row(name: str, payload: Any, provider: str, route: str) -> dict[str, Any]:
+                value = unwrap(payload)
+                rows = as_rows(payload)
+                meta = value.get("meta", {}) if isinstance(value, dict) and isinstance(value.get("meta"), dict) else {}
+                return {
+                    "dataset": name,
+                    "provider": provider,
+                    "route": route,
+                    "available": payload is not None,
+                    "rows": len(rows),
+                    "shape": type(value).__name__,
+                    "request_id": meta.get("request_id"),
+                    "warnings": meta.get("warnings", []),
+                }
+
+            audit = pd.DataFrame([
+                audit_row("prices", calls["prices"], "eod", "equity.pricing.get_historical_prices"),
+                audit_row("ratios", calls["ratios"], "fmp", "equity.fundamentals.get_financial_ratios_ttm"),
+                audit_row("filings", calls["filings"], "sec", "regulatory.sec.get_company_filings"),
+                audit_row("identity", calls["identity"], "openfigi", "reference.identifiers.get_figi_data"),
+            ])
+            display(audit)
+            """,
+            """
+            coverage = audit.set_index("dataset")["rows"]
+            coverage.plot(kind="bar", title="Lineage packet coverage")
+            plt.ylabel("rows returned")
+            plt.show()
+            lineage_packet = {
+                "symbol": symbol,
+                "datasets": audit.to_dict(orient="records"),
+                "policy": {
+                    "tenant_scoped": True,
+                    "provider_secrets_server_side": True,
+                    "retain_request_metadata": True,
+                },
+            }
+            print(json.dumps(lineage_packet, indent=2, default=str)[:2000])
+            """,
+        ],
+    ),
+]
+
+
 SPECS = [
     NotebookSpec(
         "22_hierarchical_risk_parity_hrp.ipynb",
@@ -594,10 +959,6 @@ SPECS = [
         ["qj.eod.get_historical_prices", "qj.yf.get_sp500_sectors"],
         [
             """
-            fallback_sectors = {
-                "AAPL": "Technology", "MSFT": "Technology", "NVDA": "Technology", "GOOGL": "Communication",
-                "AMZN": "Consumer", "JPM": "Financials", "XOM": "Energy", "LLY": "Health Care",
-            }
             sector_feed = safe_call("S&P 500 sectors", qj.yf.get_sp500_sectors)
 
             def normalize_sector_map(payload: Any) -> dict[str, str]:
@@ -610,7 +971,7 @@ SPECS = [
                         sector_map[str(symbol).upper()] = str(sector)
                 return sector_map
 
-            sectors = {**fallback_sectors, **normalize_sector_map(sector_feed)}
+            sectors = normalize_sector_map(sector_feed)
             portfolio_w = pd.Series({"AAPL": 0.18, "MSFT": 0.18, "NVDA": 0.16, "GOOGL": 0.12, "AMZN": 0.12, "JPM": 0.10, "XOM": 0.06, "LLY": 0.08})
             benchmark_w = pd.Series({"AAPL": 0.12, "MSFT": 0.12, "NVDA": 0.10, "GOOGL": 0.09, "AMZN": 0.09, "JPM": 0.08, "XOM": 0.10, "LLY": 0.08})
             benchmark_w = benchmark_w / benchmark_w.sum()
@@ -619,6 +980,7 @@ SPECS = [
             """,
             """
             df = pd.DataFrame({"sector": pd.Series(sectors), "portfolio_w": portfolio_w, "benchmark_w": benchmark_w, "return": period_return})
+            df["sector"] = df["sector"].fillna("Unknown")
             sector = df.groupby("sector").apply(lambda x: pd.Series({
                 "portfolio_w": x["portfolio_w"].sum(),
                 "benchmark_w": x["benchmark_w"].sum(),
@@ -1416,7 +1778,7 @@ from multisource_candidate_specs import get_multisource_workflow_specs
 
 
 MULTI_SOURCE_WORKFLOW_SPECS = get_multisource_workflow_specs(NotebookSpec)
-ALL_GENERATED_SPECS = [*SPECS, *ADVANCED_FULL_SPECS, *MULTI_SOURCE_WORKFLOW_SPECS]
+ALL_GENERATED_SPECS = [*CORE_PRIMITIVE_SPECS, *SPECS, *ADVANCED_FULL_SPECS, *MULTI_SOURCE_WORKFLOW_SPECS]
 
 
 def clean_candidates() -> None:

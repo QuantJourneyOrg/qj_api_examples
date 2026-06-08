@@ -287,10 +287,96 @@ def plot_positioning_dashboard(stem: str, title: str, out: Path) -> None:
     save(fig, out)
 
 
+def plot_adjustment_semantics(stem: str, title: str, out: Path) -> None:
+    rng = rng_for(stem)
+    x = dates(420)
+    close = pd.Series(np.cumprod(1 + rng.normal(0.00045, 0.012, len(x))) * 180, index=x)
+    ratio = pd.Series(0.96, index=x)
+    ratio.iloc[180:] = 0.985
+    ratio.iloc[310:] = 1.0
+    adjusted = close * ratio
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.plot(close.index, close, color=CYAN, linewidth=2.1, label="close")
+    ax.plot(adjusted.index, adjusted, color=PINK, linewidth=2.1, label="adjusted close")
+    ax.legend(facecolor=PANEL, edgecolor="#17376f", labelcolor=TEXT)
+    ax.set_ylabel("price")
+    save(fig, out)
+
+
+def plot_domain_contract(stem: str, title: str, out: Path) -> None:
+    labels = ["domains", "aliases", "described", "scoped", "callable"]
+    values = [540, 120, 5, 5, 4]
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.bar(labels, values, color=[BLUE, CYAN, PINK, GREEN, AMBER], alpha=0.92)
+    ax.set_ylabel("contract objects")
+    save(fig, out)
+
+
+def plot_macro_sources(stem: str, title: str, out: Path) -> None:
+    labels = ["FRED", "IMF", "OECD", "WorldBank", "DBnomics", "Eurostat"]
+    values = [1.0, 0.82, 0.74, 0.86, 0.68, 0.59]
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.bar(labels, values, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED], alpha=0.92)
+    ax.set_ylim(0, 1.05)
+    ax.set_ylabel("coverage score")
+    save(fig, out)
+
+
+def plot_vol_surface_context(stem: str, title: str, out: Path) -> None:
+    rng = rng_for(stem)
+    x = dates(360)
+    vix = pd.Series(18 + 5 * np.sin(np.linspace(0, 13, len(x))) + rng.normal(0, 1.5, len(x)), index=x).clip(9, 55)
+    skew = pd.Series(125 + 9 * np.cos(np.linspace(0, 10, len(x))) + rng.normal(0, 3, len(x)), index=x)
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.plot(vix.index, vix, color=CYAN, linewidth=2.1, label="VIX")
+    ax.plot(skew.index, (skew - 100) / 2, color=PINK, linewidth=2.1, label="SKEW scaled")
+    ax.legend(facecolor=PANEL, edgecolor="#17376f", labelcolor=TEXT)
+    ax.set_ylabel("vol context")
+    save(fig, out)
+
+
+def plot_universe_build(stem: str, title: str, out: Path) -> None:
+    labels = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "JPM", "XOM"]
+    values = [0.72, 0.69, 0.84, 0.58, 0.61, 0.64, 0.47, 0.43]
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.bar(labels, values, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED, "#8ab4ff", "#b6e880"], alpha=0.92)
+    ax.set_ylim(0, 1)
+    ax.set_ylabel("universe score")
+    save(fig, out)
+
+
+def plot_lineage_packet(stem: str, title: str, out: Path) -> None:
+    labels = ["prices", "ratios", "filings", "identity"]
+    values = [252, 1, 10, 1]
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    style_ax(ax, title)
+    ax.bar(labels, values, color=[BLUE, CYAN, PINK, GREEN], alpha=0.92)
+    ax.set_yscale("log")
+    ax.set_ylabel("rows / evidence objects")
+    save(fig, out)
+
+
 def plot_one(stem: str, out: Path) -> None:
     title = stem[3:] if stem[:2].isdigit() else stem
     lower = stem.lower()
-    if "investment_evidence_packet" in lower:
+    if "corporate_actions_pit_adjustments" in lower:
+        plot_adjustment_semantics(stem, title, out)
+    elif "domain_route_discovery_contract" in lower:
+        plot_domain_contract(stem, title, out)
+    elif "global_macro_sources" in lower:
+        plot_macro_sources(stem, title, out)
+    elif "options_vix_skew_term_structure" in lower:
+        plot_vol_surface_context(stem, title, out)
+    elif "index_constituents_universe_build" in lower:
+        plot_universe_build(stem, title, out)
+    elif "data_contract_lineage_audit" in lower:
+        plot_lineage_packet(stem, title, out)
+    elif "investment_evidence_packet" in lower:
         plot_evidence_packet(stem, title, out)
     elif "macro_shock_cross_asset" in lower:
         plot_scenario_bars(stem, title, out)

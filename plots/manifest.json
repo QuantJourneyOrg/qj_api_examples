@@ -70,6 +70,69 @@
     "status": "ok"
   },
   {
+    "notebook": "_candidates/11_sec_filings.ipynb",
+    "output": "plots/11_sec_filings_output_01.png",
+    "code_cells": 9,
+    "markdown_cells": 13,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/12_finra_short_interest.ipynb",
+    "output": "plots/12_finra_short_interest_output_01.png",
+    "code_cells": 6,
+    "markdown_cells": 7,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/13_openfigi.ipynb",
+    "output": "plots/13_openfigi_output_01.png",
+    "code_cells": 5,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/14_corporate_actions_pit_adjustments.ipynb",
+    "output": "plots/14_corporate_actions_pit_adjustments_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/15_domain_route_discovery_contract.ipynb",
+    "output": "plots/15_domain_route_discovery_contract_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/16_global_macro_sources.ipynb",
+    "output": "plots/16_global_macro_sources_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/17_options_vix_skew_term_structure.ipynb",
+    "output": "plots/17_options_vix_skew_term_structure_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/18_index_constituents_universe_build.ipynb",
+    "output": "plots/18_index_constituents_universe_build_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/19_data_contract_lineage_audit.ipynb",
+    "output": "plots/19_data_contract_lineage_audit_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 4,
+    "status": "ok"
+  },
+  {
     "notebook": "_candidates/20_multi_factor_model.ipynb",
     "output": "plots/20_multi_factor_model_output_01.png",
     "code_cells": 13,
