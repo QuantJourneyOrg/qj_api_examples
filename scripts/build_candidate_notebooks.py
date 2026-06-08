@@ -1,10 +1,10 @@
 """Build the flat `_candidates/` notebook catalog.
 
 The candidate catalog is intentionally flat: every workflow notebook lives
-directly under `_candidates/<number>_<slug>.ipynb`. Existing executed core and
-buy-side notebooks are copied in, and new candidate workflows are generated as
-self-contained notebooks with real QuantJourney SDK calls plus local pandas /
-numpy analytics.
+directly under `_candidates/<number>_<slug>.ipynb`. Existing core notebooks are
+copied in, and institutional candidate workflows are generated as
+self-contained source notebooks with real QuantJourney SDK calls plus local
+pandas / numpy analytics.
 """
 
 from __future__ import annotations
@@ -41,23 +41,7 @@ EXISTING_CORE = [
 ]
 
 
-EXISTING_BUY_SIDE = [
-    "20_multi_factor_model.ipynb",
-    "21_volatility_surface_greeks.ipynb",
-    "23_cot_positioning_sentiment.ipynb",
-    "24_macro_regime_allocation.ipynb",
-    "25_cross_asset_correlation.ipynb",
-    "26_risk_parity_portfolio.ipynb",
-    "27_var_expected_shortfall.ipynb",
-    "28_factor_attribution.ipynb",
-    "29_pairs_trading_stat_arb.ipynb",
-    "31_event_study_earnings.ipynb",
-    "35_performance_reporting.ipynb",
-    "40_sector_rotation_momentum.ipynb",
-    "43_tail_risk_hedging.ipynb",
-    "51_factor_risk_attribution.ipynb",
-    "59_risk_adjusted_performance.ipynb",
-]
+EXISTING_BUY_SIDE: list[str] = []
 
 
 PRESERVED_SOURCE_CANDIDATES = [
@@ -108,7 +92,7 @@ import matplotlib.pyplot as plt
 
 from quantjourney.sdk import QuantJourneyAPI
 
-qj = QuantJourneyAPI.from_env()
+qj = QuantJourneyAPI(api_key=os.environ["QJ_API_KEY"])
 
 START = os.getenv("QJ_EXAMPLE_START", "2020-01-01")
 END = os.getenv("QJ_EXAMPLE_END") or pd.Timestamp.today().normalize().strftime("%Y-%m-%d")
@@ -130,17 +114,6 @@ def unwrap(payload: Any) -> Any:
     if isinstance(payload, dict) and "value" in payload:
         return payload["value"]
     return payload
-
-
-def safe_call(label: str, fn, **kwargs) -> Any:
-    """Run an SDK call and keep the notebook usable when an optional feed is unavailable."""
-    try:
-        out = fn(**kwargs)
-        print(f"{label}: ok")
-        return out
-    except Exception as exc:
-        print(f"{label}: unavailable ({type(exc).__name__}: {exc})")
-        return None
 
 
 def as_rows(payload: Any) -> list[dict[str, Any]]:
@@ -292,8 +265,93 @@ def md(text: str) -> dict:
     return {"cell_type": "markdown", "metadata": {}, "source": dedent(text).strip().splitlines(keepends=True)}
 
 
+def _root_name(node: ast.AST) -> str | None:
+    while isinstance(node, ast.Attribute):
+        node = node.value
+    if isinstance(node, ast.Call):
+        return _root_name(node.func)
+    if isinstance(node, ast.Name):
+        return node.id
+    return None
+
+
+def _contains_qj_call(node: ast.AST) -> bool:
+    for child in ast.walk(node):
+        if isinstance(child, ast.Call) and _root_name(child.func) == "qj":
+            return True
+    return False
+
+
+class StrictCandidateTransformer(ast.NodeTransformer):
+    """Normalize generated candidates to strict API calls with no helper fallback."""
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> ast.AST | None:
+        if node.name == "safe_call":
+            return None
+        return self.generic_visit(node)
+
+    def visit_Call(self, node: ast.Call) -> ast.AST:
+        node = self.generic_visit(node)
+        if isinstance(node.func, ast.Name) and node.func.id == "safe_call" and len(node.args) >= 2:
+            target = node.args[1]
+            args = list(node.args[2:])
+            keywords = list(node.keywords)
+            if isinstance(target, ast.Lambda):
+                return ast.copy_location(ast.Call(func=target, args=[], keywords=[]), node)
+            return ast.copy_location(ast.Call(func=target, args=args, keywords=keywords), node)
+        if (
+            isinstance(node.func, ast.Attribute)
+            and node.func.attr == "from_env"
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "QuantJourneyAPI"
+        ):
+            api_key = ast.Subscript(
+                value=ast.Attribute(value=ast.Name(id="os", ctx=ast.Load()), attr="environ", ctx=ast.Load()),
+                slice=ast.Constant(value="QJ_API_KEY"),
+                ctx=ast.Load(),
+            )
+            return ast.copy_location(
+                ast.Call(func=ast.Name(id="QuantJourneyAPI", ctx=ast.Load()), args=[], keywords=[ast.keyword(arg="api_key", value=api_key)]),
+                node,
+            )
+        if (
+            isinstance(node.func, ast.Attribute)
+            and node.func.attr == "get"
+            and isinstance(node.func.value, ast.Attribute)
+            and node.func.value.attr == "environ"
+            and isinstance(node.func.value.value, ast.Name)
+            and node.func.value.value.id == "os"
+            and node.args
+            and isinstance(node.args[0], ast.Constant)
+            and node.args[0].value == "QJ_API_KEY"
+        ):
+            return ast.copy_location(
+                ast.Subscript(
+                    value=ast.Attribute(value=ast.Name(id="os", ctx=ast.Load()), attr="environ", ctx=ast.Load()),
+                    slice=ast.Constant(value="QJ_API_KEY"),
+                    ctx=ast.Load(),
+                ),
+                node,
+            )
+        return node
+
+    def visit_BoolOp(self, node: ast.BoolOp) -> ast.AST:
+        node = self.generic_visit(node)
+        if isinstance(node.op, ast.Or) and any(_contains_qj_call(value) for value in node.values):
+            return ast.copy_location(node.values[0], node)
+        return node
+
+
+def normalize_code_source(source: str) -> str:
+    tree = ast.parse(source)
+    tree = StrictCandidateTransformer().visit(tree)
+    ast.fix_missing_locations(tree)
+    return ast.unparse(tree) + "\n"
+
+
 def code(text: str) -> dict:
     source = dedent(text).strip() + "\n"
+    source = normalize_code_source(source)
     ast.parse(source)
     return {"cell_type": "code", "execution_count": None, "metadata": {}, "outputs": [], "source": source.splitlines(keepends=True)}
 
@@ -412,19 +470,9 @@ CORE_PRIMITIVE_SPECS = [
         ],
         [
             """
-            def safe_method(label: str, root: Any, dotted_path: str, **kwargs) -> Any:
-                try:
-                    fn = root
-                    for part in dotted_path.split("."):
-                        fn = getattr(fn, part)
-                except Exception as exc:
-                    print(f"{label}: unavailable ({type(exc).__name__}: {exc})")
-                    return None
-                return safe_call(label, fn, **kwargs)
-
-            domains_list = safe_method("domain list", qj, "domains.list")
-            domain_tree = safe_method("domain tree", qj, "domains.tree", scope="effective", include_aliases=True, include_unavailable=False)
-            aliases = safe_method("domain aliases", qj, "domains.aliases")
+            domains_list = qj.domains.list()
+            domain_tree = qj.domains.tree(scope="effective", include_aliases=True)
+            aliases = qj.domains.aliases()
             route_names = [
                 "equity.pricing.get_historical_prices",
                 "equity.fundamentals.get_financial_ratios_ttm",
@@ -432,7 +480,7 @@ CORE_PRIMITIVE_SPECS = [
                 "derivatives.vol.get_vix_data",
                 "reference.identifiers.get_figi_data",
             ]
-            descriptions = {route: safe_method(f"describe {route}", qj, "domains.describe", route=route) for route in route_names}
+            descriptions = {route: qj.domains.describe(route=route) for route in route_names}
             """,
             """
             rows = []
@@ -451,7 +499,7 @@ CORE_PRIMITIVE_SPECS = [
             contract = pd.DataFrame(rows)
             coverage = pd.Series({
                 "domain_list_rows": len(as_rows(domains_list)),
-                "tree_is_available": domain_tree is not None,
+                "domain_tree_rows": len(as_rows(domain_tree)),
                 "aliases_rows": len(as_rows(aliases)),
                 "described_routes": contract["description"].notna().sum() if not contract.empty else 0,
             })
@@ -462,7 +510,7 @@ CORE_PRIMITIVE_SPECS = [
             plot_data = pd.Series({
                 "list": len(as_rows(domains_list)),
                 "aliases": len(as_rows(aliases)),
-                "descriptions": len([payload for payload in descriptions.values() if payload is not None]),
+                "descriptions": len(descriptions),
                 "routes_checked": len(route_names),
             })
             plot_data.plot(kind="bar", title="Domain discovery surface")
@@ -1795,7 +1843,7 @@ def copy_existing() -> list[tuple[str, str, str]]:
     copied: list[tuple[str, str, str]] = []
     for source_dir, names, category, note in [
         (ROOT / "notebooks" / "core", EXISTING_CORE, "Existing core notebook", "copied from notebooks/core"),
-        (ROOT / "notebooks" / "buy_side", EXISTING_BUY_SIDE, "Existing executed buy-side notebook", "copied from notebooks/buy_side"),
+        (ROOT / "notebooks" / "buy_side", EXISTING_BUY_SIDE, "Existing buy-side notebook", "copied from notebooks/buy_side"),
     ]:
         for name in names:
             src = source_dir / name
@@ -1820,21 +1868,6 @@ def write_generated(specs: Iterable[NotebookSpec]) -> list[str]:
     return written
 
 
-def preview_cell(name: str) -> dict:
-    stem = Path(name).stem
-    return md(f"""
-    ## Run Output
-
-    ![{stem}](../plots/{stem}_output_01.png)
-    """)
-
-
-def branding_cell() -> dict:
-    return md("""
-    **Prepared by QuantJourney.** Candidate notebook source is kept clean and unexecuted. Generated run artifacts are committed under `plots/` and indexed in `plots/manifest.json`.
-    """)
-
-
 def attach_preview_cells() -> None:
     for path in sorted(CANDIDATES.glob("*.ipynb")):
         nb = json.loads(path.read_text(encoding="utf-8"))
@@ -1845,12 +1878,14 @@ def attach_preview_cells() -> None:
                 continue
             if cell.get("cell_type") == "markdown" and "Prepared by QuantJourney" in source:
                 continue
+            if cell.get("cell_type") == "markdown" and "Generated run artifacts" in source:
+                continue
             cleaned_cells.append(cell)
         nb["cells"] = cleaned_cells
-        nb["cells"].insert(1, preview_cell(path.name))
-        nb["cells"].insert(2, branding_cell())
         for cell in nb.get("cells", []):
             if cell.get("cell_type") == "code":
+                source = "".join(cell.get("source", []))
+                cell["source"] = normalize_code_source(source).splitlines(keepends=True)
                 cell["execution_count"] = None
                 cell["outputs"] = []
         path.write_text(json.dumps(nb, indent=2) + "\n", encoding="utf-8")
@@ -1869,7 +1904,7 @@ def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> Non
     lines = [
         "# Buy-Side Candidate Notebook Catalog",
         "",
-        "Flat candidate catalog for institutional workflows. Candidate notebooks are clean source notebooks; generated run plots are committed under `plots/` and indexed in `plots/manifest.json`. New candidates use real QuantJourney SDK connector calls plus transparent local analytics. Production systems can wrap the same workflows behind governed domain routes, tenant scopes and audit metadata.",
+        "Flat candidate catalog for institutional workflows. Candidate notebooks are clean source notebooks; generated plot artifacts are committed under `plots/` and indexed in `plots/manifest.json`. New candidates use direct QuantJourney SDK connector calls plus transparent local analytics. Production systems can wrap the same workflows behind governed domain routes, tenant scopes and audit metadata.",
         "",
         "| Notebook | Preview | Category | What it shows |",
         "|---|---|---|---|",
@@ -1887,7 +1922,7 @@ def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> Non
             "jupyter lab _candidates",
             "```",
             "",
-            "Candidate notebooks use optional API calls through `safe_call(...)` when a feed may depend on tenant entitlements.",
+            "Candidate notebooks use direct SDK calls. Missing tenant access or missing provider coverage should surface as normal API errors during execution.",
         ]
     )
     (CANDIDATES / "INDEX.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
