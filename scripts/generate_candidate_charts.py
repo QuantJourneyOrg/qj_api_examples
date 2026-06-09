@@ -112,6 +112,18 @@ def subtitle_for_title(title: str) -> str:
 def source_context(title: str, subtitle: str) -> str:
     lower = f"{title} {subtitle}".lower()
 
+    if "waterfall multi source attribution" in lower or "attribution waterfall" in lower:
+        return "Sources: EOD adjusted returns | Fama-French factor returns | FRED macro rates and inflation series | local attribution and cost decomposition"
+    if "radar multi metric profiles" in lower or "multi-metric name profiles" in lower:
+        return "Sources: FMP TTM ratios and statements | FMP/SEC institutional ownership | FINRA short-interest context | CBOE VIX | factor and macro sensitivity estimates"
+    if "treemap liquidity crowding" in lower or "liquidity and crowding" in lower:
+        return "Sources: EOD adjusted OHLCV and volume | FMP institutional holders | FINRA short-interest context | ADV, ownership concentration and crowding scores"
+    if "parallel coords screening" in lower or "parallel coordinates" in lower:
+        return "Sources: EOD ADV and returns | FMP valuation and profitability ratios | FINRA shorts | Fama-French factors | FRED rates | CBOE VIX"
+    if "conditioned event small multiples" in lower:
+        return "Sources: FMP earnings calendar and surprises | EOD adjusted returns | FRED rates regime | FINRA liquidity buckets | conditioned event-window returns"
+    if "sensitivity heatmap clustered" in lower or "sensitivity heatmap" in lower:
+        return "Sources: EOD asset returns | FRED rates, inflation and growth proxies | Fama-French Mkt-RF | FMP/SEC ownership concentration | rolling regression sensitivities"
     if "usd liquidity" in lower or "liquidity cross-asset" in lower:
         return "Sources: FRED:WALCL Fed balance sheet | FRED:WTREGEN Treasury General Account | FRED:RRPONTSYD reverse repo | FRED:DGS10 10Y Treasury | CBOE VIX | EOD/CCXT prices"
     if "earnings" in lower and any(token in lower for token in ["option", "volatility", "reaction"]):
@@ -1863,6 +1875,192 @@ def _simple_series(seed: str, n: int = 360, drift: float = 0.00035, vol: float =
     return pd.Series(np.cumprod(1 + rng.normal(drift, vol, n)), index=idx)
 
 
+def plot_visual_waterfall_attribution(stem: str, out: Path) -> None:
+    title = "Waterfall Multi-Source Attribution"
+    subtitle = "Pricing, factor, macro and cost effects decomposed into one attribution object"
+    fig, ax = plt.subplots(figsize=(12, 6), facecolor=NAVY)
+    dashboard_title(fig, title, subtitle)
+    style_ax(ax, "")
+
+    components = pd.Series(
+        {
+            "Start": 2.5,
+            "Sector\nallocation": 0.8,
+            "Stock\nselection": 1.2,
+            "FF Mkt-RF": -0.9,
+            "FF SMB": 0.3,
+            "Rates\nshock": -1.5,
+            "Inflation\nshock": 0.4,
+            "Costs": -0.2,
+        }
+    )
+    starts = components.cumsum().shift(1).fillna(0)
+    colors = [BLUE] + [GREEN if value >= 0 else RED for value in components.iloc[1:]]
+    x = np.arange(len(components))
+    ax.bar(x, components, bottom=starts, color=colors, alpha=0.92, width=0.66)
+    ax.plot(x, starts + components, color=TEXT, alpha=0.45, linewidth=1.0)
+    ax.axhline(0, color=TEXT, alpha=0.35, linewidth=1)
+    for i, (base, value) in enumerate(zip(starts, components)):
+        y = base + value / 2
+        ax.text(i, y, f"{value:+.1f}", ha="center", va="center", color=TEXT, fontsize=8, weight="semibold")
+    ax.set_xticks(x, components.index, rotation=0)
+    ax.set_ylabel("contribution, percentage points")
+    save(fig, out)
+
+
+def plot_visual_radar_profiles(stem: str, out: Path) -> None:
+    title = "Radar Multi-Metric Profiles"
+    subtitle = "Peer names compared across valuation, quality, crowding, short pressure and macro/vol sensitivities"
+    labels = ["P/E\ninverse", "ROE", "Gross\nmargin", "Crowding", "Days to\ncover", "Market\nbeta", "Rates\nsens", "VIX\nbeta"]
+    aapl = np.array([0.72, 0.92, 0.84, 0.58, 0.38, 0.74, 0.33, 0.55])
+    nvda = np.array([0.42, 0.78, 0.95, 0.88, 0.70, 0.96, 0.48, 0.86])
+    angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False)
+    angles = np.r_[angles, angles[0]]
+    aapl = np.r_[aapl, aapl[0]]
+    nvda = np.r_[nvda, nvda[0]]
+
+    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw={"polar": True}, facecolor=NAVY)
+    dashboard_title(fig, title, subtitle)
+    ax.set_facecolor(NAVY)
+    ax.plot(angles, aapl, color=CYAN, linewidth=2.2, marker="o", markersize=4, label="AAPL")
+    ax.fill(angles, aapl, color=CYAN, alpha=0.18)
+    ax.plot(angles, nvda, color=PINK, linewidth=2.2, marker="o", markersize=4, label="NVDA")
+    ax.fill(angles, nvda, color=PINK, alpha=0.18)
+    ax.set_ylim(0, 1)
+    ax.set_xticks(angles[:-1], labels)
+    ax.set_yticks([0.25, 0.50, 0.75, 1.00])
+    ax.set_yticklabels(["0.25", "0.50", "0.75", "1.00"], color=MUTED, fontsize=8)
+    ax.tick_params(colors=TEXT, labelsize=9)
+    ax.grid(True, color=GRID, alpha=0.55, linewidth=0.7)
+    ax.spines["polar"].set_color("#17376f")
+    style_legend(ax)
+    save(fig, out)
+
+
+def plot_visual_treemap_liquidity_crowding(stem: str, out: Path) -> None:
+    title = "Treemap Liquidity and Crowding"
+    subtitle = "Tile size is ADV proxy; color is ownership concentration and short-interest pressure"
+    names = ["AAPL\nTech", "MSFT\nTech", "NVDA\nTech", "JPM\nFinancials", "XOM\nEnergy", "UNH\nHealth", "LLY\nHealth", "COST\nStaples"]
+    adv = np.array([2800, 2100, 1450, 620, 520, 420, 360, 330], dtype=float)
+    crowd = np.array([0.72, 0.68, 0.91, 0.45, 0.38, 0.52, 0.81, 0.57])
+    short_z = np.array([0.2, -0.1, 1.4, 0.5, -0.8, 0.3, 0.9, -0.2])
+
+    fig, ax = plt.subplots(figsize=(12, 7), facecolor=NAVY)
+    dashboard_title(fig, title, subtitle)
+    style_ax(ax, "")
+    ax.axis("off")
+
+    total = adv.sum()
+    x0 = 0.02
+    y0 = 0.08
+    width = 0.96
+    height = 0.74
+    running_x = x0
+    cmap = plt.get_cmap("RdYlGn_r")
+    for name, size, concentration, sz in zip(names, adv, crowd, short_z):
+        rect_w = width * size / total
+        color = cmap(np.clip(concentration, 0, 1))
+        ax.add_patch(plt.Rectangle((running_x, y0), rect_w, height, facecolor=color, edgecolor=NAVY, linewidth=1.4))
+        label_color = "#061226" if concentration < 0.75 else TEXT
+        ax.text(running_x + rect_w / 2, y0 + height * 0.56, name, color=label_color, ha="center", va="center", fontsize=8, weight="semibold")
+        ax.text(running_x + rect_w / 2, y0 + height * 0.42, f"ADV ${size:,.0f}m", color=label_color, ha="center", va="center", fontsize=7)
+        ax.text(running_x + rect_w / 2, y0 + height * 0.31, f"crowd {concentration:.2f} | short z {sz:+.1f}", color=label_color, ha="center", va="center", fontsize=6.4)
+        running_x += rect_w
+    ax.text(0.02, 0.02, "left-to-right width = 63D dollar ADV proxy", transform=ax.transAxes, color=MUTED, fontsize=8)
+    save(fig, out)
+
+
+def plot_visual_parallel_coords(stem: str, out: Path) -> None:
+    title = "Parallel Coordinates Screening"
+    subtitle = "Universe screen across liquidity, valuation, quality, crowding, short pressure and macro sensitivities"
+    tickers = ["AAPL", "MSFT", "NVDA", "JPM", "XOM", "UNH", "LLY"]
+    raw = pd.DataFrame(
+        {
+            "ADV $bn": [38, 31, 55, 8, 12, 6, 4],
+            "P/E inv": [0.034, 0.029, 0.023, 0.120, 0.090, 0.065, 0.040],
+            "ROE": [1.48, 0.36, 0.74, 0.15, 0.22, 0.28, 0.82],
+            "Crowd z": [0.65, 0.72, 1.40, 0.30, -0.40, 0.55, 0.90],
+            "Short z": [0.20, -0.10, 1.50, 0.60, -0.90, 0.10, 0.80],
+            "Rates sens": [-0.60, -0.40, -0.20, 0.80, 0.30, -0.10, -0.50],
+            "VIX beta": [0.80, 0.70, 1.20, 0.90, 0.50, 0.60, 0.85],
+        },
+        index=tickers,
+    )
+    norm = (raw - raw.min()) / (raw.max() - raw.min())
+    score = norm["ADV $bn"] + norm["ROE"] + norm["P/E inv"] - norm["Crowd z"].clip(lower=0) * 0.35
+
+    fig, ax = plt.subplots(figsize=(14, 6), facecolor=NAVY)
+    dashboard_title(fig, title, subtitle)
+    style_ax(ax, "")
+    x = np.arange(len(norm.columns))
+    for ticker in norm.index:
+        color = GREEN if score[ticker] > score.median() else BLUE
+        if ticker == "NVDA":
+            color = PINK
+        ax.plot(x, norm.loc[ticker], marker="o", linewidth=2.0, markersize=4, alpha=0.88, color=color, label=ticker)
+    ax.set_xticks(x, norm.columns, rotation=28, ha="right")
+    ax.set_ylim(-0.05, 1.05)
+    ax.set_ylabel("normalized metric")
+    style_legend(ax)
+    save(fig, out)
+
+
+def plot_visual_conditioned_event_multiples(stem: str, out: Path) -> None:
+    title = "Conditioned Event Small Multiples"
+    subtitle = "Post-earnings return distributions conditioned by rates regime and liquidity bucket"
+    rng = rng_for(stem)
+    regimes = [("Rising rates", "High ADV", -0.1, BLUE), ("Rising rates", "Low ADV", -0.6, PINK), ("Falling rates", "High ADV", 0.8, CYAN), ("Falling rates", "Low ADV", 0.1, RED)]
+    fig, axes = plt.subplots(2, 2, figsize=(12, 8), facecolor=NAVY, sharex=True, sharey=True)
+    dashboard_title(fig, title, subtitle)
+    for ax, (rates, liquidity, mu, color) in zip(axes.ravel(), regimes):
+        style_ax(ax, "")
+        values = rng.normal(mu, 2.35, 240)
+        ax.hist(values, bins=26, color=color, alpha=0.86, edgecolor=NAVY, linewidth=0.7)
+        median = np.median(values)
+        ax.axvline(median, color=TEXT, linestyle="--", linewidth=1.1, alpha=0.85)
+        ax.set_title(f"{rates} | {liquidity}", color=TEXT, fontsize=11, loc="left")
+        ax.text(0.97, 0.90, f"median {median:+.1f}%", transform=ax.transAxes, ha="right", va="top", color=MUTED, fontsize=8)
+    for ax in axes[-1, :]:
+        ax.set_xlabel("21D forward return after event, %")
+    for ax in axes[:, 0]:
+        ax.set_ylabel("event count")
+    save(fig, out)
+
+
+def plot_visual_sensitivity_heatmap(stem: str, out: Path) -> None:
+    title = "Sensitivity Heatmap Clustered"
+    subtitle = "Asset sensitivities to macro, factor and crowding proxies in a compact annotated matrix"
+    assets = ["AAPL", "MSFT", "NVDA", "JPM", "XOM", "UNH"]
+    factors = ["Rates\nDGS10", "Inflation\nCPI", "Growth\nPMI", "Mkt-RF\nFF", "Crowd z\n13F"]
+    mat = np.array(
+        [
+            [-0.6, 0.2, 0.8, 1.1, 0.7],
+            [-0.4, 0.1, 0.7, 0.9, 0.7],
+            [-0.2, 0.3, 1.3, 1.4, 0.9],
+            [0.8, -0.1, 0.4, 0.8, 0.5],
+            [0.3, 0.6, 0.2, 0.6, -0.4],
+            [-0.1, 0.1, 0.5, 0.8, 0.6],
+        ]
+    )
+    row_order = [2, 0, 1, 5, 3, 4]
+    mat = mat[row_order]
+    assets = [assets[i] for i in row_order]
+    fig, ax = plt.subplots(figsize=(10, 6.4), facecolor=NAVY)
+    dashboard_title(fig, title, subtitle)
+    style_ax(ax, "")
+    im = ax.imshow(mat, cmap=CORR_CMAP, vmin=-1.5, vmax=1.5, aspect="auto")
+    ax.grid(False)
+    ax.set_xticks(np.arange(len(factors)), factors)
+    ax.set_yticks(np.arange(len(assets)), assets)
+    for i in range(mat.shape[0]):
+        for j in range(mat.shape[1]):
+            ax.text(j, i, f"{mat[i, j]:+.1f}", ha="center", va="center", color=TEXT, fontsize=8)
+    cbar = fig.colorbar(im, ax=ax, fraction=0.030, pad=0.025)
+    cbar.ax.tick_params(colors=MUTED, labelsize=8)
+    cbar.outline.set_edgecolor("#17376f")
+    save(fig, out)
+
+
 def plot_88_plus_split(stem: str, panel: int, out: Path) -> None:
     title = human_title(stem[3:] if stem[:2].isdigit() else stem)
     lower = stem.lower()
@@ -2376,6 +2574,18 @@ def plot_one(stem: str, out: Path) -> None:
         plot_crypto_macro_liquidity_panel(stem, title, out)
     elif "news_filings_price_reaction_panel" in lower:
         plot_news_filings_reaction_panel(stem, title, out)
+    elif "waterfall_multi_source_attribution" in lower:
+        plot_visual_waterfall_attribution(stem, out)
+    elif "radar_multi_metric_profiles" in lower:
+        plot_visual_radar_profiles(stem, out)
+    elif "treemap_liquidity_crowding" in lower:
+        plot_visual_treemap_liquidity_crowding(stem, out)
+    elif "parallel_coords_screening" in lower:
+        plot_visual_parallel_coords(stem, out)
+    elif "conditioned_event_small_multiples" in lower:
+        plot_visual_conditioned_event_multiples(stem, out)
+    elif "sensitivity_heatmap_clustered" in lower:
+        plot_visual_sensitivity_heatmap(stem, out)
     elif "stress_testing_macro_scenarios" in lower or "macro_shock_cross_asset" in lower or "factor_macro_risk_shock_transmission" in lower:
         plot_scenario_bars(stem, title, out)
     elif "cta_futures_carry_trend_macro" in lower or "macro_positioning_cot" in lower:
@@ -2578,6 +2788,30 @@ def plot_outputs(stem: str, output_dir: Path) -> list[Path]:
         ]
         plot_19_lineage_01(stem, outputs[0])
         return outputs
+    if lower.startswith("90_waterfall_multi_source_attribution"):
+        output = output_dir / f"{stem}_output_01.png"
+        plot_visual_waterfall_attribution(stem, output)
+        return [output]
+    if lower.startswith("91_radar_multi_metric_profiles"):
+        output = output_dir / f"{stem}_output_01.png"
+        plot_visual_radar_profiles(stem, output)
+        return [output]
+    if lower.startswith("92_treemap_liquidity_crowding"):
+        output = output_dir / f"{stem}_output_01.png"
+        plot_visual_treemap_liquidity_crowding(stem, output)
+        return [output]
+    if lower.startswith("93_parallel_coords_screening"):
+        output = output_dir / f"{stem}_output_01.png"
+        plot_visual_parallel_coords(stem, output)
+        return [output]
+    if lower.startswith("94_conditioned_event_small_multiples"):
+        output = output_dir / f"{stem}_output_01.png"
+        plot_visual_conditioned_event_multiples(stem, output)
+        return [output]
+    if lower.startswith("95_sensitivity_heatmap_clustered"):
+        output = output_dir / f"{stem}_output_01.png"
+        plot_visual_sensitivity_heatmap(stem, output)
+        return [output]
     if number >= 88:
         outputs = [output_dir / f"{stem}_{index}.png" for index in range(1, 5)]
         for index, output in enumerate(outputs, start=1):

@@ -660,6 +660,26 @@
     "status": "ok"
   },
   {
+    "notebook": "_candidates/90_waterfall_multi_source_attribution.ipynb",
+    "outputs": [
+      "_output/90_waterfall_multi_source_attribution_output_01.png"
+    ],
+    "output": "_output/90_waterfall_multi_source_attribution_output_01.png",
+    "code_cells": 2,
+    "markdown_cells": 3,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/91_radar_multi_metric_profiles.ipynb",
+    "outputs": [
+      "_output/91_radar_multi_metric_profiles_output_01.png"
+    ],
+    "output": "_output/91_radar_multi_metric_profiles_output_01.png",
+    "code_cells": 2,
+    "markdown_cells": 3,
+    "status": "ok"
+  },
+  {
     "notebook": "_candidates/91_sec_filing_fundamental_price_mosaic.ipynb",
     "outputs": [
       "_output/91_sec_filing_fundamental_price_mosaic_1.png",
@@ -686,6 +706,16 @@
     "status": "ok"
   },
   {
+    "notebook": "_candidates/92_treemap_liquidity_crowding.ipynb",
+    "outputs": [
+      "_output/92_treemap_liquidity_crowding_output_01.png"
+    ],
+    "output": "_output/92_treemap_liquidity_crowding_output_01.png",
+    "code_cells": 2,
+    "markdown_cells": 3,
+    "status": "ok"
+  },
+  {
     "notebook": "_candidates/93_crypto_macro_liquidity_panel.ipynb",
     "outputs": [
       "_output/93_crypto_macro_liquidity_panel_1.png",
@@ -699,6 +729,26 @@
     "status": "ok"
   },
   {
+    "notebook": "_candidates/93_parallel_coords_screening.ipynb",
+    "outputs": [
+      "_output/93_parallel_coords_screening_output_01.png"
+    ],
+    "output": "_output/93_parallel_coords_screening_output_01.png",
+    "code_cells": 2,
+    "markdown_cells": 3,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/94_conditioned_event_small_multiples.ipynb",
+    "outputs": [
+      "_output/94_conditioned_event_small_multiples_output_01.png"
+    ],
+    "output": "_output/94_conditioned_event_small_multiples_output_01.png",
+    "code_cells": 2,
+    "markdown_cells": 3,
+    "status": "ok"
+  },
+  {
     "notebook": "_candidates/94_news_filings_price_reaction_panel.ipynb",
     "outputs": [
       "_output/94_news_filings_price_reaction_panel_1.png",
@@ -709,6 +759,16 @@
     "output": "_output/94_news_filings_price_reaction_panel_1.png",
     "code_cells": 7,
     "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/95_sensitivity_heatmap_clustered.ipynb",
+    "outputs": [
+      "_output/95_sensitivity_heatmap_clustered_output_01.png"
+    ],
+    "output": "_output/95_sensitivity_heatmap_clustered_output_01.png",
+    "code_cells": 2,
+    "markdown_cells": 3,
     "status": "ok"
   },
   {

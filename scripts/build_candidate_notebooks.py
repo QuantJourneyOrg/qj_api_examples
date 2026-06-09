@@ -73,6 +73,36 @@ PRESERVED_SOURCE_CANDIDATES = [
         "Multi-source daily intelligence / decision support",
         "Overlays public signals across earnings, congress, 13F, macro, COT and volatility for a book-level watchlist.",
     ),
+    (
+        "90_waterfall_multi_source_attribution.ipynb",
+        "Visual research artifact / attribution",
+        "Builds a multi-source attribution waterfall across pricing, factor, macro and cost components.",
+    ),
+    (
+        "91_radar_multi_metric_profiles.ipynb",
+        "Visual research artifact / peer profiles",
+        "Compares peer names across fundamentals, crowding, short-interest, macro sensitivity and volatility beta in one radar profile.",
+    ),
+    (
+        "92_treemap_liquidity_crowding.ipynb",
+        "Visual research artifact / liquidity and crowding",
+        "Shows universe size, ADV and ownership concentration as a treemap instead of another flat time-series chart.",
+    ),
+    (
+        "93_parallel_coords_screening.ipynb",
+        "Visual research artifact / screening",
+        "Uses parallel coordinates to inspect liquidity, valuation, quality, crowding, short pressure and macro sensitivities across a universe.",
+    ),
+    (
+        "94_conditioned_event_small_multiples.ipynb",
+        "Visual research artifact / event distributions",
+        "Shows conditioned post-event return distributions by macro regime and liquidity bucket using small multiples.",
+    ),
+    (
+        "95_sensitivity_heatmap_clustered.ipynb",
+        "Visual research artifact / sensitivity map",
+        "Maps asset sensitivities to rates, inflation, growth, market, and crowding factors in a clustered annotated heatmap.",
+    ),
 ]
 PRESERVED_SOURCE_CANDIDATE_NAMES = {name for name, _, _ in PRESERVED_SOURCE_CANDIDATES}
 
@@ -2204,6 +2234,12 @@ OUTPUT_LINKS = {
     "19_data_contract_lineage_audit": [
         "19_lineage_01_aapl_evidence_timeline.png",
     ],
+    "90_waterfall_multi_source_attribution": ["90_waterfall_multi_source_attribution_output_01.png"],
+    "91_radar_multi_metric_profiles": ["91_radar_multi_metric_profiles_output_01.png"],
+    "92_treemap_liquidity_crowding": ["92_treemap_liquidity_crowding_output_01.png"],
+    "93_parallel_coords_screening": ["93_parallel_coords_screening_output_01.png"],
+    "94_conditioned_event_small_multiples": ["94_conditioned_event_small_multiples_output_01.png"],
+    "95_sensitivity_heatmap_clustered": ["95_sensitivity_heatmap_clustered_output_01.png"],
 }
 
 
