@@ -7,6 +7,7 @@ artifacts. Figures use the same dark navy background.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import hashlib
 import os
 import tempfile
@@ -23,6 +24,7 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
+from matplotlib import dates as mdates
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 import pandas as pd
@@ -212,7 +214,265 @@ def style_legend(ax: plt.Axes) -> None:
         legend.get_frame().set_alpha(0.88)
 
 
+def _is_v2_output(path: Path) -> bool:
+    return "_v2" in path.parts
+
+
+def _numeric(values: object) -> np.ndarray:
+    try:
+        arr = np.asarray(values)
+    except Exception:
+        return np.array([], dtype=float)
+    if arr.dtype.kind in {"M"}:
+        arr = mdates.date2num(arr)
+    elif arr.dtype.kind in {"U", "S", "O"}:
+        flat = arr.reshape(-1)
+        sample = [value for value in flat[:8] if value is not None]
+        if sample and all(isinstance(value, (pd.Timestamp, np.datetime64, dt.datetime, dt.date)) for value in sample):
+            arr = pd.to_datetime(arr).map(mdates.date2num).to_numpy(dtype=float)
+        else:
+            try:
+                arr = arr.astype(float)
+            except Exception:
+                return np.array([], dtype=float)
+    else:
+        try:
+            arr = arr.astype(float)
+        except Exception:
+            return np.array([], dtype=float)
+    arr = arr.reshape(-1)
+    return arr[np.isfinite(arr)]
+
+
+def _format_metric(value: float) -> str:
+    if not np.isfinite(value):
+        return "-"
+    sign = "-" if value < 0 else ""
+    value = abs(float(value))
+    if value >= 1_000_000_000:
+        return f"{sign}{value / 1_000_000_000:.1f}b"
+    if value >= 1_000_000:
+        return f"{sign}{value / 1_000_000:.1f}m"
+    if value >= 1_000:
+        return f"{sign}{value / 1_000:.1f}k"
+    if value >= 100:
+        return f"{sign}{value:.0f}"
+    if value >= 10:
+        return f"{sign}{value:.1f}"
+    if value >= 1:
+        return f"{sign}{value:.2f}"
+    return f"{sign}{value:.2f}"
+
+
+def _metric_box(ax: plt.Axes, lines: list[str]) -> None:
+    if not lines:
+        return
+    ax.text(
+        0.985,
+        0.985,
+        "\n".join(lines[:4]),
+        transform=ax.transAxes,
+        ha="right",
+        va="top",
+        color=TEXT,
+        fontsize=7.2,
+        bbox={
+            "boxstyle": "round,pad=0.35,rounding_size=0.12",
+            "facecolor": "#071a3d",
+            "edgecolor": "#244b86",
+            "alpha": 0.88,
+            "linewidth": 0.7,
+        },
+        zorder=20,
+    )
+
+
+def _annotate_line_axis(ax: plt.Axes) -> bool:
+    lines = [line for line in ax.get_lines() if line.get_visible()]
+    useful: list[tuple[object, np.ndarray, np.ndarray, object]] = []
+    for line in lines:
+        y = _numeric(line.get_ydata())
+        if len(y) < 4:
+            continue
+        if np.nanmax(y) == np.nanmin(y):
+            continue
+        x_raw = np.asarray(line.get_xdata())
+        if len(x_raw) < len(y):
+            x_raw = np.arange(len(y))
+        x = x_raw[-len(y):]
+        useful.append((line, x, y, line.get_color()))
+
+    if not useful:
+        return False
+
+    line, x, y, color = useful[0]
+    avg = float(np.nanmean(y))
+    latest = float(y[-1])
+    p10 = float(np.nanpercentile(y, 10))
+    p90 = float(np.nanpercentile(y, 90))
+    ax.axhline(avg, color=AMBER, linestyle=(0, (4, 4)), linewidth=1.0, alpha=0.78, zorder=1)
+    ax.text(
+        0.015,
+        0.92,
+        f"avg {_format_metric(avg)}",
+        transform=ax.transAxes,
+        color=AMBER,
+        fontsize=7.4,
+        va="top",
+        bbox={"facecolor": NAVY, "edgecolor": AMBER, "alpha": 0.72, "linewidth": 0.5, "pad": 2.5},
+        zorder=20,
+    )
+
+    if len(y) >= 30:
+        window = 20 if len(y) < 140 else 63
+        sma = pd.Series(y).rolling(window, min_periods=max(5, window // 3)).mean().to_numpy()
+        ax.plot(x, sma, color="#b6e880", linewidth=1.2, alpha=0.72, linestyle="--", zorder=3)
+        ax.text(
+            0.015,
+            0.84,
+            f"SMA {window} {_format_metric(float(pd.Series(sma).dropna().iloc[-1]))}",
+            transform=ax.transAxes,
+            color="#b6e880",
+            fontsize=7.4,
+            va="top",
+            bbox={"facecolor": NAVY, "edgecolor": "#b6e880", "alpha": 0.70, "linewidth": 0.5, "pad": 2.5},
+            zorder=20,
+        )
+
+    try:
+        ax.scatter([x[-1]], [latest], color=color, s=22, edgecolors=TEXT, linewidths=0.35, zorder=15)
+        ax.annotate(
+            _format_metric(latest),
+            xy=(x[-1], latest),
+            xytext=(6, 0),
+            textcoords="offset points",
+            color=TEXT,
+            fontsize=7.3,
+            va="center",
+            bbox={"boxstyle": "round,pad=0.18", "facecolor": "#071a3d", "edgecolor": color, "alpha": 0.88, "linewidth": 0.55},
+            zorder=20,
+        )
+    except Exception:
+        pass
+
+    _metric_box(ax, [f"last {_format_metric(latest)}", f"p10/p90 {_format_metric(p10)} / {_format_metric(p90)}", f"range {_format_metric(float(np.nanmax(y) - np.nanmin(y)))}"])
+    return True
+
+
+def _annotate_bar_axis(ax: plt.Axes) -> bool:
+    changed = False
+    values: list[float] = []
+    horizontal = False
+    for container in ax.containers:
+        datavalues = getattr(container, "datavalues", None)
+        if datavalues is None:
+            continue
+        horizontal = horizontal or getattr(container, "orientation", None) == "horizontal"
+        vals = _numeric(datavalues)
+        if not len(vals):
+            continue
+        labels = [_format_metric(float(v)) for v in vals]
+        try:
+            ax.bar_label(container, labels=labels, padding=3, color=TEXT, fontsize=7.0)
+            changed = True
+            values.extend(vals.tolist())
+        except Exception:
+            continue
+
+    if values:
+        arr = np.asarray(values, dtype=float)
+        avg = float(np.nanmean(arr))
+        if np.nanmin(arr) < avg < np.nanmax(arr):
+            if abs(np.nanmax(arr) - np.nanmin(arr)) > 0:
+                if horizontal:
+                    ax.axvline(avg, color=AMBER, linestyle=(0, (4, 4)), linewidth=0.9, alpha=0.72, zorder=1)
+                else:
+                    ax.axhline(avg, color=AMBER, linestyle=(0, (4, 4)), linewidth=0.9, alpha=0.72, zorder=1)
+        _metric_box(ax, [f"avg {_format_metric(avg)}", f"max {_format_metric(float(np.nanmax(arr)))}", f"min {_format_metric(float(np.nanmin(arr)))}"])
+    return changed
+
+
+def _annotate_image_axis(ax: plt.Axes) -> bool:
+    if not ax.images:
+        return False
+    image = ax.images[0]
+    data = np.asarray(image.get_array(), dtype=float)
+    vals = data[np.isfinite(data)]
+    if not len(vals):
+        return False
+    _metric_box(
+        ax,
+        [
+            f"median {_format_metric(float(np.nanmedian(vals)))}",
+            f"max {_format_metric(float(np.nanmax(vals)))}",
+            f"min {_format_metric(float(np.nanmin(vals)))}",
+        ],
+    )
+    return True
+
+
+def _annotate_scatter_axis(ax: plt.Axes) -> bool:
+    if ax.get_lines() or ax.images:
+        return False
+    for collection in ax.collections:
+        if not hasattr(collection, "get_offsets"):
+            continue
+        offsets = collection.get_offsets()
+        if offsets is None or len(offsets) < 4:
+            continue
+        arr = np.asarray(offsets, dtype=float)
+        arr = arr[np.isfinite(arr).all(axis=1)]
+        if len(arr) < 4:
+            continue
+        x_med = float(np.nanmedian(arr[:, 0]))
+        y_med = float(np.nanmedian(arr[:, 1]))
+        ax.axvline(x_med, color=AMBER, linestyle=(0, (4, 4)), linewidth=0.9, alpha=0.70, zorder=1)
+        ax.axhline(y_med, color=AMBER, linestyle=(0, (4, 4)), linewidth=0.9, alpha=0.70, zorder=1)
+        _metric_box(ax, [f"x median {_format_metric(x_med)}", f"y median {_format_metric(y_med)}", f"n {len(arr)}"])
+        return True
+    return False
+
+
+def _annotate_polar_axis(ax: plt.Axes) -> bool:
+    values: list[float] = []
+    for line in ax.get_lines():
+        if not line.get_visible():
+            continue
+        y = _numeric(line.get_ydata())
+        if len(y) >= 4:
+            values.extend(y.tolist())
+    if not values:
+        return False
+    arr = np.asarray(values, dtype=float)
+    _metric_box(
+        ax,
+        [
+            f"avg {_format_metric(float(np.nanmean(arr)))}",
+            f"max {_format_metric(float(np.nanmax(arr)))}",
+            f"min {_format_metric(float(np.nanmin(arr)))}",
+        ],
+    )
+    return True
+
+
+def add_v2_annotations(fig: plt.Figure) -> None:
+    for ax in fig.axes:
+        if not ax.get_visible() or ax.get_label().startswith("<colorbar"):
+            continue
+        if ax.name == "polar":
+            _annotate_polar_axis(ax)
+            continue
+        if not ax.has_data():
+            continue
+        changed = _annotate_image_axis(ax)
+        changed = _annotate_bar_axis(ax) or changed
+        changed = _annotate_line_axis(ax) or changed
+        changed = _annotate_scatter_axis(ax) or changed
+
+
 def save(fig: plt.Figure, path: Path) -> None:
+    if _is_v2_output(path):
+        add_v2_annotations(fig)
     fig.subplots_adjust(left=0.07, right=0.97, top=0.80, bottom=0.12, hspace=0.52, wspace=0.32)
     fig.savefig(path, dpi=160, facecolor=fig.get_facecolor(), edgecolor="none")
     plt.close(fig)

@@ -1,0 +1,865 @@
+[
+  {
+    "notebook": "_candidates/01_authentication_methods.ipynb",
+    "outputs": [],
+    "output": null,
+    "code_cells": 9,
+    "markdown_cells": 5,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/02_market_data_basics.ipynb",
+    "outputs": [
+      "_output/_v2/02_market_01.png",
+      "_output/_v2/02_market_02.png",
+      "_output/_v2/02_market_03.png"
+    ],
+    "output": "_output/_v2/02_market_01.png",
+    "code_cells": 9,
+    "markdown_cells": 9,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/03_economic_data_macro.ipynb",
+    "outputs": [
+      "_output/_v2/03_macro_01_yield_curve.png",
+      "_output/_v2/03_macro_02_inflation.png",
+      "_output/_v2/03_macro_03_unemployment.png",
+      "_output/_v2/03_macro_04_sensitivity.png"
+    ],
+    "output": "_output/_v2/03_macro_01_yield_curve.png",
+    "code_cells": 15,
+    "markdown_cells": 10,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/04_fundamental_analysis.ipynb",
+    "outputs": [
+      "_output/_v2/04_fundamentals_01_valuation_quality.png",
+      "_output/_v2/04_fundamentals_02_peer_pe.png",
+      "_output/_v2/04_fundamentals_03_profitability.png"
+    ],
+    "output": "_output/_v2/04_fundamentals_01_valuation_quality.png",
+    "code_cells": 10,
+    "markdown_cells": 12,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/05_technical_analysis.ipynb",
+    "outputs": [
+      "_output/_v2/05_technical_analysis_output_01.png"
+    ],
+    "output": "_output/_v2/05_technical_analysis_output_01.png",
+    "code_cells": 11,
+    "markdown_cells": 12,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/06_portfolio_analysis.ipynb",
+    "outputs": [
+      "_output/_v2/06_portfolio_01_nav_risk.png",
+      "_output/_v2/06_portfolio_02_risk_contribution.png",
+      "_output/_v2/06_portfolio_03_correlation.png"
+    ],
+    "output": "_output/_v2/06_portfolio_01_nav_risk.png",
+    "code_cells": 11,
+    "markdown_cells": 13,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/07_crypto_ccxt.ipynb",
+    "outputs": [
+      "_output/_v2/07_crypto_01_spot_performance.png",
+      "_output/_v2/07_crypto_02_funding_pressure.png",
+      "_output/_v2/07_crypto_03_basis_state.png"
+    ],
+    "output": "_output/_v2/07_crypto_01_spot_performance.png",
+    "code_cells": 21,
+    "markdown_cells": 20,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/08_cboe_vix.ipynb",
+    "outputs": [
+      "_output/_v2/08_vix_01_vol_state.png",
+      "_output/_v2/08_vix_02_drawdown_overlay.png",
+      "_output/_v2/08_vix_03_regime_mix.png"
+    ],
+    "output": "_output/_v2/08_vix_01_vol_state.png",
+    "code_cells": 6,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/09_multpl_valuation.ipynb",
+    "outputs": [
+      "_output/_v2/09_multpl_01_cape.png",
+      "_output/_v2/09_multpl_02_rates.png",
+      "_output/_v2/09_multpl_03_earnings_yield_spread.png"
+    ],
+    "output": "_output/_v2/09_multpl_01_cape.png",
+    "code_cells": 7,
+    "markdown_cells": 7,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/10_cftc_cot.ipynb",
+    "outputs": [
+      "_output/_v2/10_cftc_cot_output_01.png"
+    ],
+    "output": "_output/_v2/10_cftc_cot_output_01.png",
+    "code_cells": 6,
+    "markdown_cells": 7,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/11_sec_filings.ipynb",
+    "outputs": [
+      "_output/_v2/11_sec_01_filing_event_reaction.png"
+    ],
+    "output": "_output/_v2/11_sec_01_filing_event_reaction.png",
+    "code_cells": 10,
+    "markdown_cells": 13,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/12_finra_short_interest.ipynb",
+    "outputs": [
+      "_output/_v2/12_finra_01_short_volume_ratio.png",
+      "_output/_v2/12_finra_02_days_to_cover.png",
+      "_output/_v2/12_finra_03_crowding_map.png"
+    ],
+    "output": "_output/_v2/12_finra_01_short_volume_ratio.png",
+    "code_cells": 7,
+    "markdown_cells": 7,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/13_openfigi.ipynb",
+    "outputs": [
+      "_output/_v2/13_openfigi_01_aapl_identity.png"
+    ],
+    "output": "_output/_v2/13_openfigi_01_aapl_identity.png",
+    "code_cells": 6,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/14_corporate_actions_pit_adjustments.ipynb",
+    "outputs": [
+      "_output/_v2/14_corporate_actions_01_raw_vs_adjusted.png"
+    ],
+    "output": "_output/_v2/14_corporate_actions_01_raw_vs_adjusted.png",
+    "code_cells": 6,
+    "markdown_cells": 5,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/15_domain_route_discovery_contract.ipynb",
+    "outputs": [
+      "_output/_v2/15_domain_01_aapl_equity_packet.png"
+    ],
+    "output": "_output/_v2/15_domain_01_aapl_equity_packet.png",
+    "code_cells": 6,
+    "markdown_cells": 5,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/16_global_macro_sources.ipynb",
+    "outputs": [
+      "_output/_v2/16_macro_01_cpi_fed_funds.png",
+      "_output/_v2/16_macro_02_global_growth.png",
+      "_output/_v2/16_macro_03_energy_inflation.png"
+    ],
+    "output": "_output/_v2/16_macro_01_cpi_fed_funds.png",
+    "code_cells": 6,
+    "markdown_cells": 5,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/17_options_vix_skew_term_structure.ipynb",
+    "outputs": [
+      "_output/_v2/17_vol_01_vix_skew.png",
+      "_output/_v2/17_vol_02_term_structure.png",
+      "_output/_v2/17_vol_03_surface.png"
+    ],
+    "output": "_output/_v2/17_vol_01_vix_skew.png",
+    "code_cells": 6,
+    "markdown_cells": 5,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/18_index_constituents_universe_build.ipynb",
+    "outputs": [
+      "_output/_v2/18_index_01_universe_scores.png",
+      "_output/_v2/18_index_02_sector_weights.png",
+      "_output/_v2/18_index_03_liquidity_filter.png"
+    ],
+    "output": "_output/_v2/18_index_01_universe_scores.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/19_data_contract_lineage_audit.ipynb",
+    "outputs": [
+      "_output/_v2/19_lineage_01_aapl_evidence_timeline.png"
+    ],
+    "output": "_output/_v2/19_lineage_01_aapl_evidence_timeline.png",
+    "code_cells": 6,
+    "markdown_cells": 5,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/22_hierarchical_risk_parity_hrp.ipynb",
+    "outputs": [
+      "_output/_v2/22_hierarchical_risk_parity_hrp_output_01.png"
+    ],
+    "output": "_output/_v2/22_hierarchical_risk_parity_hrp_output_01.png",
+    "code_cells": 9,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/30_universe_construction_liquidity_screen.ipynb",
+    "outputs": [
+      "_output/_v2/30_universe_construction_liquidity_screen_output_01.png"
+    ],
+    "output": "_output/_v2/30_universe_construction_liquidity_screen_output_01.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/32_liquidity_capacity_impact.ipynb",
+    "outputs": [
+      "_output/_v2/32_liquidity_capacity_impact_output_01.png"
+    ],
+    "output": "_output/_v2/32_liquidity_capacity_impact_output_01.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/33_stress_testing_macro_scenarios.ipynb",
+    "outputs": [
+      "_output/_v2/33_stress_testing_macro_scenarios_output_01.png"
+    ],
+    "output": "_output/_v2/33_stress_testing_macro_scenarios_output_01.png",
+    "code_cells": 8,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/34_index_replication_tracking_error.ipynb",
+    "outputs": [
+      "_output/_v2/34_index_replication_tracking_error_output_01.png"
+    ],
+    "output": "_output/_v2/34_index_replication_tracking_error_output_01.png",
+    "code_cells": 8,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/36_rolling_risk_budgeting_drawdown_control.ipynb",
+    "outputs": [
+      "_output/_v2/36_rolling_risk_budgeting_drawdown_control_output_01.png"
+    ],
+    "output": "_output/_v2/36_rolling_risk_budgeting_drawdown_control_output_01.png",
+    "code_cells": 8,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/37_brinson_attribution_benchmark_relative.ipynb",
+    "outputs": [
+      "_output/_v2/37_brinson_attribution_benchmark_relative_output_01.png"
+    ],
+    "output": "_output/_v2/37_brinson_attribution_benchmark_relative_output_01.png",
+    "code_cells": 6,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/38_congress_smart_money_overlay.ipynb",
+    "outputs": [
+      "_output/_v2/38_congress_smart_money_overlay_output_01.png"
+    ],
+    "output": "_output/_v2/38_congress_smart_money_overlay_output_01.png",
+    "code_cells": 6,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/39_institutional_crowding_13f_flows.ipynb",
+    "outputs": [
+      "_output/_v2/39_institutional_crowding_13f_flows_output_01.png"
+    ],
+    "output": "_output/_v2/39_institutional_crowding_13f_flows_output_01.png",
+    "code_cells": 6,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/41_broad_event_study_pead.ipynb",
+    "outputs": [
+      "_output/_v2/41_broad_event_study_pead_output_01.png"
+    ],
+    "output": "_output/_v2/41_broad_event_study_pead_output_01.png",
+    "code_cells": 6,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/42_factor_risk_model_construction.ipynb",
+    "outputs": [
+      "_output/_v2/42_factor_risk_model_construction_output_01.png"
+    ],
+    "output": "_output/_v2/42_factor_risk_model_construction_output_01.png",
+    "code_cells": 7,
+    "markdown_cells": 7,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/44_cta_futures_carry_trend_macro.ipynb",
+    "outputs": [
+      "_output/_v2/44_cta_futures_carry_trend_macro_output_01.png"
+    ],
+    "output": "_output/_v2/44_cta_futures_carry_trend_macro_output_01.png",
+    "code_cells": 7,
+    "markdown_cells": 7,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/45_holdings_based_vs_returns_based.ipynb",
+    "outputs": [
+      "_output/_v2/45_holdings_based_vs_returns_based_output_01.png"
+    ],
+    "output": "_output/_v2/45_holdings_based_vs_returns_based_output_01.png",
+    "code_cells": 8,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/46_options_overlay_strategies.ipynb",
+    "outputs": [
+      "_output/_v2/46_options_overlay_strategies_output_01.png"
+    ],
+    "output": "_output/_v2/46_options_overlay_strategies_output_01.png",
+    "code_cells": 7,
+    "markdown_cells": 7,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/47_tactical_asset_allocation_macro_valuation.ipynb",
+    "outputs": [
+      "_output/_v2/47_tactical_asset_allocation_macro_valuation_output_01.png"
+    ],
+    "output": "_output/_v2/47_tactical_asset_allocation_macro_valuation_output_01.png",
+    "code_cells": 7,
+    "markdown_cells": 7,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/48_end_to_end_research_to_book.ipynb",
+    "outputs": [
+      "_output/_v2/48_end_to_end_research_to_book_output_01.png"
+    ],
+    "output": "_output/_v2/48_end_to_end_research_to_book_output_01.png",
+    "code_cells": 8,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/50_integrated_daily_risk_attribution_report.ipynb",
+    "outputs": [
+      "_output/_v2/50_integrated_daily_risk_attribution_report_output_01.png"
+    ],
+    "output": "_output/_v2/50_integrated_daily_risk_attribution_report_output_01.png",
+    "code_cells": 8,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/52_turnover_cost_drag.ipynb",
+    "outputs": [
+      "_output/_v2/52_turnover_cost_drag_output_01.png"
+    ],
+    "output": "_output/_v2/52_turnover_cost_drag_output_01.png",
+    "code_cells": 8,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/53_backtest_with_risk_management_full.ipynb",
+    "outputs": [
+      "_output/_v2/53_backtest_with_risk_management_full_output_01.png"
+    ],
+    "output": "_output/_v2/53_backtest_with_risk_management_full_output_01.png",
+    "code_cells": 8,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/55_factor_timing_dynamic_exposures.ipynb",
+    "outputs": [
+      "_output/_v2/55_factor_timing_dynamic_exposures_output_01.png"
+    ],
+    "output": "_output/_v2/55_factor_timing_dynamic_exposures_output_01.png",
+    "code_cells": 8,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/57_crypto_perps_basis_funding_arbitrage.ipynb",
+    "outputs": [
+      "_output/_v2/57_crypto_perps_basis_funding_arbitrage_output_01.png"
+    ],
+    "output": "_output/_v2/57_crypto_perps_basis_funding_arbitrage_output_01.png",
+    "code_cells": 6,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/61_vectorized_strategy_grid.ipynb",
+    "outputs": [
+      "_output/_v2/61_vectorized_strategy_grid_output_01.png"
+    ],
+    "output": "_output/_v2/61_vectorized_strategy_grid_output_01.png",
+    "code_cells": 9,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/62_walk_forward_robustness.ipynb",
+    "outputs": [
+      "_output/_v2/62_walk_forward_robustness_output_01.png"
+    ],
+    "output": "_output/_v2/62_walk_forward_robustness_output_01.png",
+    "code_cells": 9,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/63_monte_carlo_tail_risk.ipynb",
+    "outputs": [
+      "_output/_v2/63_monte_carlo_tail_risk_output_01.png"
+    ],
+    "output": "_output/_v2/63_monte_carlo_tail_risk_output_01.png",
+    "code_cells": 8,
+    "markdown_cells": 7,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/64_correlation_regime_lab.ipynb",
+    "outputs": [
+      "_output/_v2/64_correlation_regime_lab_output_01.png"
+    ],
+    "output": "_output/_v2/64_correlation_regime_lab_output_01.png",
+    "code_cells": 6,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/65_drawdown_diagnostics.ipynb",
+    "outputs": [
+      "_output/_v2/65_drawdown_diagnostics_output_01.png"
+    ],
+    "output": "_output/_v2/65_drawdown_diagnostics_output_01.png",
+    "code_cells": 8,
+    "markdown_cells": 7,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/66_factor_exposure_diagnostics.ipynb",
+    "outputs": [
+      "_output/_v2/66_factor_exposure_diagnostics_output_01.png"
+    ],
+    "output": "_output/_v2/66_factor_exposure_diagnostics_output_01.png",
+    "code_cells": 9,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/70_macro_regime_cot_cross_asset.ipynb",
+    "outputs": [
+      "_output/_v2/70_macro_regime_cot_cross_asset_output_01.png"
+    ],
+    "output": "_output/_v2/70_macro_regime_cot_cross_asset_output_01.png",
+    "code_cells": 5,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/71_congress_13f_smart_money_mosaic.ipynb",
+    "outputs": [
+      "_output/_v2/71_congress_13f_smart_money_mosaic_output_01.png"
+    ],
+    "output": "_output/_v2/71_congress_13f_smart_money_mosaic_output_01.png",
+    "code_cells": 5,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/72_crowding_liquidity_capacity_stress.ipynb",
+    "outputs": [
+      "_output/_v2/72_crowding_liquidity_capacity_stress_output_01.png"
+    ],
+    "output": "_output/_v2/72_crowding_liquidity_capacity_stress_output_01.png",
+    "code_cells": 5,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/73_conditioned_earnings_pead_multi_source.ipynb",
+    "outputs": [
+      "_output/_v2/73_conditioned_earnings_pead_multi_source_output_01.png"
+    ],
+    "output": "_output/_v2/73_conditioned_earnings_pead_multi_source_output_01.png",
+    "code_cells": 5,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/74_factor_macro_risk_shock_transmission.ipynb",
+    "outputs": [
+      "_output/_v2/74_factor_macro_risk_shock_transmission_output_01.png"
+    ],
+    "output": "_output/_v2/74_factor_macro_risk_shock_transmission_output_01.png",
+    "code_cells": 5,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/75_public_signals_book_intelligence.ipynb",
+    "outputs": [
+      "_output/_v2/75_public_signals_book_intelligence_output_01.png"
+    ],
+    "output": "_output/_v2/75_public_signals_book_intelligence_output_01.png",
+    "code_cells": 4,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/80_investment_evidence_packet.ipynb",
+    "outputs": [
+      "_output/_v2/80_investment_evidence_packet_output_01.png"
+    ],
+    "output": "_output/_v2/80_investment_evidence_packet_output_01.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/81_pre_trade_liquidity_capacity_check.ipynb",
+    "outputs": [
+      "_output/_v2/81_pre_trade_liquidity_capacity_check_output_01.png"
+    ],
+    "output": "_output/_v2/81_pre_trade_liquidity_capacity_check_output_01.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/82_earnings_event_pead_research.ipynb",
+    "outputs": [
+      "_output/_v2/82_earnings_event_pead_research_output_01.png"
+    ],
+    "output": "_output/_v2/82_earnings_event_pead_research_output_01.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/83_portfolio_morning_risk_brief.ipynb",
+    "outputs": [
+      "_output/_v2/83_portfolio_morning_risk_brief_output_01.png"
+    ],
+    "output": "_output/_v2/83_portfolio_morning_risk_brief_output_01.png",
+    "code_cells": 9,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/84_crowding_smart_money_flow.ipynb",
+    "outputs": [
+      "_output/_v2/84_crowding_smart_money_flow_output_01.png"
+    ],
+    "output": "_output/_v2/84_crowding_smart_money_flow_output_01.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/85_macro_shock_cross_asset_scenario.ipynb",
+    "outputs": [
+      "_output/_v2/85_macro_shock_cross_asset_scenario_output_01.png"
+    ],
+    "output": "_output/_v2/85_macro_shock_cross_asset_scenario_output_01.png",
+    "code_cells": 9,
+    "markdown_cells": 8,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/86_macro_regime_allocation_control.ipynb",
+    "outputs": [
+      "_output/_v2/86_macro_regime_allocation_control_output_01.png"
+    ],
+    "output": "_output/_v2/86_macro_regime_allocation_control_output_01.png",
+    "code_cells": 8,
+    "markdown_cells": 7,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/87_inflation_shock_monitor.ipynb",
+    "outputs": [
+      "_output/_v2/87_inflation_shock_monitor_output_01.png"
+    ],
+    "output": "_output/_v2/87_inflation_shock_monitor_output_01.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/88_macro_positioning_cot_dashboard.ipynb",
+    "outputs": [
+      "_output/_v2/88_macro_positioning_cot_dashboard_1.png",
+      "_output/_v2/88_macro_positioning_cot_dashboard_2.png",
+      "_output/_v2/88_macro_positioning_cot_dashboard_3.png",
+      "_output/_v2/88_macro_positioning_cot_dashboard_4.png"
+    ],
+    "output": "_output/_v2/88_macro_positioning_cot_dashboard_1.png",
+    "code_cells": 8,
+    "markdown_cells": 7,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/89_usd_liquidity_cross_asset_mosaic.ipynb",
+    "outputs": [
+      "_output/_v2/89_usd_liquidity_cross_asset_mosaic_1.png",
+      "_output/_v2/89_usd_liquidity_cross_asset_mosaic_2.png",
+      "_output/_v2/89_usd_liquidity_cross_asset_mosaic_3.png",
+      "_output/_v2/89_usd_liquidity_cross_asset_mosaic_4.png"
+    ],
+    "output": "_output/_v2/89_usd_liquidity_cross_asset_mosaic_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/90_earnings_options_vol_reaction.ipynb",
+    "outputs": [
+      "_output/_v2/90_earnings_options_vol_reaction_1.png",
+      "_output/_v2/90_earnings_options_vol_reaction_2.png",
+      "_output/_v2/90_earnings_options_vol_reaction_3.png",
+      "_output/_v2/90_earnings_options_vol_reaction_4.png"
+    ],
+    "output": "_output/_v2/90_earnings_options_vol_reaction_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/90_waterfall_multi_source_attribution.ipynb",
+    "outputs": [
+      "_output/_v2/90_waterfall_multi_source_attribution_output_01.png"
+    ],
+    "output": "_output/_v2/90_waterfall_multi_source_attribution_output_01.png",
+    "code_cells": 2,
+    "markdown_cells": 3,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/91_radar_multi_metric_profiles.ipynb",
+    "outputs": [
+      "_output/_v2/91_radar_multi_metric_profiles_output_01.png"
+    ],
+    "output": "_output/_v2/91_radar_multi_metric_profiles_output_01.png",
+    "code_cells": 2,
+    "markdown_cells": 3,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/91_sec_filing_fundamental_price_mosaic.ipynb",
+    "outputs": [
+      "_output/_v2/91_sec_filing_fundamental_price_mosaic_1.png",
+      "_output/_v2/91_sec_filing_fundamental_price_mosaic_2.png",
+      "_output/_v2/91_sec_filing_fundamental_price_mosaic_3.png",
+      "_output/_v2/91_sec_filing_fundamental_price_mosaic_4.png"
+    ],
+    "output": "_output/_v2/91_sec_filing_fundamental_price_mosaic_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/92_macro_rates_equity_factor_panel.ipynb",
+    "outputs": [
+      "_output/_v2/92_macro_rates_equity_factor_panel_1.png",
+      "_output/_v2/92_macro_rates_equity_factor_panel_2.png",
+      "_output/_v2/92_macro_rates_equity_factor_panel_3.png",
+      "_output/_v2/92_macro_rates_equity_factor_panel_4.png"
+    ],
+    "output": "_output/_v2/92_macro_rates_equity_factor_panel_1.png",
+    "code_cells": 8,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/92_treemap_liquidity_crowding.ipynb",
+    "outputs": [
+      "_output/_v2/92_treemap_liquidity_crowding_output_01.png"
+    ],
+    "output": "_output/_v2/92_treemap_liquidity_crowding_output_01.png",
+    "code_cells": 2,
+    "markdown_cells": 3,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/93_crypto_macro_liquidity_panel.ipynb",
+    "outputs": [
+      "_output/_v2/93_crypto_macro_liquidity_panel_1.png",
+      "_output/_v2/93_crypto_macro_liquidity_panel_2.png",
+      "_output/_v2/93_crypto_macro_liquidity_panel_3.png",
+      "_output/_v2/93_crypto_macro_liquidity_panel_4.png"
+    ],
+    "output": "_output/_v2/93_crypto_macro_liquidity_panel_1.png",
+    "code_cells": 8,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/93_parallel_coords_screening.ipynb",
+    "outputs": [
+      "_output/_v2/93_parallel_coords_screening_output_01.png"
+    ],
+    "output": "_output/_v2/93_parallel_coords_screening_output_01.png",
+    "code_cells": 2,
+    "markdown_cells": 3,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/94_conditioned_event_small_multiples.ipynb",
+    "outputs": [
+      "_output/_v2/94_conditioned_event_small_multiples_output_01.png"
+    ],
+    "output": "_output/_v2/94_conditioned_event_small_multiples_output_01.png",
+    "code_cells": 2,
+    "markdown_cells": 3,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/94_news_filings_price_reaction_panel.ipynb",
+    "outputs": [
+      "_output/_v2/94_news_filings_price_reaction_panel_1.png",
+      "_output/_v2/94_news_filings_price_reaction_panel_2.png",
+      "_output/_v2/94_news_filings_price_reaction_panel_3.png",
+      "_output/_v2/94_news_filings_price_reaction_panel_4.png"
+    ],
+    "output": "_output/_v2/94_news_filings_price_reaction_panel_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/95_sensitivity_heatmap_clustered.ipynb",
+    "outputs": [
+      "_output/_v2/95_sensitivity_heatmap_clustered_output_01.png"
+    ],
+    "output": "_output/_v2/95_sensitivity_heatmap_clustered_output_01.png",
+    "code_cells": 2,
+    "markdown_cells": 3,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/95_spread_liquidity_monitoring_packet.ipynb",
+    "outputs": [
+      "_output/_v2/95_spread_liquidity_monitoring_packet_1.png",
+      "_output/_v2/95_spread_liquidity_monitoring_packet_2.png",
+      "_output/_v2/95_spread_liquidity_monitoring_packet_3.png",
+      "_output/_v2/95_spread_liquidity_monitoring_packet_4.png"
+    ],
+    "output": "_output/_v2/95_spread_liquidity_monitoring_packet_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/96_earnings_revisions_price_momentum.ipynb",
+    "outputs": [
+      "_output/_v2/96_earnings_revisions_price_momentum_1.png",
+      "_output/_v2/96_earnings_revisions_price_momentum_2.png",
+      "_output/_v2/96_earnings_revisions_price_momentum_3.png",
+      "_output/_v2/96_earnings_revisions_price_momentum_4.png"
+    ],
+    "output": "_output/_v2/96_earnings_revisions_price_momentum_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/97_roic_wacc_cash_conversion_quality.ipynb",
+    "outputs": [
+      "_output/_v2/97_roic_wacc_cash_conversion_quality_1.png",
+      "_output/_v2/97_roic_wacc_cash_conversion_quality_2.png",
+      "_output/_v2/97_roic_wacc_cash_conversion_quality_3.png",
+      "_output/_v2/97_roic_wacc_cash_conversion_quality_4.png"
+    ],
+    "output": "_output/_v2/97_roic_wacc_cash_conversion_quality_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/98_oil_curve_regime_instrument_selection.ipynb",
+    "outputs": [
+      "_output/_v2/98_oil_curve_regime_instrument_selection_1.png",
+      "_output/_v2/98_oil_curve_regime_instrument_selection_2.png",
+      "_output/_v2/98_oil_curve_regime_instrument_selection_3.png",
+      "_output/_v2/98_oil_curve_regime_instrument_selection_4.png"
+    ],
+    "output": "_output/_v2/98_oil_curve_regime_instrument_selection_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/99_vixy_term_structure_macro_regime.ipynb",
+    "outputs": [
+      "_output/_v2/99_vixy_term_structure_macro_regime_1.png",
+      "_output/_v2/99_vixy_term_structure_macro_regime_2.png",
+      "_output/_v2/99_vixy_term_structure_macro_regime_3.png",
+      "_output/_v2/99_vixy_term_structure_macro_regime_4.png"
+    ],
+    "output": "_output/_v2/99_vixy_term_structure_macro_regime_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/100_credit_hy_treasury_spread_regime.ipynb",
+    "outputs": [
+      "_output/_v2/100_credit_hy_treasury_spread_regime_1.png",
+      "_output/_v2/100_credit_hy_treasury_spread_regime_2.png",
+      "_output/_v2/100_credit_hy_treasury_spread_regime_3.png",
+      "_output/_v2/100_credit_hy_treasury_spread_regime_4.png"
+    ],
+    "output": "_output/_v2/100_credit_hy_treasury_spread_regime_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/101_consumer_dispersion_not_the_trade.ipynb",
+    "outputs": [
+      "_output/_v2/101_consumer_dispersion_not_the_trade_1.png",
+      "_output/_v2/101_consumer_dispersion_not_the_trade_2.png",
+      "_output/_v2/101_consumer_dispersion_not_the_trade_3.png",
+      "_output/_v2/101_consumer_dispersion_not_the_trade_4.png"
+    ],
+    "output": "_output/_v2/101_consumer_dispersion_not_the_trade_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  }
+]
