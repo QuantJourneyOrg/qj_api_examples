@@ -623,11 +623,183 @@
   {
     "notebook": "_candidates/88_macro_positioning_cot_dashboard.ipynb",
     "outputs": [
-      "_output/88_macro_positioning_cot_dashboard_output_01.png"
+      "_output/88_macro_positioning_cot_dashboard_1.png",
+      "_output/88_macro_positioning_cot_dashboard_2.png",
+      "_output/88_macro_positioning_cot_dashboard_3.png",
+      "_output/88_macro_positioning_cot_dashboard_4.png"
     ],
-    "output": "_output/88_macro_positioning_cot_dashboard_output_01.png",
+    "output": "_output/88_macro_positioning_cot_dashboard_1.png",
     "code_cells": 8,
     "markdown_cells": 7,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/89_usd_liquidity_cross_asset_mosaic.ipynb",
+    "outputs": [
+      "_output/89_usd_liquidity_cross_asset_mosaic_1.png",
+      "_output/89_usd_liquidity_cross_asset_mosaic_2.png",
+      "_output/89_usd_liquidity_cross_asset_mosaic_3.png",
+      "_output/89_usd_liquidity_cross_asset_mosaic_4.png"
+    ],
+    "output": "_output/89_usd_liquidity_cross_asset_mosaic_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/90_earnings_options_vol_reaction.ipynb",
+    "outputs": [
+      "_output/90_earnings_options_vol_reaction_1.png",
+      "_output/90_earnings_options_vol_reaction_2.png",
+      "_output/90_earnings_options_vol_reaction_3.png",
+      "_output/90_earnings_options_vol_reaction_4.png"
+    ],
+    "output": "_output/90_earnings_options_vol_reaction_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/91_sec_filing_fundamental_price_mosaic.ipynb",
+    "outputs": [
+      "_output/91_sec_filing_fundamental_price_mosaic_1.png",
+      "_output/91_sec_filing_fundamental_price_mosaic_2.png",
+      "_output/91_sec_filing_fundamental_price_mosaic_3.png",
+      "_output/91_sec_filing_fundamental_price_mosaic_4.png"
+    ],
+    "output": "_output/91_sec_filing_fundamental_price_mosaic_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/92_macro_rates_equity_factor_panel.ipynb",
+    "outputs": [
+      "_output/92_macro_rates_equity_factor_panel_1.png",
+      "_output/92_macro_rates_equity_factor_panel_2.png",
+      "_output/92_macro_rates_equity_factor_panel_3.png",
+      "_output/92_macro_rates_equity_factor_panel_4.png"
+    ],
+    "output": "_output/92_macro_rates_equity_factor_panel_1.png",
+    "code_cells": 8,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/93_crypto_macro_liquidity_panel.ipynb",
+    "outputs": [
+      "_output/93_crypto_macro_liquidity_panel_1.png",
+      "_output/93_crypto_macro_liquidity_panel_2.png",
+      "_output/93_crypto_macro_liquidity_panel_3.png",
+      "_output/93_crypto_macro_liquidity_panel_4.png"
+    ],
+    "output": "_output/93_crypto_macro_liquidity_panel_1.png",
+    "code_cells": 8,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/94_news_filings_price_reaction_panel.ipynb",
+    "outputs": [
+      "_output/94_news_filings_price_reaction_panel_1.png",
+      "_output/94_news_filings_price_reaction_panel_2.png",
+      "_output/94_news_filings_price_reaction_panel_3.png",
+      "_output/94_news_filings_price_reaction_panel_4.png"
+    ],
+    "output": "_output/94_news_filings_price_reaction_panel_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/95_spread_liquidity_monitoring_packet.ipynb",
+    "outputs": [
+      "_output/95_spread_liquidity_monitoring_packet_1.png",
+      "_output/95_spread_liquidity_monitoring_packet_2.png",
+      "_output/95_spread_liquidity_monitoring_packet_3.png",
+      "_output/95_spread_liquidity_monitoring_packet_4.png"
+    ],
+    "output": "_output/95_spread_liquidity_monitoring_packet_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/96_earnings_revisions_price_momentum.ipynb",
+    "outputs": [
+      "_output/96_earnings_revisions_price_momentum_1.png",
+      "_output/96_earnings_revisions_price_momentum_2.png",
+      "_output/96_earnings_revisions_price_momentum_3.png",
+      "_output/96_earnings_revisions_price_momentum_4.png"
+    ],
+    "output": "_output/96_earnings_revisions_price_momentum_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/97_roic_wacc_cash_conversion_quality.ipynb",
+    "outputs": [
+      "_output/97_roic_wacc_cash_conversion_quality_1.png",
+      "_output/97_roic_wacc_cash_conversion_quality_2.png",
+      "_output/97_roic_wacc_cash_conversion_quality_3.png",
+      "_output/97_roic_wacc_cash_conversion_quality_4.png"
+    ],
+    "output": "_output/97_roic_wacc_cash_conversion_quality_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/98_oil_curve_regime_instrument_selection.ipynb",
+    "outputs": [
+      "_output/98_oil_curve_regime_instrument_selection_1.png",
+      "_output/98_oil_curve_regime_instrument_selection_2.png",
+      "_output/98_oil_curve_regime_instrument_selection_3.png",
+      "_output/98_oil_curve_regime_instrument_selection_4.png"
+    ],
+    "output": "_output/98_oil_curve_regime_instrument_selection_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/99_vixy_term_structure_macro_regime.ipynb",
+    "outputs": [
+      "_output/99_vixy_term_structure_macro_regime_1.png",
+      "_output/99_vixy_term_structure_macro_regime_2.png",
+      "_output/99_vixy_term_structure_macro_regime_3.png",
+      "_output/99_vixy_term_structure_macro_regime_4.png"
+    ],
+    "output": "_output/99_vixy_term_structure_macro_regime_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/100_credit_hy_treasury_spread_regime.ipynb",
+    "outputs": [
+      "_output/100_credit_hy_treasury_spread_regime_1.png",
+      "_output/100_credit_hy_treasury_spread_regime_2.png",
+      "_output/100_credit_hy_treasury_spread_regime_3.png",
+      "_output/100_credit_hy_treasury_spread_regime_4.png"
+    ],
+    "output": "_output/100_credit_hy_treasury_spread_regime_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
+    "status": "ok"
+  },
+  {
+    "notebook": "_candidates/101_consumer_dispersion_not_the_trade.ipynb",
+    "outputs": [
+      "_output/101_consumer_dispersion_not_the_trade_1.png",
+      "_output/101_consumer_dispersion_not_the_trade_2.png",
+      "_output/101_consumer_dispersion_not_the_trade_3.png",
+      "_output/101_consumer_dispersion_not_the_trade_4.png"
+    ],
+    "output": "_output/101_consumer_dispersion_not_the_trade_1.png",
+    "code_cells": 7,
+    "markdown_cells": 6,
     "status": "ok"
   }
 ]

@@ -2213,7 +2213,22 @@ def output_links_for(stem: str) -> str:
         if not names:
             return "none"
         return ", ".join(f"[{index:02d}](../_output/{name})" for index, name in enumerate(names, start=1))
+    try:
+        number = int(stem.split("_", 1)[0])
+    except ValueError:
+        number = 0
+    if number >= 88:
+        return ", ".join(f"[{index}](../_output/{stem}_{index}.png)" for index in range(1, 5))
     return f"[PNG](../_output/{stem}_output_01.png)"
+
+
+def notebook_sort_key(name: str) -> tuple[int, str]:
+    stem = Path(name).stem
+    prefix = stem.split("_", 1)[0]
+    try:
+        return int(prefix), stem
+    except ValueError:
+        return 10_000, stem
 
 
 def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> None:
@@ -2225,7 +2240,7 @@ def write_index(copied: list[tuple[str, str, str]], generated: list[str]) -> Non
             rows.append((name, category, summary))
     for spec in ALL_GENERATED_SPECS:
         rows.append((spec.filename, spec.category, spec.summary))
-    rows = sorted(rows, key=lambda row: row[0])
+    rows = sorted(rows, key=lambda row: notebook_sort_key(row[0]))
     lines = [
         "# QuantJourney SDK Example Catalog",
         "",

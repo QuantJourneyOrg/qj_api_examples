@@ -39,13 +39,21 @@ def validate_notebook(path: Path) -> tuple[int, int]:
     return code_cells, markdown_cells
 
 
+def notebook_sort_key(path: Path) -> tuple[int, str]:
+    prefix = path.stem.split("_", 1)[0]
+    try:
+        return int(prefix), path.stem
+    except ValueError:
+        return 10_000, path.stem
+
+
 def main() -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     for old in OUTPUT.glob("*.png"):
         old.unlink()
 
     manifest = []
-    for notebook in sorted(CANDIDATES.glob("*.ipynb")):
+    for notebook in sorted(CANDIDATES.glob("*.ipynb"), key=notebook_sort_key):
         code_cells, markdown_cells = validate_notebook(notebook)
         outputs = plot_outputs(notebook.stem, OUTPUT)
         manifest.append(

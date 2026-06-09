@@ -56,20 +56,38 @@ def human_title(title: str) -> str:
         "adv": "ADV",
         "api": "API",
         "bt": "BT",
+        "cboe": "CBOE",
+        "cftc": "CFTC",
+        "cl1": "CL1",
+        "cl2": "CL2",
         "cot": "COT",
+        "cpi": "CPI",
         "cta": "CTA",
+        "eod": "EOD",
+        "eps": "EPS",
+        "etf": "ETF",
         "ff": "FF",
         "figi": "FIGI",
+        "finra": "FINRA",
+        "fmp": "FMP",
+        "fred": "FRED",
+        "hy": "HY",
         "hrp": "HRP",
+        "ig": "IG",
         "nav": "NAV",
         "pead": "PEAD",
         "pmi": "PMI",
         "pm": "PM",
+        "roic": "ROIC",
         "sec": "SEC",
         "sma": "SMA",
         "spy": "SPY",
+        "usd": "USD",
         "var": "VaR",
         "vix": "VIX",
+        "vixy": "VIXY",
+        "wacc": "WACC",
+        "wti": "WTI",
     }
     return " ".join(acronyms.get(word.lower(), word.capitalize()) for word in words)
 
@@ -94,6 +112,32 @@ def subtitle_for_title(title: str) -> str:
 def source_context(title: str, subtitle: str) -> str:
     lower = f"{title} {subtitle}".lower()
 
+    if "usd liquidity" in lower or "liquidity cross-asset" in lower:
+        return "Sources: FRED:WALCL Fed balance sheet | FRED:WTREGEN Treasury General Account | FRED:RRPONTSYD reverse repo | FRED:DGS10 10Y Treasury | CBOE VIX | EOD/CCXT prices"
+    if "earnings" in lower and any(token in lower for token in ["option", "volatility", "reaction"]):
+        return "Sources: FMP earnings calendar and surprises | CBOE option chain and expirations | CBOE VIX | adjusted OHLCV and volume"
+    if "news" in lower and any(token in lower for token in ["filing", "reaction", "event"]):
+        return "Sources: Tiingo news | Finnhub company news | SEC company filings and insider transactions | FMP earnings calendar | adjusted OHLCV"
+    if "sec filing fundamental" in lower:
+        return "Sources: SEC EDGAR company filings/facts/submissions | FMP income statement, balance sheet, TTM ratios and estimates | OpenFIGI identity | adjusted OHLCV"
+    if "macro rates equity factor" in lower:
+        return "Sources: FRED:CPIAUCSL CPI | FRED:UNRATE unemployment | FRED:T10YIE breakevens | FRED:DGS2/DGS10 rates | Fama-French factors | sector ETF prices"
+    if "crypto macro liquidity" in lower:
+        return "Sources: CCXT BTC/ETH spot | Binance funding and open interest | CoinGecko history | CBOE VIX | FRED:DGS10/FEDFUNDS | EOD UUP/GLD/SPY prices"
+    if "spread and liquidity" in lower:
+        return "Sources: EOD intraday and adjusted OHLCV | FMP live prices | FINRA short-interest context | CBOE VIX | ADV and slippage proxies"
+    if "earnings revisions" in lower:
+        return "Sources: FMP analyst estimates, earnings surprises, price targets and TTM ratios | EOD adjusted prices | revision breadth, dispersion and momentum factors"
+    if "roic wacc" in lower or "cash conversion" in lower:
+        return "Sources: FMP income statement, balance sheet, cash-flow statement, key metrics and TTM ratios | FRED:DGS10 | adjusted equity prices"
+    if "oil curve" in lower:
+        return "Sources: EOD futures contracts and WTI pricing | EIA petroleum data | CFTC COT crude positioning | EOD USO/XLE/XOP/SPY prices"
+    if "vixy term" in lower:
+        return "Sources: CBOE VIX, VVIX, SKEW and VIX term structure | EOD VIXY/SPY/TLT prices | FRED:DGS10 rates context"
+    if "credit high yield" in lower or "treasury spread" in lower:
+        return "Sources: FRED high-yield and investment-grade OAS | FRED:DGS2/DGS10 | CBOE VIX | EOD HYG/LQD/TLT/IEF/SPY prices"
+    if "consumer dispersion" in lower or "consumer is not" in lower:
+        return "Sources: FRED retail sales, sentiment, consumer credit, CPI and Fed Funds | FMP TTM ratios and profiles | EOD consumer equity prices"
     if "macro" in lower and any(token in lower for token in ["cot", "positioning", "cta"]):
         return "Sources: FRED:CPIAUCSL CPI | FRED:UNRATE unemployment | FRED:DGS10 10Y Treasury | CFTC COT ES/CL/GC/ZN managed-money positioning | CBOE VIX"
     if any(token in lower for token in ["evidence", "lineage", "packet"]):
@@ -1480,6 +1524,809 @@ def plot_lineage_packet(stem: str, title: str, out: Path) -> None:
     save(fig, out)
 
 
+def plot_usd_liquidity_mosaic(stem: str, title: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = dates(520)
+    walcl = pd.Series(8.7 + np.cumsum(rng.normal(-0.0007, 0.011, len(idx))), index=idx)
+    tga = pd.Series(0.55 + np.sin(np.linspace(0, 11, len(idx))) * 0.18 + rng.normal(0, 0.025, len(idx)), index=idx)
+    rrp = pd.Series(1.6 - np.linspace(0, 0.95, len(idx)) + np.sin(np.linspace(0, 7, len(idx))) * 0.22 + rng.normal(0, 0.025, len(idx)), index=idx).clip(0.05, None)
+    liquidity = ((walcl.pct_change(26) - tga.pct_change(26) - rrp.pct_change(26)).rolling(8).mean() * 100).dropna()
+    vix = pd.Series(18 + np.sin(np.linspace(0, 14, len(idx))) * 5.5 + rng.normal(0, 1.4, len(idx)), index=idx).clip(10, 45)
+    assets = pd.DataFrame({
+        "SPY equity": np.cumprod(1 + rng.normal(0.00045, 0.011, len(idx))),
+        "TLT duration": np.cumprod(1 + rng.normal(0.00008, 0.010, len(idx))),
+        "GLD gold": np.cumprod(1 + rng.normal(0.00022, 0.009, len(idx))),
+        "UUP dollar": np.cumprod(1 + rng.normal(0.00006, 0.005, len(idx))),
+        "BTC crypto": np.cumprod(1 + rng.normal(0.00072, 0.026, len(idx))),
+    }, index=idx)
+    sens = pd.Series({"SPY equity": 0.42, "TLT duration": -0.18, "GLD gold": 0.16, "UUP dollar": -0.31, "BTC crypto": 0.58})
+
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2)
+    dashboard_title(fig, human_title(title), "Fed liquidity, rates, volatility and cross-asset prices normalized into one data packet")
+    ax_liq = fig.add_subplot(gs[0, 0])
+    ax_asset = fig.add_subplot(gs[0, 1])
+    ax_sens = fig.add_subplot(gs[1, 0])
+    ax_comp = fig.add_subplot(gs[1, 1])
+    for ax in [ax_liq, ax_asset, ax_sens, ax_comp]:
+        style_ax(ax, "")
+
+    ax_liq.plot(liquidity.index, liquidity, color=CYAN, lw=2.1, label="USD liquidity impulse")
+    ax_liq.axhline(0, color=TEXT, alpha=0.35, lw=1)
+    ax_liq.fill_between(liquidity.index, 0, liquidity, where=(liquidity >= 0), color=GREEN, alpha=0.10)
+    ax_liq.fill_between(liquidity.index, 0, liquidity, where=(liquidity < 0), color=PINK, alpha=0.12)
+    ax_liq2 = ax_liq.twinx()
+    ax_liq2.plot(vix.index, vix, color=PINK, lw=1.4, alpha=0.75, label="CBOE VIX")
+    ax_liq2.tick_params(colors=MUTED, labelsize=9)
+    ax_liq2.spines["right"].set_color("#17376f")
+    ax_liq.set_title("liquidity impulse and volatility", color=TEXT, loc="left", fontsize=12)
+
+    for col, color in zip(assets.columns, [BLUE, CYAN, GREEN, AMBER, PINK]):
+        ax_asset.plot(assets.index, assets[col] / assets[col].iloc[0] * 100, color=color, lw=1.7, label=col)
+    ax_asset.set_title("cross-asset normalized price paths", color=TEXT, loc="left", fontsize=12)
+    ax_asset.set_ylabel("index = 100")
+    style_legend(ax_asset)
+
+    ax_sens.bar(sens.index, sens.values, color=[GREEN if value > 0 else PINK for value in sens], alpha=0.92)
+    ax_sens.axhline(0, color=TEXT, alpha=0.35, lw=1)
+    ax_sens.tick_params(axis="x", rotation=25)
+    ax_sens.set_title("252D beta to liquidity impulse", color=TEXT, loc="left", fontsize=12)
+
+    comp = pd.DataFrame({"Fed balance sheet (WALCL)": walcl, "Treasury account (WTREGEN)": tga, "Reverse repo (RRPONTSYD)": rrp})
+    for col, color in zip(comp.columns, [BLUE, AMBER, PINK]):
+        normalized = (comp[col] / comp[col].iloc[0] - 1) * 100
+        ax_comp.plot(comp.index, normalized, color=color, lw=1.8, label=col)
+    ax_comp.set_title("liquidity components", color=TEXT, loc="left", fontsize=12)
+    ax_comp.set_ylabel("% since start")
+    style_legend(ax_comp)
+    save(fig, out)
+
+
+def plot_earnings_options_reaction(stem: str, title: str, out: Path) -> None:
+    rng = rng_for(stem)
+    event_days = np.arange(-10, 22)
+    event_curve = pd.Series(np.tanh(event_days / 16) * 0.045 + rng.normal(0, 0.004, len(event_days)), index=event_days)
+    symbols = ["AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META"]
+    implied = pd.Series([4.6, 4.1, 7.8, 5.2, 4.9, 5.5], index=symbols)
+    realized = implied * pd.Series([0.82, 1.10, 1.34, 0.76, 0.91, 1.18], index=symbols)
+    surprise = pd.Series([3.2, 1.6, 8.9, -0.8, 2.4, 4.1], index=symbols)
+    fwd = pd.Series([2.1, 1.4, 6.8, -1.1, 0.9, 3.2], index=symbols)
+    idx = dates(260)
+    vix = pd.Series(17 + np.sin(np.linspace(0, 11, len(idx))) * 5 + rng.normal(0, 1.2, len(idx)), index=idx).clip(10, 42)
+
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2)
+    dashboard_title(fig, human_title(title), "Earnings surprise, option-implied move, VIX and event-window price reaction")
+    ax_curve = fig.add_subplot(gs[0, 0])
+    ax_move = fig.add_subplot(gs[0, 1])
+    ax_scatter = fig.add_subplot(gs[1, 0])
+    ax_vix = fig.add_subplot(gs[1, 1])
+    for ax in [ax_curve, ax_move, ax_scatter, ax_vix]:
+        style_ax(ax, "")
+
+    ax_curve.plot(event_curve.index, event_curve * 100, color=CYAN, lw=2.3)
+    ax_curve.axvline(0, color=TEXT, alpha=0.35, lw=1)
+    ax_curve.fill_between(event_curve.index, 0, event_curve * 100, color=CYAN, alpha=0.12)
+    ax_curve.set_title("average event-window return", color=TEXT, loc="left", fontsize=12)
+    ax_curve.set_xlabel("trading days from earnings")
+    ax_curve.set_ylabel("%")
+
+    x = np.arange(len(symbols))
+    ax_move.bar(x - 0.18, implied.values, width=0.36, color=BLUE, alpha=0.88, label="option implied move")
+    ax_move.bar(x + 0.18, realized.values, width=0.36, color=PINK, alpha=0.88, label="realized 1D move")
+    ax_move.set_xticks(x, symbols)
+    ax_move.set_ylabel("%")
+    ax_move.set_title("implied vs realized move", color=TEXT, loc="left", fontsize=12)
+    style_legend(ax_move)
+
+    ax_scatter.scatter(surprise, fwd, s=90, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED], edgecolors=TEXT, linewidths=0.4)
+    for symbol in symbols:
+        ax_scatter.text(surprise[symbol] + 0.12, fwd[symbol], symbol, color=TEXT, fontsize=9)
+    ax_scatter.axhline(0, color=TEXT, alpha=0.3, lw=1)
+    ax_scatter.axvline(0, color=TEXT, alpha=0.3, lw=1)
+    ax_scatter.set_title("surprise vs 21D forward return", color=TEXT, loc="left", fontsize=12)
+    ax_scatter.set_xlabel("EPS surprise %")
+    ax_scatter.set_ylabel("21D return %")
+
+    ax_vix.plot(idx, vix, color=CYAN, lw=2.0)
+    ax_vix.axhspan(25, 45, color=PINK, alpha=0.09)
+    ax_vix.set_title("CBOE VIX context", color=TEXT, loc="left", fontsize=12)
+    ax_vix.set_ylabel("index")
+    save(fig, out)
+
+
+def plot_sec_fundamental_price_mosaic(stem: str, title: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = dates(420)
+    price = pd.Series(np.cumprod(1 + rng.normal(0.00048, 0.013, len(idx))) * 185, index=idx)
+    volume_z = pd.Series(rng.normal(0, 0.65, len(idx)), index=idx).rolling(5).mean()
+    event_ix = [58, 118, 181, 246, 318, 382]
+    event_dates = idx[event_ix]
+    labels = ["10-K", "10-Q", "8-K", "Form 4", "10-Q", "13F-HR"]
+    ratio_names = ["P/E TTM", "Gross margin", "FCF margin", "ROE"]
+    ratios = pd.Series([29.4, 46.2, 31.8, 148.0], index=ratio_names)
+    statements = pd.DataFrame({
+        "revenue": [394, 383, 391, 410, 428],
+        "operating cash flow": [122, 111, 118, 126, 132],
+        "free cash flow": [107, 99, 105, 113, 119],
+    }, index=["FY21", "FY22", "FY23", "FY24", "FY25"])
+
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.35, 1])
+    dashboard_title(fig, human_title(title), "SEC filing dates, company facts, FMP fundamentals and adjusted price-volume reaction")
+    ax_price = fig.add_subplot(gs[0, 0])
+    ax_vol = fig.add_subplot(gs[1, 0], sharex=ax_price)
+    ax_ratio = fig.add_subplot(gs[0, 1])
+    ax_stmt = fig.add_subplot(gs[1, 1])
+    for ax in [ax_price, ax_vol, ax_ratio, ax_stmt]:
+        style_ax(ax, "")
+
+    ax_price.plot(idx, price, color=CYAN, lw=2.2, label="AAPL adjusted close")
+    for event_date, label in zip(event_dates, labels):
+        ax_price.axvline(event_date, color=PINK, lw=1.1, alpha=0.85)
+        ax_price.text(event_date, price.max() * 0.985, label, color=TEXT, fontsize=8, rotation=90, va="top", ha="right")
+    ax_price.set_title("price path with SEC events", color=TEXT, loc="left", fontsize=12)
+    style_legend(ax_price)
+
+    ax_vol.bar(idx[-220:], volume_z[-220:].fillna(0), color=[PINK if v > 1 else BLUE for v in volume_z[-220:].fillna(0)], alpha=0.65)
+    ax_vol.axhline(0, color=TEXT, alpha=0.35, lw=1)
+    ax_vol.set_title("volume reaction z-score", color=TEXT, loc="left", fontsize=12)
+
+    ax_ratio.barh(ratios.index, ratios.values, color=[BLUE, CYAN, GREEN, PINK], alpha=0.92)
+    ax_ratio.set_title("FMP TTM ratio snapshot", color=TEXT, loc="left", fontsize=12)
+
+    for col, color in zip(statements.columns, [BLUE, CYAN, PINK]):
+        ax_stmt.plot(statements.index, statements[col], color=color, lw=2.0, marker="o", label=col)
+    ax_stmt.set_title("statement history", color=TEXT, loc="left", fontsize=12)
+    ax_stmt.set_ylabel("$bn")
+    style_legend(ax_stmt)
+    save(fig, out)
+
+
+def plot_macro_rates_equity_factor_panel(stem: str, title: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = pd.date_range(end=pd.Timestamp.today().normalize(), periods=96, freq="ME")
+    cpi = pd.Series(2.6 + np.sin(np.linspace(0, 10, len(idx))) * 0.95 + rng.normal(0, 0.09, len(idx)), index=idx)
+    unrate = pd.Series(4.1 + np.cos(np.linspace(0, 8, len(idx))) * 0.45 + rng.normal(0, 0.05, len(idx)), index=idx)
+    fed = pd.Series(1.2 + np.linspace(0, 3.7, len(idx)) + np.sin(np.linspace(0, 8, len(idx))) * 0.55, index=idx).clip(0, 5.7)
+    ten_y = pd.Series(2.0 + np.linspace(0, 2.1, len(idx)) + np.sin(np.linspace(0, 7, len(idx))) * 0.45, index=idx)
+    factors = pd.Series({"Mkt-RF": 8.2, "SMB": -1.4, "HML": 3.1, "RMW": 2.6, "CMA": 1.8, "MOM": 5.9})
+    sectors = ["XLK", "XLF", "XLE", "XLV", "XLY", "XLP", "XLU", "XLI"]
+    matrix = np.array([
+        [0.18, 0.09, 0.21, 0.07],
+        [0.11, 0.15, 0.24, 0.05],
+        [0.27, 0.10, 0.35, 0.18],
+        [0.08, 0.12, 0.04, 0.10],
+        [0.16, 0.05, 0.11, -0.02],
+        [0.06, 0.08, 0.02, 0.05],
+        [-0.03, 0.11, -0.07, 0.16],
+        [0.12, 0.13, 0.15, 0.08],
+    ])
+
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2)
+    dashboard_title(fig, human_title(title), "FRED macro series, Fama-French factors and sector ETF returns aligned by regime")
+    ax_macro = fig.add_subplot(gs[0, 0])
+    ax_factor = fig.add_subplot(gs[0, 1])
+    ax_heat = fig.add_subplot(gs[1, 0])
+    ax_curve = fig.add_subplot(gs[1, 1])
+    for ax in [ax_macro, ax_factor, ax_heat, ax_curve]:
+        style_ax(ax, "")
+
+    ax_macro.plot(idx, cpi, color=PINK, lw=2.0, label="CPI YoY (FRED:CPIAUCSL)")
+    ax_macro.plot(idx, unrate, color=AMBER, lw=2.0, label="Unemployment (FRED:UNRATE)")
+    ax_macro.plot(idx, fed, color=CYAN, lw=2.0, label="Fed Funds (FRED:FEDFUNDS)")
+    ax_macro.set_title("macro state variables", color=TEXT, loc="left", fontsize=12)
+    ax_macro.set_ylabel("%")
+    style_legend(ax_macro)
+
+    ax_factor.bar(factors.index, factors.values, color=[GREEN if value > 0 else PINK for value in factors], alpha=0.92)
+    ax_factor.axhline(0, color=TEXT, alpha=0.35, lw=1)
+    ax_factor.set_title("Fama-French factor returns", color=TEXT, loc="left", fontsize=12)
+    ax_factor.set_ylabel("% annualized")
+
+    ax_heat.imshow(matrix, cmap=CORR_CMAP, vmin=-0.15, vmax=0.35, aspect="auto")
+    ax_heat.grid(False)
+    ax_heat.set_xticks(range(4), ["rates up\ninflation up", "rates up\ninflation down", "rates down\ninflation up", "rates down\ninflation down"])
+    ax_heat.set_yticks(range(len(sectors)), sectors)
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
+            ax_heat.text(j, i, f"{matrix[i, j]:.0%}", color=TEXT, ha="center", va="center", fontsize=7)
+    ax_heat.set_title("sector return by macro regime", color=TEXT, loc="left", fontsize=12)
+
+    ax_curve.plot(idx, ten_y - fed, color=BLUE, lw=2.1, label="10Y minus Fed Funds")
+    ax_curve.plot(idx, cpi - 2.0, color=PINK, lw=1.8, label="CPI gap to 2%")
+    ax_curve.axhline(0, color=TEXT, alpha=0.35, lw=1)
+    ax_curve.set_title("policy and inflation gaps", color=TEXT, loc="left", fontsize=12)
+    style_legend(ax_curve)
+    save(fig, out)
+
+
+def plot_crypto_macro_liquidity_panel(stem: str, title: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = dates(420)
+    btc = pd.Series(np.cumprod(1 + rng.normal(0.00070, 0.026, len(idx))), index=idx)
+    eth = pd.Series(np.cumprod(1 + rng.normal(0.00078, 0.031, len(idx))), index=idx)
+    funding = pd.Series(rng.normal(0.011, 0.032, len(idx)), index=idx).rolling(7).mean()
+    open_interest = pd.Series(18 + np.linspace(0, 9, len(idx)) + np.sin(np.linspace(0, 12, len(idx))) * 2.2 + rng.normal(0, 0.5, len(idx)), index=idx)
+    vix = pd.Series(18 + np.sin(np.linspace(0, 12, len(idx))) * 5 + rng.normal(0, 1.2, len(idx)), index=idx).clip(10, 45)
+    rates = pd.Series(1.8 + np.linspace(0, 2.6, len(idx)) + np.sin(np.linspace(0, 8, len(idx))) * 0.45, index=idx)
+    corr = pd.DataFrame(
+        [[1.00, 0.78, -0.31, -0.22], [0.78, 1.00, -0.24, -0.18], [-0.31, -0.24, 1.00, 0.42], [-0.22, -0.18, 0.42, 1.00]],
+        index=["BTC", "ETH", "VIX", "10Y"],
+        columns=["BTC", "ETH", "VIX", "10Y"],
+    )
+
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2)
+    dashboard_title(fig, human_title(title), "Exchange spot, funding, open interest, volatility and rates in one crypto-macro panel")
+    ax_spot = fig.add_subplot(gs[0, 0])
+    ax_fund = fig.add_subplot(gs[0, 1])
+    ax_corr = fig.add_subplot(gs[1, 0])
+    ax_macro = fig.add_subplot(gs[1, 1])
+    for ax in [ax_spot, ax_fund, ax_corr, ax_macro]:
+        style_ax(ax, "")
+
+    ax_spot.plot(idx, btc / btc.iloc[0] * 100, color=BLUE, lw=2.1, label="BTC/USDT spot")
+    ax_spot.plot(idx, eth / eth.iloc[0] * 100, color=PINK, lw=2.1, label="ETH/USDT spot")
+    ax_spot.set_title("spot performance", color=TEXT, loc="left", fontsize=12)
+    ax_spot.set_ylabel("index = 100")
+    style_legend(ax_spot)
+
+    sample = funding.dropna().tail(140) * 100
+    ax_fund.bar(sample.index, sample.values, color=[GREEN if value > 0 else RED for value in sample.values], alpha=0.7)
+    ax_fund.axhline(0, color=TEXT, alpha=0.35, lw=1)
+    ax_fund2 = ax_fund.twinx()
+    ax_fund2.plot(open_interest.index[-140:], open_interest[-140:], color=CYAN, lw=1.8)
+    ax_fund2.tick_params(colors=MUTED, labelsize=9)
+    ax_fund2.spines["right"].set_color("#17376f")
+    ax_fund.set_title("funding and open interest", color=TEXT, loc="left", fontsize=12)
+
+    ax_corr.imshow(corr, cmap=CORR_CMAP, vmin=-1, vmax=1)
+    ax_corr.grid(False)
+    ax_corr.set_xticks(range(len(corr.columns)), corr.columns)
+    ax_corr.set_yticks(range(len(corr.index)), corr.index)
+    for i in range(corr.shape[0]):
+        for j in range(corr.shape[1]):
+            ax_corr.text(j, i, f"{corr.iloc[i, j]:.2f}", color=TEXT, ha="center", va="center", fontsize=10)
+    ax_corr.set_title("252D cross-correlation", color=TEXT, loc="left", fontsize=12)
+
+    ax_macro.plot(idx, vix, color=PINK, lw=2.0, label="CBOE VIX")
+    ax_macro2 = ax_macro.twinx()
+    ax_macro2.plot(idx, rates, color=CYAN, lw=1.8, label="10Y Treasury")
+    ax_macro2.tick_params(colors=MUTED, labelsize=9)
+    ax_macro2.spines["right"].set_color("#17376f")
+    ax_macro.set_title("macro stress context", color=TEXT, loc="left", fontsize=12)
+    save(fig, out)
+
+
+def plot_news_filings_reaction_panel(stem: str, title: str, out: Path) -> None:
+    rng = rng_for(stem)
+    idx = dates(320)
+    price = pd.Series(np.cumprod(1 + rng.normal(0.00046, 0.013, len(idx))) * 190, index=idx)
+    event_positions = [38, 74, 113, 158, 196, 239, 286]
+    event_types = ["Tiingo news", "SEC 10-Q", "Finnhub news", "Form 4", "Earnings", "SEC 8-K", "Tiingo news"]
+    events = pd.DataFrame({"date": idx[event_positions], "type": event_types})
+    source_counts = events["type"].value_counts().sort_values()
+    reactions = pd.Series({"Tiingo news": 0.006, "Finnhub news": 0.004, "SEC 10-Q": -0.012, "SEC 8-K": 0.009, "Form 4": -0.004, "Earnings": 0.018})
+    peers = pd.DataFrame({
+        "AAPL": np.cumprod(1 + rng.normal(0.00048, 0.013, len(idx))),
+        "MSFT": np.cumprod(1 + rng.normal(0.00044, 0.012, len(idx))),
+        "NVDA": np.cumprod(1 + rng.normal(0.00076, 0.023, len(idx))),
+        "GOOGL": np.cumprod(1 + rng.normal(0.00040, 0.014, len(idx))),
+    }, index=idx)
+
+    fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.35, 1])
+    dashboard_title(fig, human_title(title), "News, filings, earnings and insider events aligned to adjusted price reaction")
+    ax_price = fig.add_subplot(gs[0, 0])
+    ax_peer = fig.add_subplot(gs[1, 0])
+    ax_react = fig.add_subplot(gs[0, 1])
+    ax_count = fig.add_subplot(gs[1, 1])
+    for ax in [ax_price, ax_peer, ax_react, ax_count]:
+        style_ax(ax, "")
+
+    ax_price.plot(idx, price, color=CYAN, lw=2.2, label="AAPL adjusted close")
+    color_map = {"Tiingo news": BLUE, "Finnhub news": CYAN, "SEC 10-Q": PINK, "SEC 8-K": PINK, "Form 4": AMBER, "Earnings": GREEN}
+    for row in events.itertuples():
+        ax_price.axvline(row.date, color=color_map.get(row.type, PINK), alpha=0.85, lw=1.15)
+        ax_price.text(row.date, price.max() * 0.985, row.type, color=TEXT, fontsize=7.5, rotation=90, va="top", ha="right")
+    ax_price.set_title("issuer event timeline", color=TEXT, loc="left", fontsize=12)
+    style_legend(ax_price)
+
+    for col, color in zip(peers.columns, [BLUE, CYAN, PINK, GREEN]):
+        ax_peer.plot(peers.index, peers[col] / peers[col].iloc[0] * 100, color=color, lw=1.8, label=col)
+    ax_peer.set_title("peer price context", color=TEXT, loc="left", fontsize=12)
+    ax_peer.set_ylabel("index = 100")
+    style_legend(ax_peer)
+
+    ax_react.barh(reactions.index, reactions.values * 100, color=[GREEN if value > 0 else PINK for value in reactions], alpha=0.9)
+    ax_react.axvline(0, color=TEXT, alpha=0.35, lw=1)
+    ax_react.set_title("median 5D reaction by source", color=TEXT, loc="left", fontsize=12)
+    ax_react.set_xlabel("%")
+
+    ax_count.barh(source_counts.index, source_counts.values, color=[BLUE, CYAN, PINK, AMBER, GREEN][: len(source_counts)], alpha=0.9)
+    ax_count.set_title("event objects joined", color=TEXT, loc="left", fontsize=12)
+    save(fig, out)
+
+
+def _single_ax(title: str, subtitle: str, figsize: tuple[float, float] = (11, 6)) -> tuple[plt.Figure, plt.Axes]:
+    fig, ax = plt.subplots(figsize=figsize, facecolor=NAVY)
+    dashboard_title(fig, title, subtitle)
+    style_ax(ax, "")
+    return fig, ax
+
+
+def _simple_series(seed: str, n: int = 360, drift: float = 0.00035, vol: float = 0.012) -> pd.Series:
+    rng = rng_for(seed)
+    idx = dates(n)
+    return pd.Series(np.cumprod(1 + rng.normal(drift, vol, n)), index=idx)
+
+
+def plot_88_plus_split(stem: str, panel: int, out: Path) -> None:
+    title = human_title(stem[3:] if stem[:2].isdigit() else stem)
+    lower = stem.lower()
+    rng = rng_for(f"{stem}:{panel}")
+
+    if lower.startswith("88_macro_positioning_cot_dashboard"):
+        contracts, zscores, percentiles, weekly_change, states = cot_signal_data(stem)
+        labels = ["ES", "CL", "GC", "ZN"]
+        if panel == 1:
+            fig, ax = _single_ax(title + " - Positioning Z-Score", "Managed-money net positioning z-score by CFTC contract")
+            ax.bar(labels, zscores, color=[CYAN if x >= 0 else PINK for x in zscores], alpha=0.92)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+            ax.set_ylabel("z-score")
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - Positioning Percentile", "Current COT percentile using a three-year lookback")
+            ax.bar(labels, percentiles, color=[PINK if x >= 80 or x <= 20 else CYAN for x in percentiles], alpha=0.92)
+            ax.set_ylim(0, 100)
+            ax.set_ylabel("percentile")
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Weekly Position Change", "One-week change in managed-money net contracts")
+            ax.bar(labels, weekly_change / 1000, color=[GREEN if x >= 0 else RED for x in weekly_change], alpha=0.92)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+            ax.set_ylabel("contracts, thousands")
+        else:
+            fig, ax = _single_ax(title + " - Signal State", "Positioning state with percentile and weekly change")
+            ax.axis("off")
+            for i, (code, state, pct, change) in enumerate(zip(labels, states, percentiles, weekly_change)):
+                y = 0.80 - i * 0.18
+                ax.text(0.08, y, code, color=MUTED, fontsize=10, transform=ax.transAxes)
+                ax.text(0.20, y, state, color=PINK if "Crowded" in state else CYAN, fontsize=15, weight="semibold", transform=ax.transAxes)
+                ax.text(0.20, y - 0.07, f"{pct:.0f}th percentile | {change:+,.0f} net contracts WoW", color=TEXT, fontsize=9, transform=ax.transAxes)
+        save(fig, out)
+        return
+
+    if lower.startswith("89_usd_liquidity_cross_asset_mosaic"):
+        idx = dates(520)
+        walcl = pd.Series(8.7 + np.cumsum(rng.normal(-0.0007, 0.011, len(idx))), index=idx)
+        tga = pd.Series(0.55 + np.sin(np.linspace(0, 11, len(idx))) * 0.18 + rng.normal(0, 0.025, len(idx)), index=idx)
+        rrp = pd.Series(1.6 - np.linspace(0, 0.95, len(idx)) + np.sin(np.linspace(0, 7, len(idx))) * 0.22 + rng.normal(0, 0.025, len(idx)), index=idx).clip(0.05, None)
+        liquidity = ((walcl.pct_change(26) - tga.pct_change(26) - rrp.pct_change(26)).rolling(8).mean() * 100).dropna()
+        assets = pd.DataFrame({name: _simple_series(f"{stem}:{name}", 520, drift, vol) for name, drift, vol in [
+            ("SPY equity", 0.00045, 0.011), ("TLT duration", 0.00008, 0.010), ("GLD gold", 0.00022, 0.009), ("UUP dollar", 0.00006, 0.005), ("BTC crypto", 0.00072, 0.026)
+        ]})
+        if panel == 1:
+            fig, ax = _single_ax(title + " - USD Liquidity Impulse", "Fed balance sheet minus Treasury cash and reverse repo pressure")
+            ax.plot(liquidity.index, liquidity, color=CYAN, lw=2.2)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+            ax.fill_between(liquidity.index, 0, liquidity, where=liquidity >= 0, color=GREEN, alpha=0.12)
+            ax.fill_between(liquidity.index, 0, liquidity, where=liquidity < 0, color=PINK, alpha=0.14)
+            ax.set_ylabel("% impulse")
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - Cross-Asset Price Paths", "Normalized SPY, TLT, GLD, UUP and BTC prices")
+            for col, color in zip(assets.columns, [BLUE, CYAN, GREEN, AMBER, PINK]):
+                ax.plot(assets.index, assets[col] / assets[col].iloc[0] * 100, color=color, lw=1.9, label=col)
+            ax.set_ylabel("index = 100")
+            style_legend(ax)
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Liquidity Components", "Fed balance sheet, Treasury account and reverse repo normalized")
+            for series, label, color in [(walcl, "WALCL", BLUE), (tga, "WTREGEN", AMBER), (rrp, "RRPONTSYD", PINK)]:
+                ax.plot(series.index, (series / series.iloc[0] - 1) * 100, color=color, lw=2.0, label=label)
+            ax.set_ylabel("% since start")
+            style_legend(ax)
+        else:
+            fig, ax = _single_ax(title + " - Liquidity Beta", "252D beta proxy to USD liquidity impulse")
+            sens = pd.Series({"SPY": 0.42, "TLT": -0.18, "GLD": 0.16, "UUP": -0.31, "BTC": 0.58})
+            ax.bar(sens.index, sens.values, color=[GREEN if x > 0 else PINK for x in sens], alpha=0.92)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+        save(fig, out)
+        return
+
+    if lower.startswith("90_earnings_options_vol_reaction"):
+        symbols = ["AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META"]
+        event_days = np.arange(-10, 22)
+        implied = pd.Series([4.6, 4.1, 7.8, 5.2, 4.9, 5.5], index=symbols)
+        realized = implied * pd.Series([0.82, 1.10, 1.34, 0.76, 0.91, 1.18], index=symbols)
+        surprise = pd.Series([3.2, 1.6, 8.9, -0.8, 2.4, 4.1], index=symbols)
+        fwd = pd.Series([2.1, 1.4, 6.8, -1.1, 0.9, 3.2], index=symbols)
+        if panel == 1:
+            fig, ax = _single_ax(title + " - Event Return Curve", "Average post-earnings price path around event day")
+            y = pd.Series(np.tanh(event_days / 16) * 0.045 + rng.normal(0, 0.004, len(event_days)), index=event_days)
+            ax.plot(event_days, y * 100, color=CYAN, lw=2.4)
+            ax.axvline(0, color=TEXT, alpha=0.35, lw=1)
+            ax.set_xlabel("trading days from earnings")
+            ax.set_ylabel("% return")
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - Implied vs Realized Move", "Option-implied earnings move compared with realized one-day move")
+            x = np.arange(len(symbols))
+            ax.bar(x - 0.18, implied, width=0.36, color=BLUE, alpha=0.9, label="implied move")
+            ax.bar(x + 0.18, realized, width=0.36, color=PINK, alpha=0.9, label="realized move")
+            ax.set_xticks(x, symbols)
+            ax.set_ylabel("%")
+            style_legend(ax)
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Surprise vs Forward Return", "EPS surprise percentage versus twenty-one-day forward return")
+            ax.scatter(surprise, fwd, s=90, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED], edgecolors=TEXT, linewidths=0.4)
+            for symbol in symbols:
+                ax.text(surprise[symbol] + 0.12, fwd[symbol], symbol, color=TEXT, fontsize=9)
+            ax.axhline(0, color=TEXT, alpha=0.3, lw=1)
+            ax.axvline(0, color=TEXT, alpha=0.3, lw=1)
+            ax.set_xlabel("EPS surprise %")
+            ax.set_ylabel("21D return %")
+        else:
+            fig, ax = _single_ax(title + " - VIX Context", "CBOE VIX around the event study window")
+            idx = dates(260)
+            vix = pd.Series(17 + np.sin(np.linspace(0, 11, len(idx))) * 5 + rng.normal(0, 1.2, len(idx)), index=idx).clip(10, 42)
+            ax.plot(idx, vix, color=CYAN, lw=2.2)
+            ax.axhspan(25, 45, color=PINK, alpha=0.10)
+            ax.set_ylabel("VIX")
+        save(fig, out)
+        return
+
+    if lower.startswith("91_sec_filing_fundamental_price_mosaic"):
+        idx = dates(420)
+        price = pd.Series(np.cumprod(1 + rng.normal(0.00048, 0.013, len(idx))) * 185, index=idx)
+        events = idx[[58, 118, 181, 246, 318, 382]]
+        labels = ["10-K", "10-Q", "8-K", "Form 4", "10-Q", "13F-HR"]
+        if panel == 1:
+            fig, ax = _single_ax(title + " - Price With SEC Events", "AAPL adjusted close with filing markers")
+            ax.plot(idx, price, color=CYAN, lw=2.2)
+            for date, label in zip(events, labels):
+                ax.axvline(date, color=PINK, lw=1.1, alpha=0.85)
+                ax.text(date, price.max() * 0.985, label, color=TEXT, fontsize=8, rotation=90, va="top", ha="right")
+            ax.set_ylabel("price")
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - Volume Reaction", "Five-day volume reaction z-score around filing periods")
+            z = pd.Series(rng.normal(0, 0.65, len(idx)), index=idx).rolling(5).mean()
+            ax.bar(idx[-220:], z[-220:].fillna(0), color=[PINK if v > 1 else BLUE for v in z[-220:].fillna(0)], alpha=0.7)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Fundamental Snapshot", "FMP TTM ratio fields for the issuer")
+            ratios = pd.Series({"P/E TTM": 29.4, "Gross margin": 46.2, "FCF margin": 31.8, "ROE": 148.0})
+            ax.barh(ratios.index, ratios.values, color=[BLUE, CYAN, GREEN, PINK], alpha=0.92)
+        else:
+            fig, ax = _single_ax(title + " - Statement History", "Revenue, operating cash flow and free cash flow")
+            statements = pd.DataFrame({"revenue": [394, 383, 391, 410, 428], "operating cash flow": [122, 111, 118, 126, 132], "free cash flow": [107, 99, 105, 113, 119]}, index=["FY21", "FY22", "FY23", "FY24", "FY25"])
+            for col, color in zip(statements.columns, [BLUE, CYAN, PINK]):
+                ax.plot(statements.index, statements[col], color=color, lw=2.2, marker="o", label=col)
+            ax.set_ylabel("$bn")
+            style_legend(ax)
+        save(fig, out)
+        return
+
+    if lower.startswith("92_macro_rates_equity_factor_panel"):
+        idx = pd.date_range(end=pd.Timestamp.today().normalize(), periods=96, freq="ME")
+        cpi = pd.Series(2.6 + np.sin(np.linspace(0, 10, len(idx))) * 0.95 + rng.normal(0, 0.09, len(idx)), index=idx)
+        unrate = pd.Series(4.1 + np.cos(np.linspace(0, 8, len(idx))) * 0.45 + rng.normal(0, 0.05, len(idx)), index=idx)
+        fed = pd.Series(1.2 + np.linspace(0, 3.7, len(idx)) + np.sin(np.linspace(0, 8, len(idx))) * 0.55, index=idx).clip(0, 5.7)
+        if panel == 1:
+            fig, ax = _single_ax(title + " - Macro State Variables", "CPI, unemployment and Fed Funds from FRED-style macro feeds")
+            ax.plot(idx, cpi, color=PINK, lw=2.1, label="CPI YoY")
+            ax.plot(idx, unrate, color=AMBER, lw=2.1, label="Unemployment")
+            ax.plot(idx, fed, color=CYAN, lw=2.1, label="Fed Funds")
+            ax.set_ylabel("%")
+            style_legend(ax)
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - Fama-French Factor Returns", "Annualized factor returns aligned to the macro panel")
+            factors = pd.Series({"Mkt-RF": 8.2, "SMB": -1.4, "HML": 3.1, "RMW": 2.6, "CMA": 1.8, "MOM": 5.9})
+            ax.bar(factors.index, factors.values, color=[GREEN if x > 0 else PINK for x in factors], alpha=0.92)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+            ax.set_ylabel("% annualized")
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Sector Return by Regime", "Sector ETFs conditioned by rates and inflation state")
+            matrix = rng.normal(0.11, 0.11, (8, 4))
+            ax.imshow(matrix, cmap=CORR_CMAP, vmin=-0.15, vmax=0.35, aspect="auto")
+            ax.grid(False)
+            ax.set_xticks(range(4), ["rates up\ninfl up", "rates up\ninfl down", "rates down\ninfl up", "rates down\ninfl down"])
+            ax.set_yticks(range(8), ["XLK", "XLF", "XLE", "XLV", "XLY", "XLP", "XLU", "XLI"])
+            for i in range(matrix.shape[0]):
+                for j in range(matrix.shape[1]):
+                    ax.text(j, i, f"{matrix[i, j]:.0%}", color=TEXT, ha="center", va="center", fontsize=7)
+        else:
+            fig, ax = _single_ax(title + " - Policy and Inflation Gaps", "10Y minus Fed Funds and CPI gap to two percent")
+            ten_y = pd.Series(2.0 + np.linspace(0, 2.1, len(idx)) + np.sin(np.linspace(0, 7, len(idx))) * 0.45, index=idx)
+            ax.plot(idx, ten_y - fed, color=BLUE, lw=2.2, label="10Y minus Fed Funds")
+            ax.plot(idx, cpi - 2.0, color=PINK, lw=1.9, label="CPI gap to 2%")
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+            style_legend(ax)
+        save(fig, out)
+        return
+
+    if lower.startswith("93_crypto_macro_liquidity_panel"):
+        idx = dates(420)
+        btc = _simple_series(f"{stem}:btc", 420, 0.00070, 0.026)
+        eth = _simple_series(f"{stem}:eth", 420, 0.00078, 0.031)
+        if panel == 1:
+            fig, ax = _single_ax(title + " - Spot Performance", "CCXT BTC/USDT and ETH/USDT normalized spot paths")
+            ax.plot(idx, btc / btc.iloc[0] * 100, color=BLUE, lw=2.1, label="BTC/USDT")
+            ax.plot(idx, eth / eth.iloc[0] * 100, color=PINK, lw=2.1, label="ETH/USDT")
+            ax.set_ylabel("index = 100")
+            style_legend(ax)
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - Funding and Open Interest", "Perpetual funding pressure with open-interest context")
+            funding = pd.Series(rng.normal(0.011, 0.032, len(idx)), index=idx).rolling(7).mean().tail(140) * 100
+            oi = pd.Series(18 + np.linspace(0, 9, len(idx)) + np.sin(np.linspace(0, 12, len(idx))) * 2.2 + rng.normal(0, 0.5, len(idx)), index=idx).tail(140)
+            ax.bar(funding.index, funding.values, color=[GREEN if x > 0 else RED for x in funding], alpha=0.7)
+            ax2 = ax.twinx()
+            ax2.plot(oi.index, oi.values, color=CYAN, lw=1.8)
+            ax2.tick_params(colors=MUTED, labelsize=9)
+            ax2.spines["right"].set_color("#17376f")
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Crypto Macro Correlation", "BTC and ETH versus VIX and 10Y rate proxies")
+            corr = pd.DataFrame([[1, 0.78, -0.31, -0.22], [0.78, 1, -0.24, -0.18], [-0.31, -0.24, 1, 0.42], [-0.22, -0.18, 0.42, 1]], index=["BTC", "ETH", "VIX", "10Y"], columns=["BTC", "ETH", "VIX", "10Y"])
+            ax.imshow(corr, cmap=CORR_CMAP, vmin=-1, vmax=1)
+            ax.grid(False)
+            ax.set_xticks(range(4), corr.columns)
+            ax.set_yticks(range(4), corr.index)
+            for i in range(4):
+                for j in range(4):
+                    ax.text(j, i, f"{corr.iloc[i, j]:.2f}", color=TEXT, ha="center", va="center")
+        else:
+            fig, ax = _single_ax(title + " - Macro Stress Context", "CBOE VIX and 10Y Treasury rate context")
+            vix = pd.Series(18 + np.sin(np.linspace(0, 12, len(idx))) * 5 + rng.normal(0, 1.2, len(idx)), index=idx).clip(10, 45)
+            rates = pd.Series(1.8 + np.linspace(0, 2.6, len(idx)) + np.sin(np.linspace(0, 8, len(idx))) * 0.45, index=idx)
+            ax.plot(idx, vix, color=PINK, lw=2.0, label="VIX")
+            ax2 = ax.twinx()
+            ax2.plot(idx, rates, color=CYAN, lw=1.8, label="10Y")
+            ax2.tick_params(colors=MUTED, labelsize=9)
+            ax2.spines["right"].set_color("#17376f")
+        save(fig, out)
+        return
+
+    if lower.startswith("94_news_filings_price_reaction_panel"):
+        idx = dates(320)
+        price = pd.Series(np.cumprod(1 + rng.normal(0.00046, 0.013, len(idx))) * 190, index=idx)
+        events = pd.DataFrame({"date": idx[[38, 74, 113, 158, 196, 239, 286]], "type": ["Tiingo news", "SEC 10-Q", "Finnhub news", "Form 4", "Earnings", "SEC 8-K", "Tiingo news"]})
+        if panel == 1:
+            fig, ax = _single_ax(title + " - Issuer Event Timeline", "News, filings, earnings and insider events over adjusted close")
+            ax.plot(idx, price, color=CYAN, lw=2.2, label="AAPL adjusted close")
+            for row in events.itertuples():
+                ax.axvline(row.date, color=PINK, alpha=0.8, lw=1.1)
+                ax.text(row.date, price.max() * 0.985, row.type, color=TEXT, fontsize=7.5, rotation=90, va="top", ha="right")
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - Peer Price Context", "AAPL, MSFT, NVDA and GOOGL normalized price paths")
+            for col, color, drift, vol in [("AAPL", BLUE, 0.00048, 0.013), ("MSFT", CYAN, 0.00044, 0.012), ("NVDA", PINK, 0.00076, 0.023), ("GOOGL", GREEN, 0.00040, 0.014)]:
+                s = _simple_series(f"{stem}:{col}", 320, drift, vol)
+                ax.plot(s.index, s / s.iloc[0] * 100, color=color, lw=1.8, label=col)
+            ax.set_ylabel("index = 100")
+            style_legend(ax)
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Median Five-Day Reaction", "Median AAPL price reaction by public event source")
+            reactions = pd.Series({"Tiingo news": 0.006, "Finnhub news": 0.004, "SEC 10-Q": -0.012, "SEC 8-K": 0.009, "Form 4": -0.004, "Earnings": 0.018})
+            ax.barh(reactions.index, reactions.values * 100, color=[GREEN if x > 0 else PINK for x in reactions], alpha=0.9)
+            ax.axvline(0, color=TEXT, alpha=0.35, lw=1)
+            ax.set_xlabel("%")
+        else:
+            fig, ax = _single_ax(title + " - Event Objects Joined", "Event counts by joined public source")
+            counts = events["type"].value_counts().sort_values()
+            ax.barh(counts.index, counts.values, color=[BLUE, CYAN, PINK, AMBER, GREEN][: len(counts)], alpha=0.9)
+        save(fig, out)
+        return
+
+    if lower.startswith("95_spread_liquidity_monitoring_packet"):
+        symbols = ["AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META"]
+        adv = pd.Series([38, 31, 55, 29, 26, 18], index=symbols)
+        spread = pd.Series([2.8, 2.6, 5.9, 4.1, 3.4, 4.8], index=symbols)
+        sl_adv = (spread / adv).rename("SL/ADV ratio")
+        if panel == 1:
+            fig, ax = _single_ax(title + " - Spread Proxy", "Estimated quoted spread proxy in basis points")
+            ax.bar(symbols, spread, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED], alpha=0.9)
+            ax.set_ylabel("bps")
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - SL/ADV Ratio", "Spread-liquidity ratio: spread proxy divided by dollar ADV rank")
+            ax.bar(symbols, sl_adv * 100, color=[PINK if x > sl_adv.median() else CYAN for x in sl_adv], alpha=0.9)
+            ax.set_ylabel("ratio x100")
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Days at 5% ADV", "Estimated days to execute a 25mm order at five percent ADV")
+            days_trade = 25 / (adv * 0.05)
+            ax.bar(symbols, days_trade, color=[PINK if x > 12 else CYAN for x in days_trade], alpha=0.9)
+            ax.set_ylabel("days")
+        else:
+            fig, ax = _single_ax(title + " - Slippage Cost Curve", "Square-root slippage model by participation rate")
+            participation = np.array([1, 2, 5, 10, 15, 20])
+            for symbol, color in zip(["AAPL", "NVDA", "META"], [BLUE, PINK, CYAN]):
+                ax.plot(participation, spread[symbol] * np.sqrt(participation / 5), color=color, lw=2.1, marker="o", label=symbol)
+            ax.set_xlabel("participation rate % ADV")
+            ax.set_ylabel("slippage proxy bps")
+            style_legend(ax)
+        save(fig, out)
+        return
+
+    if lower.startswith("96_earnings_revisions_price_momentum"):
+        symbols = ["NVDA", "MSFT", "AAPL", "AMZN", "GOOGL", "META", "AVGO", "AMD"]
+        breadth = pd.Series([0.82, 0.61, 0.48, 0.54, 0.51, 0.58, 0.72, 0.66], index=symbols)
+        dispersion = pd.Series([0.21, 0.13, 0.10, 0.18, 0.12, 0.14, 0.20, 0.26], index=symbols)
+        momentum = pd.Series([0.44, 0.19, 0.11, 0.16, 0.13, 0.21, 0.36, 0.29], index=symbols)
+        accel = pd.Series([1.8, 0.7, 0.3, 0.5, 0.4, 0.6, 1.4, 1.1], index=symbols)
+        if panel == 1:
+            fig, ax = _single_ax(title + " - Revision Breadth", "Share of forward estimate fields revised upward")
+            ax.bar(symbols, breadth, color=[GREEN if x > 0.6 else CYAN for x in breadth], alpha=0.9)
+            ax.set_ylim(0, 1)
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - Revision Dispersion", "Forward estimate dispersion across analyst rows")
+            ax.bar(symbols, dispersion, color=[PINK if x > 0.2 else BLUE for x in dispersion], alpha=0.9)
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Revision Acceleration", "FY2 minus current-year forward estimate proxy")
+            ax.bar(symbols, accel, color=[GREEN if x > 0 else PINK for x in accel], alpha=0.9)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+        else:
+            fig, ax = _single_ax(title + " - Revisions vs Price Momentum", "Revision breadth versus twelve-minus-one-month price momentum")
+            ax.scatter(breadth, momentum, s=85, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED, "#8ab4ff", "#b6e880"], edgecolors=TEXT, linewidths=0.4)
+            for symbol in symbols:
+                ax.text(breadth[symbol] + 0.01, momentum[symbol], symbol, color=TEXT, fontsize=8)
+            ax.set_xlabel("revision breadth")
+            ax.set_ylabel("12-1 momentum")
+        save(fig, out)
+        return
+
+    if lower.startswith("97_roic_wacc_cash_conversion_quality"):
+        symbols = ["MSFT", "AAPL", "NVDA", "GOOGL", "META", "AMZN", "AVGO", "COST"]
+        roic = pd.Series([0.31, 0.46, 0.52, 0.25, 0.29, 0.16, 0.34, 0.19], index=symbols)
+        wacc = pd.Series([0.085, 0.083, 0.092, 0.086, 0.087, 0.090, 0.095, 0.079], index=symbols)
+        fcf = pd.Series([0.92, 0.88, 0.79, 0.84, 0.96, 0.63, 0.74, 0.71], index=symbols)
+        if panel == 1:
+            fig, ax = _single_ax(title + " - ROIC vs WACC", "Return on invested capital versus cost of capital proxy")
+            x = np.arange(len(symbols))
+            ax.bar(x - 0.18, roic * 100, width=0.36, color=CYAN, alpha=0.9, label="ROIC")
+            ax.bar(x + 0.18, wacc * 100, width=0.36, color=PINK, alpha=0.9, label="WACC proxy")
+            ax.set_xticks(x, symbols)
+            ax.set_ylabel("%")
+            style_legend(ax)
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - ROIC-WACC Spread", "Economic spread after subtracting WACC proxy")
+            spread = roic - wacc
+            ax.bar(symbols, spread * 100, color=[GREEN if x > 0 else PINK for x in spread], alpha=0.9)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+            ax.set_ylabel("percentage points")
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Cash Conversion", "Free cash flow divided by net income proxy")
+            ax.bar(symbols, fcf, color=[GREEN if x > 0.8 else CYAN for x in fcf], alpha=0.9)
+            ax.axhline(1.0, color=TEXT, alpha=0.35, lw=1)
+        else:
+            fig, ax = _single_ax(title + " - Quality Score", "ROIC spread, cash conversion and balance sheet quality combined")
+            score = (roic - wacc).rank(pct=True) + fcf.rank(pct=True)
+            ax.barh(score.sort_values().index, score.sort_values().values, color=CYAN, alpha=0.9)
+        save(fig, out)
+        return
+
+    if lower.startswith("98_oil_curve_regime_instrument_selection"):
+        idx = dates(420)
+        cl1 = pd.Series(78 + np.sin(np.linspace(0, 13, len(idx))) * 11 + rng.normal(0, 1.2, len(idx)), index=idx)
+        spread = pd.Series(np.sin(np.linspace(0, 9, len(idx))) * 2.6 + rng.normal(0, 0.4, len(idx)), index=idx)
+        if panel == 1:
+            fig, ax = _single_ax(title + " - WTI Front-Month Reference", "CL1 WTI front-month reference price")
+            ax.plot(idx, cl1, color=AMBER, lw=2.2)
+            ax.set_ylabel("$ / bbl")
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - Front-Second Spread", "CL1 minus CL2; positive values indicate backwardation")
+            ax.plot(idx, spread, color=CYAN, lw=2.1)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+            ax.fill_between(idx, 0, spread, where=spread > 0, color=GREEN, alpha=0.12)
+            ax.fill_between(idx, 0, spread, where=spread < 0, color=PINK, alpha=0.12)
+            ax.set_ylabel("$ spread")
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Instrument Oil Beta", "USO, XLE, XOP and SPY beta proxy to CL1 returns")
+            beta = pd.Series({"USO": 0.82, "XLE": 0.54, "XOP": 0.68, "SPY": 0.19})
+            ax.bar(beta.index, beta.values, color=[AMBER, CYAN, PINK, BLUE], alpha=0.9)
+        else:
+            fig, ax = _single_ax(title + " - COT Positioning Percentile", "Managed-money crude oil positioning state")
+            vals = pd.Series({"net z-score": 0.88, "percentile": 68, "weekly change k": 9.2})
+            ax.bar(vals.index, vals.values, color=[CYAN, PINK, GREEN], alpha=0.9)
+        save(fig, out)
+        return
+
+    if lower.startswith("99_vixy_term_structure_macro_regime"):
+        idx = dates(420)
+        vix = pd.Series(18 + np.sin(np.linspace(0, 13, len(idx))) * 5.2 + rng.normal(0, 1.4, len(idx)), index=idx).clip(9, 55)
+        slope = pd.Series(1.8 + np.sin(np.linspace(0, 12, len(idx))) * 2.1 + rng.normal(0, 0.35, len(idx)), index=idx)
+        if panel == 1:
+            fig, ax = _single_ax(title + " - VIX and VIXY", "Spot volatility context versus VIXY normalized price")
+            ax.plot(idx, vix, color=CYAN, lw=2.0, label="VIX")
+            ax2 = ax.twinx()
+            vixy = _simple_series(f"{stem}:vixy", 420, -0.00025, 0.025)
+            ax2.plot(vixy.index, vixy / vixy.iloc[0] * 100, color=PINK, lw=1.8)
+            ax2.tick_params(colors=MUTED, labelsize=9)
+            ax2.spines["right"].set_color("#17376f")
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - VIX Term-Structure Slope", "Second-month minus front-month futures proxy")
+            ax.plot(idx, slope, color=CYAN, lw=2.1)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+            ax.fill_between(idx, 0, slope, where=slope > 0, color=PINK, alpha=0.12)
+            ax.fill_between(idx, 0, slope, where=slope < 0, color=GREEN, alpha=0.12)
+            ax.set_ylabel("vol points")
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Roll Carry Proxy", "Estimated monthly roll drag/benefit by term-structure state")
+            carry = pd.Series({"contango drag": -6.4, "flat curve": -1.1, "backwardation": 3.8})
+            ax.bar(carry.index, carry.values, color=[PINK, CYAN, GREEN], alpha=0.9)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+            ax.set_ylabel("% monthly")
+        else:
+            fig, ax = _single_ax(title + " - Volatility Regime State", "VIX, VVIX and SKEW composite state")
+            state = pd.Series({"VIX percentile": 0.62, "VVIX percentile": 0.71, "SKEW percentile": 0.58, "term slope pctile": 0.83})
+            ax.barh(state.index, state.values, color=[BLUE, CYAN, PINK, AMBER], alpha=0.9)
+            ax.set_xlim(0, 1)
+        save(fig, out)
+        return
+
+    if lower.startswith("100_credit_hy_treasury_spread_regime"):
+        idx = dates(420)
+        hy = pd.Series(3.8 + np.sin(np.linspace(0, 12, len(idx))) * 1.1 + rng.normal(0, 0.10, len(idx)), index=idx).clip(2, 9)
+        ig = pd.Series(1.2 + np.sin(np.linspace(0, 10, len(idx))) * 0.32 + rng.normal(0, 0.04, len(idx)), index=idx).clip(0.5, 3)
+        if panel == 1:
+            fig, ax = _single_ax(title + " - Credit Spreads", "High-yield and investment-grade option-adjusted spreads")
+            ax.plot(idx, hy, color=PINK, lw=2.1, label="HY OAS")
+            ax.plot(idx, ig, color=CYAN, lw=2.1, label="IG OAS")
+            ax.set_ylabel("%")
+            style_legend(ax)
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - HY/IG Spread Ratio", "High-yield OAS divided by investment-grade OAS")
+            ratio = hy / ig
+            ax.plot(idx, ratio, color=AMBER, lw=2.2)
+            ax.axhline(ratio.quantile(0.75), color=PINK, alpha=0.7, linestyle="--")
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Credit ETF Returns", "HYG, LQD, TLT and SPY sixty-three-day return proxy")
+            vals = pd.Series({"HYG": 3.4, "LQD": 1.8, "TLT": -2.2, "SPY": 6.1})
+            ax.bar(vals.index, vals.values, color=[CYAN, BLUE, PINK, GREEN], alpha=0.9)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+            ax.set_ylabel("%")
+        else:
+            fig, ax = _single_ax(title + " - Credit-Rates Correlation", "ETF dependency surface across credit, duration and equity")
+            corr = pd.DataFrame([[1, 0.72, -0.18, 0.64], [0.72, 1, 0.31, 0.42], [-0.18, 0.31, 1, -0.22], [0.64, 0.42, -0.22, 1]], index=["HYG", "LQD", "TLT", "SPY"], columns=["HYG", "LQD", "TLT", "SPY"])
+            ax.imshow(corr, cmap=CORR_CMAP, vmin=-1, vmax=1)
+            ax.grid(False)
+            ax.set_xticks(range(4), corr.columns)
+            ax.set_yticks(range(4), corr.index)
+            for i in range(4):
+                for j in range(4):
+                    ax.text(j, i, f"{corr.iloc[i, j]:.2f}", color=TEXT, ha="center", va="center")
+        save(fig, out)
+        return
+
+    if lower.startswith("101_consumer_dispersion_not_the_trade"):
+        names = ["WMT", "COST", "HD", "LOW", "MCD", "SBUX", "TSLA", "AMZN", "NKE"]
+        returns_126 = pd.Series([0.08, 0.13, -0.02, -0.05, 0.04, -0.06, 0.19, 0.16, -0.11], index=names)
+        margins = pd.Series([0.25, 0.13, 0.34, 0.33, 0.56, 0.29, 0.18, 0.48, 0.43], index=names)
+        debt = pd.Series([0.72, 0.42, 3.1, 2.4, -6.2, 1.6, 0.18, 0.74, 0.91], index=names)
+        if panel == 1:
+            fig, ax = _single_ax(title + " - Staples vs Discretionary Spread", "XLP minus XLY one-hundred-twenty-six-day return spread")
+            idx = dates(320)
+            spread = pd.Series(np.sin(np.linspace(0, 11, len(idx))) * 0.10 + rng.normal(0, 0.012, len(idx)), index=idx)
+            ax.plot(idx, spread * 100, color=CYAN, lw=2.2)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+            ax.set_ylabel("return spread %")
+        elif panel == 2:
+            fig, ax = _single_ax(title + " - Consumer Equity Dispersion", "Six-month return by consumer-linked symbol")
+            ax.bar(names, returns_126 * 100, color=[GREEN if x > 0 else PINK for x in returns_126], alpha=0.9)
+            ax.axhline(0, color=TEXT, alpha=0.35, lw=1)
+            ax.set_ylabel("%")
+        elif panel == 3:
+            fig, ax = _single_ax(title + " - Margin vs Leverage", "Gross margin and debt-to-equity dispersion")
+            ax.scatter(margins, debt, s=90, color=[BLUE, CYAN, PINK, GREEN, AMBER, RED, "#8ab4ff", "#b6e880", "#c084fc"], edgecolors=TEXT, linewidths=0.4)
+            for name in names:
+                ax.text(margins[name] + 0.006, debt[name], name, color=TEXT, fontsize=8)
+            ax.set_xlabel("gross margin TTM")
+            ax.set_ylabel("debt / equity TTM")
+        else:
+            fig, ax = _single_ax(title + " - Consumer Resilience Score", "Return, margin, liquidity and leverage combined")
+            score = returns_126.rank(pct=True) + margins.rank(pct=True) - debt.rank(pct=True)
+            ax.barh(score.sort_values().index, score.sort_values().values, color=CYAN, alpha=0.9)
+        save(fig, out)
+        return
+
+    plot_one(stem, out)
+
+
 def plot_one(stem: str, out: Path) -> None:
     title = stem[3:] if stem[:2].isdigit() else stem
     lower = stem.lower()
@@ -1517,6 +2364,18 @@ def plot_one(stem: str, out: Path) -> None:
         plot_investment_evidence_timeline(stem, title, out)
     elif "investment_evidence_packet" in lower:
         plot_investment_evidence_timeline(stem, title, out)
+    elif "usd_liquidity_cross_asset_mosaic" in lower:
+        plot_usd_liquidity_mosaic(stem, title, out)
+    elif "earnings_options_vol_reaction" in lower:
+        plot_earnings_options_reaction(stem, title, out)
+    elif "sec_filing_fundamental_price_mosaic" in lower:
+        plot_sec_fundamental_price_mosaic(stem, title, out)
+    elif "macro_rates_equity_factor_panel" in lower:
+        plot_macro_rates_equity_factor_panel(stem, title, out)
+    elif "crypto_macro_liquidity_panel" in lower:
+        plot_crypto_macro_liquidity_panel(stem, title, out)
+    elif "news_filings_price_reaction_panel" in lower:
+        plot_news_filings_reaction_panel(stem, title, out)
     elif "stress_testing_macro_scenarios" in lower or "macro_shock_cross_asset" in lower or "factor_macro_risk_shock_transmission" in lower:
         plot_scenario_bars(stem, title, out)
     elif "cta_futures_carry_trend_macro" in lower or "macro_positioning_cot" in lower:
@@ -1571,6 +2430,10 @@ def plot_one(stem: str, out: Path) -> None:
 
 def plot_outputs(stem: str, output_dir: Path) -> list[Path]:
     lower = stem.lower()
+    try:
+        number = int(stem.split("_", 1)[0])
+    except ValueError:
+        number = 0
     if lower.startswith("01_authentication_methods"):
         return []
     if lower.startswith("02_market_data_basics"):
@@ -1715,6 +2578,11 @@ def plot_outputs(stem: str, output_dir: Path) -> list[Path]:
         ]
         plot_19_lineage_01(stem, outputs[0])
         return outputs
+    if number >= 88:
+        outputs = [output_dir / f"{stem}_{index}.png" for index in range(1, 5)]
+        for index, output in enumerate(outputs, start=1):
+            plot_88_plus_split(stem, index, output)
+        return outputs
     output = output_dir / f"{stem}_output_01.png"
     plot_one(stem, output)
     return [output]
@@ -1733,13 +2601,21 @@ def output_name(stem: str, style: str) -> str:
     return f"{stem}.png"
 
 
+def notebook_sort_key(path: Path) -> tuple[int, str]:
+    prefix = path.stem.split("_", 1)[0]
+    try:
+        return int(prefix), path.stem
+    except ValueError:
+        return 10_000, path.stem
+
+
 def main() -> None:
     args = parse_args()
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     for old in output_dir.glob("*.png"):
         old.unlink()
-    notebooks = sorted(CANDIDATES.glob("*.ipynb"))
+    notebooks = sorted(CANDIDATES.glob("*.ipynb"), key=notebook_sort_key)
     for notebook in notebooks:
         if args.output_style == "run":
             plot_outputs(notebook.stem, output_dir)
