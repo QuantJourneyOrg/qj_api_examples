@@ -1,0 +1,62 @@
+[
+  {
+    "output": "_output/_v3/v3_01_cloud_arr_grouped_bars.png",
+    "description": "Grouped quarterly bars with CAGR/total-change legend",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_02_quarterly_revenue_single_bars.png",
+    "description": "Single-company quarterly revenue bars",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_03_revenue_operating_income_bars.png",
+    "description": "Revenue and operating income bars around zero",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_04_market_cap_forward_revenue_zscore.png",
+    "description": "Market cap / forward revenue with z-score",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_05_margin_efficiency_ratio_zscore.png",
+    "description": "Operating leverage ratio with z-score",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_06_short_volume_total_volume_zscore.png",
+    "description": "Short volume / total volume with z-score",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_07_hy_oas_ten_year_zscore.png",
+    "description": "HY OAS / 10Y Treasury with z-score",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_08_vvix_vix_zscore.png",
+    "description": "VVIX / VIX with z-score",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_09_cl1_cl2_oil_curve_zscore.png",
+    "description": "CL1 / CL2 oil curve with z-score",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_10_revision_breadth_zscore.png",
+    "description": "Positive / negative revisions with z-score",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_11_roic_wacc_spread_zscore.png",
+    "description": "ROIC - WACC spread with z-score",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_12_unit_economics_waterfall.png",
+    "description": "Unit economics waterfall",
+    "status": "ok"
+  }
+]
