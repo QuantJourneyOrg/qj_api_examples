@@ -25,7 +25,6 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.lines import Line2D
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 import numpy as np
 import pandas as pd
@@ -130,18 +129,9 @@ def title(fig: plt.Figure, heading: str, subtitle: str) -> None:
 
 
 def surface_layout(fig: plt.Figure) -> tuple[plt.Axes, plt.Axes]:
-    ax = fig.add_axes([0.04, 0.13, 0.70, 0.69], projection="3d")
-    cax = fig.add_axes([0.765, 0.25, 0.020, 0.44])
+    ax = fig.add_axes([0.08, 0.13, 0.74, 0.69], projection="3d")
+    cax = fig.add_axes([0.865, 0.25, 0.020, 0.44])
     return ax, cax
-
-
-def surface_notes(fig: plt.Figure, rows: list[tuple[str, str]]) -> None:
-    y = 0.73
-    for label, value in rows:
-        fig.text(0.825, y, label.upper(), color=MUTED, fontsize=8, va="top")
-        fig.text(0.825, y - 0.035, value, color=TEXT, fontsize=11, weight="semibold", va="top")
-        fig.add_artist(Line2D([0.825, 0.955], [y - 0.060, y - 0.060], transform=fig.transFigure, color=GRID, linewidth=0.8, alpha=0.65))
-        y -= 0.105
 
 
 def legend_below(ax: plt.Axes, columns: int = 1) -> None:
@@ -814,14 +804,12 @@ def plot_orange_factor_risk_river(out: Path) -> None:
 
 
 def plot_options_vol_surface_3d(out: Path) -> None:
-    ticker = "SPY"
     expiries = np.array([7, 14, 30, 60, 90, 180, 365])
     moneyness = np.linspace(0.75, 1.25, 21)
     X, Y = np.meshgrid(moneyness, expiries)
     surface = 0.18 + 0.22 * (X - 1.0) ** 2 + 0.07 * np.exp(-Y / 45) + 0.035 * np.maximum(0, 1 - X)
     fig = plt.figure(figsize=(14, 8), facecolor=NAVY)
-    title(fig, "SPY Options Surface: Implied Volatility by Strike and Expiry", "Representative QJ workflow: options chain, expirations, underlying price and CBOE volatility context rendered as a 3D surface")
-    surface_notes(fig, [("instrument", ticker), ("workflow", "options chain + expiries"), ("routes", "derivatives.options / CBOE"), ("data mode", "representative showcase")])
+    title(fig, "SPY Options Surface: Implied Volatility by Strike and Expiry", "Representative surface from SPY option chain, expiries and vol context.")
     ax, cax = surface_layout(fig)
     style_3d(ax)
     surf = ax.plot_surface(X, Y, surface * 100, cmap=LinearSegmentedColormap.from_list("vol3d", [CYAN, ORANGE, PINK]), linewidth=0.15, edgecolor="#17376f", antialiased=True, alpha=0.95)
@@ -837,7 +825,6 @@ def plot_options_vol_surface_3d(out: Path) -> None:
 
 
 def plot_backtest_parameter_surface_3d(out: Path) -> None:
-    ticker = "SPY"
     fast = np.array([5, 10, 15, 20, 30, 40, 60])
     slow = np.array([80, 100, 125, 160, 200, 250, 320])
     X, Y = np.meshgrid(fast, slow)
@@ -845,8 +832,7 @@ def plot_backtest_parameter_surface_3d(out: Path) -> None:
     surface += 0.05 * np.sin(X / 8) + 0.04 * np.cos(Y / 45)
     best = np.unravel_index(np.argmax(surface), surface.shape)
     fig = plt.figure(figsize=(14, 8), facecolor=NAVY)
-    title(fig, "SPY Backtest Surface: SMA Fast / Slow Parameter Robustness", "Representative QJ workflow: adjusted OHLCV prepared for a strategy-grid backtest with Sharpe stability surface")
-    surface_notes(fig, [("instrument", ticker), ("strategy", "SMA crossover"), ("routes", "equity.pricing + backtester"), ("data mode", "representative showcase")])
+    title(fig, "SPY Backtest Surface: SMA Fast / Slow Parameter Robustness", "Representative SPY SMA-grid backtest surface from adjusted OHLCV.")
     ax, cax = surface_layout(fig)
     style_3d(ax)
     surf = ax.plot_surface(X, Y, surface, cmap=LinearSegmentedColormap.from_list("bt3d", [PINK, ORANGE, GREEN]), edgecolor="#17376f", linewidth=0.2, alpha=0.96)
@@ -961,14 +947,12 @@ def plot_regime_allocation_river(out: Path) -> None:
 
 
 def plot_liquidity_slippage_surface_3d(out: Path) -> None:
-    ticker = "AAPL"
     participation = np.array([1, 2, 5, 10, 15, 20, 30])
     notional = np.array([5, 10, 25, 50, 100, 150])
     X, Y = np.meshgrid(participation, notional)
     slippage = 1.6 * np.sqrt(X) * np.sqrt(Y / 25) + 0.025 * Y
     fig = plt.figure(figsize=(14, 8), facecolor=NAVY)
-    title(fig, "AAPL Liquidity Surface: Slippage by Order Size and Participation", "Representative QJ workflow: adjusted volume, FINRA short pressure and ADV capacity assumptions rendered as an execution-cost surface")
-    surface_notes(fig, [("instrument", ticker), ("workflow", "capacity + slippage"), ("routes", "equity.pricing + FINRA"), ("data mode", "representative showcase")])
+    title(fig, "AAPL Liquidity Surface: Slippage by Order Size and Participation", "Representative AAPL surface from volume, FINRA shorts and ADV capacity.")
     ax, cax = surface_layout(fig)
     style_3d(ax)
     surf = ax.plot_surface(X, Y, slippage, cmap=LinearSegmentedColormap.from_list("liq3d", [CYAN, ORANGE, PINK]), linewidth=0.2, edgecolor="#17376f", alpha=0.96)
@@ -1009,15 +993,13 @@ def plot_pairs_spread_zscore(out: Path) -> None:
 
 
 def plot_option_greeks_surface_3d(out: Path) -> None:
-    ticker = "SPY"
     spot_grid = np.linspace(80, 120, 25)
     expiry = np.array([7, 14, 30, 60, 90, 180])
     X, Y = np.meshgrid(spot_grid, expiry)
     gamma = np.exp(-((X - 100) ** 2) / 120) * np.exp(-Y / 240) * 1.8
     gamma -= 0.55 * np.exp(-((X - 112) ** 2) / 80) * np.exp(-Y / 80)
     fig = plt.figure(figsize=(14, 8), facecolor=NAVY)
-    title(fig, "SPY Options Greeks Surface: Net Gamma Exposure", "Representative QJ workflow: option chain strikes, expirations and underlying price transformed into a 3D Greeks exposure surface")
-    surface_notes(fig, [("instrument", ticker), ("workflow", "option chain greeks"), ("routes", "derivatives.options / greeks"), ("data mode", "representative showcase")])
+    title(fig, "SPY Options Greeks Surface: Net Gamma Exposure", "Representative gamma surface from SPY option strikes and expiries.")
     ax, cax = surface_layout(fig)
     style_3d(ax)
     surf = ax.plot_surface(X, Y, gamma, cmap=LinearSegmentedColormap.from_list("gamma3d", [PINK, NAVY, ORANGE]), edgecolor="#17376f", linewidth=0.2, alpha=0.96)
