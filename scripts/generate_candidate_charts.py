@@ -50,15 +50,6 @@ def rng_for(stem: str) -> np.random.Generator:
     return np.random.default_rng(seed)
 
 
-def as_of_date() -> str:
-    return os.getenv("QJ_EXAMPLE_END") or pd.Timestamp.today().normalize().strftime("%Y-%m-%d")
-
-
-def example_request_id(title: str) -> str:
-    digest = hashlib.sha256(title.encode("utf-8")).hexdigest()[:8]
-    return f"qj_ex_{digest}"
-
-
 def human_title(title: str) -> str:
     words = title.replace("_", " ").replace("-", " ").split()
     acronyms = {
@@ -100,104 +91,39 @@ def subtitle_for_title(title: str) -> str:
     return "Research output generated from the example workflow"
 
 
-def pm_context(title: str, subtitle: str) -> tuple[str, str, str]:
+def source_context(title: str, subtitle: str) -> str:
     lower = f"{title} {subtitle}".lower()
-    generated = pd.Timestamp.today().normalize().strftime("%Y-%m-%d")
-    base_footer = (
-        f"Generated {generated} | QuantJourney API example | "
-        f"as_of {as_of_date()} | request_id {example_request_id(title)} | Not investment advice"
-    )
 
     if "macro" in lower and any(token in lower for token in ["cot", "positioning", "cta"]):
-        return (
-            "Sources: FRED:CPIAUCSL CPI | FRED:UNRATE unemployment | FRED:DGS10 10Y Treasury | CFTC COT ES/CL/GC/ZN managed-money positioning | CBOE VIX",
-            "PM implication: combine macro regime, futures crowding and volatility state before approving tactical cross-asset tilts.",
-            base_footer,
-        )
+        return "Sources: FRED:CPIAUCSL CPI | FRED:UNRATE unemployment | FRED:DGS10 10Y Treasury | CFTC COT ES/CL/GC/ZN managed-money positioning | CBOE VIX"
     if any(token in lower for token in ["evidence", "lineage", "packet"]):
-        return (
-            "Sources: Tiingo/EOD adjusted OHLCV | FMP TTM ratios | SEC EDGAR 10-K/10-Q/Form 4/13F-HR | OpenFIGI identity | FINRA shorts | CBOE VIX",
-            "PM implication: keep every input, source and event label beside the chart so the research packet can be replayed and defended.",
-            base_footer,
-        )
+        return "Sources: Tiingo/EOD adjusted OHLCV | FMP TTM ratios | SEC EDGAR 10-K/10-Q/Form 4/13F-HR | OpenFIGI identity | FINRA shorts | CBOE VIX"
     if any(token in lower for token in ["sec", "filing", "form 4", "13f", "congress", "smart money", "insider"]):
-        return (
-            "Sources: SEC EDGAR 10-K/10-Q/8-K/Form 4 | SEC:13F-HR institutional holdings | FMP House/Senate trades | Tiingo adjusted close",
-            "PM implication: verify event timing, holder concentration and post-event return before adding or trimming exposure.",
-            base_footer,
-        )
+        return "Sources: SEC EDGAR 10-K/10-Q/8-K/Form 4 | SEC:13F-HR institutional holdings | FMP House/Senate trades | Tiingo adjusted close"
     if any(token in lower for token in ["cot", "cta", "positioning"]):
-        return (
-            "Sources: CFTC COT managed-money net positioning | ES/CL/GC/ZN futures contracts | FRED:DGS10 10-Year Treasury Yield",
-            "PM implication: positioning extremes can amplify macro moves; review tactical tilts and crowded futures exposure.",
-            base_footer,
-        )
+        return "Sources: CFTC COT managed-money net positioning | ES E-mini S&P 500 | CL WTI Crude Oil | GC COMEX Gold | ZN 10Y Treasury Note"
     if any(token in lower for token in ["fred", "macro", "treasury", "inflation", "labor", "fed funds", "growth", "rates", "energy"]):
-        return (
-            "Sources: FRED:CPIAUCSL CPI Urban Consumers | FRED:UNRATE Civilian Unemployment | FRED:FEDFUNDS Effective Fed Funds | FRED:DGS10 10-Year Treasury",
-            "PM implication: monitor duration, inflation beta and cyclicals when policy or growth state moves into an extreme percentile.",
-            base_footer,
-        )
+        return "Sources: FRED:CPIAUCSL CPI Urban Consumers | FRED:UNRATE Civilian Unemployment | FRED:FEDFUNDS Effective Fed Funds | FRED:DGS10 10-Year Treasury"
     if any(token in lower for token in ["finra", "short", "liquidity", "capacity", "crowding"]):
-        return (
-            "Sources: FINRA daily short volume | adjusted OHLCV and volume | 63D ADV capacity model | short-interest context",
-            "PM implication: size entry and exit plans against crowding pressure, days-to-cover and participation-rate assumptions.",
-            base_footer,
-        )
+        return "Sources: FINRA daily short volume | adjusted OHLCV and volume | 63D ADV capacity model | short-interest context"
     if any(token in lower for token in ["figi", "identity", "reference"]):
-        return (
-            "Sources: OpenFIGI composite FIGI and share-class FIGI | exchange symbol directory | security-master mapping",
-            "PM implication: reconcile ticker, share class and venue identity before joining vendors or building a portfolio book.",
-            base_footer,
-        )
+        return "Sources: OpenFIGI composite FIGI and share-class FIGI | exchange symbol directory | security-master mapping"
     if any(token in lower for token in ["corporate action", "adjusted", "pit", "domain route"]):
-        return (
-            "Sources: EOD/FMP corporate actions | adjusted OHLCV | provider metadata, warnings, lineage and request audit trail",
-            "PM implication: keep adjustment policy and data vintage beside the chart so backtests and PM reports are replayable.",
-            base_footer,
-        )
+        return "Sources: EOD/FMP corporate actions | adjusted OHLCV | provider metadata, warnings, lineage and request audit trail"
     if any(token in lower for token in ["fundamental", "valuation", "cape", "earnings-yield", "shiller"]):
-        return (
-            "Sources: FMP TTM ratios and statements | SEC company disclosures | Multpl Shiller CAPE | FRED:DGS10 rates context",
-            "PM implication: separate cheap valuation from weak quality; flag peer outliers before IC or PM review.",
-            base_footer,
-        )
+        return "Sources: FMP TTM ratios and statements | SEC company disclosures | Multpl Shiller CAPE | FRED:DGS10 rates context"
     if any(token in lower for token in ["portfolio", "risk", "allocation", "parity", "hrp", "brinson", "factor", "drawdown", "scenario", "monte carlo"]):
-        return (
-            "Sources: adjusted returns | benchmark SPY | Fama-French factor proxies | 63D volatility and 252D beta windows",
-            "PM implication: identify risk concentration, drawdown budget and rebalance pressure before trades reach the blotter.",
-            base_footer,
-        )
+        return "Sources: adjusted returns | benchmark SPY | Fama-French factor returns | 63D volatility and 252D beta windows"
     if any(token in lower for token in ["vix", "vvix", "skew", "option", "vol", "greeks", "derivatives"]):
-        return (
-            "Sources: CBOE VIX/VVIX/SKEW | options chain and term structure | SPY adjusted close drawdown overlay",
-            "PM implication: treat vol regime and skew as overlay inputs for hedging, collars and tail-risk budget decisions.",
-            base_footer,
-        )
+        return "Sources: CBOE VIX/VVIX/SKEW | options chain and term structure | SPY adjusted close drawdown overlay"
     if any(token in lower for token in ["crypto", "ccxt", "funding", "basis"]):
-        return (
-            "Sources: CCXT exchange spot feeds | Binance/Bybit funding proxies | futures basis and open-interest context",
-            "PM implication: review carry, leverage pressure and basis before increasing digital-asset exposure.",
-            base_footer,
-        )
+        return "Sources: CCXT exchange spot feeds | Binance/Bybit funding data | futures basis and open-interest context"
     if any(token in lower for token in ["index", "constituent", "universe"]):
-        return (
-            "Sources: index constituents | exchange listings | adjusted OHLCV | liquidity and tradability filters",
-            "PM implication: check benchmark membership, sector balance and investability before universe promotion.",
-            base_footer,
-        )
+        return "Sources: index constituents | exchange listings | adjusted OHLCV | liquidity and tradability filters"
     if any(token in lower for token in ["market data", "ohlcv", "technical", "sma", "nav"]):
-        return (
-            "Sources: Tiingo/EOD adjusted OHLCV | split/dividend adjustment policy | 20D/63D/252D analytics windows",
-            "PM implication: use normalized returns, realized volatility and capacity state before comparing peer exposure.",
-            base_footer,
-        )
+        return "Sources: Tiingo/EOD adjusted OHLCV | split/dividend adjustment policy | 20D/63D/252D analytics windows"
 
-    return (
-        "Sources: QuantJourney SDK example workflow | provider metadata and route lineage retained in production calls",
-        "PM implication: review signal direction, confidence and implementation constraints before acting on the output.",
-        base_footer,
-    )
+    return "Sources: QuantJourney SDK example workflow | provider metadata and route lineage retained in production calls"
 
 
 def style_ax(ax: plt.Axes, title: str) -> None:
@@ -217,10 +143,8 @@ def style_ax(ax: plt.Axes, title: str) -> None:
 
 def dashboard_title(fig: plt.Figure, title: str, subtitle: str) -> None:
     fig.patch.set_facecolor(NAVY)
-    sources, implication, footer = pm_context(title, subtitle)
+    sources = source_context(title, subtitle)
     source_text = "\n".join(textwrap.wrap(sources, width=148))
-    fig._qj_pm_implication = implication
-    fig._qj_pm_footer = footer
     fig.text(0.035, 0.965, title, color=TEXT, fontsize=18, weight="semibold", va="top")
     fig.text(0.035, 0.925, subtitle, color=MUTED, fontsize=9, va="top")
     fig.text(0.035, 0.892, source_text, color=BLUE, fontsize=7.7, va="top")
@@ -233,23 +157,7 @@ def style_legend(ax: plt.Axes) -> None:
 
 
 def save(fig: plt.Figure, path: Path) -> None:
-    implication = getattr(fig, "_qj_pm_implication", "")
-    footer = getattr(fig, "_qj_pm_footer", "")
-    if implication:
-        wrapped = "\n".join(textwrap.wrap(implication, width=128))
-        fig.text(
-            0.035,
-            0.066,
-            wrapped,
-            color=TEXT,
-            fontsize=8.1,
-            weight="semibold",
-            va="bottom",
-            bbox={"facecolor": "#071434", "edgecolor": "#17376f", "boxstyle": "round,pad=0.36", "alpha": 0.92},
-        )
-    if footer:
-        fig.text(0.035, 0.025, footer, color=MUTED, fontsize=6.8, va="bottom")
-    fig.subplots_adjust(left=0.07, right=0.97, top=0.80, bottom=0.18, hspace=0.52, wspace=0.32)
+    fig.subplots_adjust(left=0.07, right=0.97, top=0.80, bottom=0.12, hspace=0.52, wspace=0.32)
     fig.savefig(path, dpi=160, facecolor=fig.get_facecolor(), edgecolor="none")
     plt.close(fig)
 
@@ -580,31 +488,78 @@ def plot_09_multpl_valuation(stem: str, out: Path) -> None:
     save(fig, out)
 
 
-def plot_10_cftc_cot(stem: str, out: Path) -> None:
+def cot_signal_data(stem: str) -> tuple[list[str], np.ndarray, np.ndarray, np.ndarray, list[str]]:
     rng = rng_for(stem)
-    idx = pd.date_range(end=pd.Timestamp.today().normalize(), periods=180, freq="W")
-    net = pd.Series(np.sin(np.linspace(0, 12, len(idx))) * 1.2 + rng.normal(0, 0.22, len(idx)), index=idx)
-    price = pd.Series(np.cumprod(1 + rng.normal(0.0009, 0.018, len(idx))) * 100, index=idx)
+    contracts = ["E-mini S&P 500\n(CFTC:ES)", "WTI Crude Oil\n(CFTC:CL)", "COMEX Gold\n(CFTC:GC)", "10Y Treasury Note\n(CFTC:ZN)"]
+    zscores = np.array([1.42, 0.88, 1.11, -1.23]) + rng.normal(0, 0.03, 4)
+    percentiles = np.array([82, 68, 74, 9]) + rng.normal(0, 1.2, 4)
+    weekly_change = np.array([18420, 9200, 11100, -15600]) + rng.normal(0, 650, 4)
+    states = ["Crowded Long", "Long Build", "Long Build", "Crowded Short"]
+    return contracts, zscores, percentiles.clip(1, 99), weekly_change, states
+
+
+def draw_cot_signal_packet(stem: str, out: Path, title: str = "CFTC COT Positioning Signal Packet") -> None:
+    contracts, zscores, percentiles, weekly_change, states = cot_signal_data(stem)
+    colors = [CYAN if value >= 0 else PINK for value in zscores]
+    change_colors = [GREEN if value >= 0 else RED for value in weekly_change]
     fig = plt.figure(figsize=(13, 7), facecolor=NAVY)
-    gs = fig.add_gridspec(2, 2, height_ratios=[1.4, 1])
-    dashboard_title(fig, "CFTC COT: Positioning, Crowding and Price Confirmation", "Managed-money futures positioning converted into z-score and tactical signal state")
-    ax_pos = fig.add_subplot(gs[0, :])
-    ax_price = fig.add_subplot(gs[1, 0])
-    ax_book = fig.add_subplot(gs[1, 1])
-    for ax in [ax_pos, ax_price, ax_book]:
+    gs = fig.add_gridspec(2, 2, height_ratios=[1.05, 1])
+    dashboard_title(
+        fig,
+        title,
+        "CFTC COT managed-money positioning - ES / CL / GC / ZN - weekly filing converted into percentile, z-score and tactical state",
+    )
+    ax_z = fig.add_subplot(gs[0, 0])
+    ax_pct = fig.add_subplot(gs[0, 1])
+    ax_chg = fig.add_subplot(gs[1, 0])
+    ax_state = fig.add_subplot(gs[1, 1])
+    for ax in [ax_z, ax_pct, ax_chg, ax_state]:
         style_ax(ax, "")
-    ax_pos.bar(idx, net, width=5, color=[CYAN if v >= 0 else PINK for v in net], alpha=0.8)
-    ax_pos.axhline(0, color=TEXT, alpha=0.45, lw=1)
-    ax_pos.axhline(1, color=RED, alpha=0.5, linestyle="--")
-    ax_pos.axhline(-1, color=GREEN, alpha=0.5, linestyle="--")
-    ax_pos.set_title("Managed Money Net Positioning Z-Score (CFTC COT)", color=TEXT, loc="left", fontsize=12)
-    ax_price.plot(idx, price, color=AMBER, lw=2.0)
-    ax_price.set_title("linked futures return index", color=TEXT, loc="left", fontsize=12)
-    book = pd.Series({"E-mini S&P 500": 0.44, "10Y Treasury Note": -0.31, "COMEX Gold": 0.52, "WTI Crude Oil": 0.18, "US Dollar Index": -0.22})
-    ax_book.barh(book.index, book.values, color=[CYAN if v > 0 else PINK for v in book], alpha=0.9)
-    ax_book.axvline(0, color=TEXT, alpha=0.35, lw=1)
-    ax_book.set_title("macro positioning mosaic by contract family", color=TEXT, loc="left", fontsize=12)
+
+    x = np.arange(len(contracts))
+    ax_z.bar(x, zscores, color=colors, alpha=0.92)
+    ax_z.axhline(0, color=TEXT, alpha=0.35, lw=1)
+    ax_z.axhline(1, color=RED, alpha=0.55, linestyle="--", lw=1)
+    ax_z.axhline(-1, color=GREEN, alpha=0.55, linestyle="--", lw=1)
+    ax_z.set_xticks(x, contracts)
+    ax_z.set_ylabel("z-score")
+    ax_z.set_title("Managed Money Net Positioning Z-Score", color=TEXT, loc="left", fontsize=12)
+    for i, value in enumerate(zscores):
+        ax_z.text(i, value + (0.10 if value >= 0 else -0.18), f"{value:.1f}", color=TEXT, ha="center", fontsize=9)
+
+    ax_pct.bar(x, percentiles, color=[PINK if p >= 80 or p <= 20 else CYAN for p in percentiles], alpha=0.92)
+    ax_pct.axhspan(80, 100, color=RED, alpha=0.08)
+    ax_pct.axhspan(0, 20, color=GREEN, alpha=0.07)
+    ax_pct.set_ylim(0, 100)
+    ax_pct.set_xticks(x, contracts)
+    ax_pct.set_ylabel("percentile")
+    ax_pct.set_title("Current Positioning Percentile - 3Y Lookback", color=TEXT, loc="left", fontsize=12)
+    for i, value in enumerate(percentiles):
+        ax_pct.text(i, value + 3, f"{value:.0f}th", color=TEXT, ha="center", fontsize=9)
+
+    ax_chg.bar(x, weekly_change / 1000, color=change_colors, alpha=0.92)
+    ax_chg.axhline(0, color=TEXT, alpha=0.35, lw=1)
+    ax_chg.set_xticks(x, contracts)
+    ax_chg.set_ylabel("net contracts, thousands")
+    ax_chg.set_title("1W Change in Managed-Money Net Contracts", color=TEXT, loc="left", fontsize=12)
+    for i, value in enumerate(weekly_change / 1000):
+        ax_chg.text(i, value + (0.9 if value >= 0 else -1.5), f"{value:+.1f}k", color=TEXT, ha="center", fontsize=9)
+
+    ax_state.axis("off")
+    ax_state.set_title("Signal State", color=TEXT, loc="left", fontsize=12, pad=10)
+    rows = zip(["ES", "CL", "GC", "ZN"], states, percentiles, weekly_change)
+    for i, (code, state, pct, change) in enumerate(rows):
+        y = 0.82 - i * 0.19
+        state_color = PINK if "Crowded" in state else CYAN
+        ax_state.text(0.04, y, code, color=MUTED, fontsize=9, transform=ax_state.transAxes)
+        ax_state.text(0.18, y, state, color=state_color, fontsize=13, weight="semibold", transform=ax_state.transAxes)
+        ax_state.text(0.18, y - 0.075, f"{pct:.0f}th percentile | {change:+,.0f} net contracts WoW", color=TEXT, fontsize=8.5, transform=ax_state.transAxes)
+        ax_state.plot([0.04, 0.94], [y - 0.115, y - 0.115], color=GRID, lw=0.8, alpha=0.7, transform=ax_state.transAxes)
     save(fig, out)
+
+
+def plot_10_cftc_cot(stem: str, out: Path) -> None:
+    draw_cot_signal_packet(stem, out)
 
 
 def macro_data(stem: str) -> tuple[pd.DatetimeIndex, np.ndarray, pd.Series, pd.Series, np.ndarray]:
@@ -1395,14 +1350,7 @@ def plot_inflation_monitor(stem: str, title: str, out: Path) -> None:
 
 
 def plot_positioning_dashboard(stem: str, title: str, out: Path) -> None:
-    labels = ["E-mini S&P 500", "COMEX Gold", "WTI Crude Oil", "US Dollar Index", "10Y Treasury Note"]
-    values = [1.4, -0.7, 0.9, 1.1, -1.2]
-    fig, ax = plt.subplots(figsize=(10, 5.4))
-    style_ax(ax, title)
-    ax.bar(labels, values, color=[CYAN if value >= 0 else PINK for value in values], alpha=0.92)
-    ax.axhline(0, color=TEXT, alpha=0.35, linewidth=1)
-    ax.set_ylabel("managed-money positioning z-score")
-    save(fig, out)
+    draw_cot_signal_packet(stem, out, human_title(title))
 
 
 def plot_weight_bar(stem: str, title: str, out: Path) -> None:
