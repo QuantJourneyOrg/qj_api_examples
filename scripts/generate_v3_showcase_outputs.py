@@ -134,10 +134,10 @@ def surface_layout(fig: plt.Figure) -> tuple[plt.Axes, plt.Axes]:
     return ax, cax
 
 
-def legend_below(ax: plt.Axes, columns: int = 1) -> None:
+def legend_below(ax: plt.Axes, columns: int = 1, y: float = -0.16) -> None:
     legend = ax.legend(
         loc="upper left",
-        bbox_to_anchor=(0, -0.16),
+        bbox_to_anchor=(0, y),
         ncol=columns,
         frameon=False,
         labelcolor=TEXT,
@@ -202,7 +202,7 @@ def plot_cloud_arr(out: Path) -> None:
     ax.set_ylim(0, 178)
     ax.yaxis.tick_right()
     ax.set_ylabel("$bn ARR", rotation=270, labelpad=18)
-    legend_below(ax, 1)
+    legend_below(ax, 1, y=-0.095)
     save(fig, out)
 
 
