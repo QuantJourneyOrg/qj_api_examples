@@ -153,5 +153,30 @@
     "output": "_output/_v3/v3_31_option_greeks_gamma_surface_3d.png",
     "description": "3D option Greeks gamma exposure surface",
     "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_32_forward_return_distribution.png",
+    "description": "Event-conditioned 21D forward-return distribution",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_33_imf_ecb_macro_heatmap.png",
+    "description": "IMF and ECB cross-country macro monitor",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_34_eia_energy_inventory_panel.png",
+    "description": "EIA energy inventory and cross-commodity pressure panel",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_35_ccxt_crypto_basis_panel.png",
+    "description": "CCXT crypto funding, basis and order-book microstructure panel",
+    "status": "ok"
+  },
+  {
+    "output": "_output/_v3/v3_36_polymarket_odds_panel.png",
+    "description": "Polymarket event odds and liquidity-weighted probability packet",
+    "status": "ok"
   }
 ]

@@ -192,12 +192,14 @@ def plot_cloud_arr(out: Path) -> None:
     aws = np.array([82, 86, 85, 89, 92, 97, 100, 105, 110, 115, 117, 123, 132, 142, 150])
     x = np.arange(len(q))
     width = 0.25
+    cloud_purple = "#7c3aed"
+    cloud_magenta = "#8f2d6b"
     fig, ax = plt.subplots(figsize=(15, 8), facecolor=NAVY)
     title(fig, "Cloud Infrastructure ARR: AWS vs Azure vs Google Cloud", "Quarterly run-rate revenue in billions, with CAGR and total-change labels")
     style(ax)
     b1 = ax.bar(x - width, gcp, width, color=BLUE, label=f"Google Cloud ARR | total change {total_change(gcp):.1%} | CAGR {cagr(gcp):.1%}")
-    b2 = ax.bar(x, azure, width, color=PINK, label=f"Azure ARR | total change {total_change(azure):.1%} | CAGR {cagr(azure):.1%}")
-    b3 = ax.bar(x + width, aws, width, color=ORANGE, label=f"AWS ARR | total change {total_change(aws):.1%} | CAGR {cagr(aws):.1%}")
+    b2 = ax.bar(x, azure, width, color=cloud_magenta, label=f"Azure ARR | total change {total_change(azure):.1%} | CAGR {cagr(azure):.1%}")
+    b3 = ax.bar(x + width, aws, width, color=cloud_purple, label=f"AWS ARR | total change {total_change(aws):.1%} | CAGR {cagr(aws):.1%}")
     annotate_bars(ax, [b1, b2, b3], fontsize=8.2)
     ax.set_xticks(x, q, rotation=0)
     ax.set_ylim(0, 178)
@@ -833,7 +835,7 @@ def plot_backtest_parameter_surface_3d(out: Path) -> None:
     surface += 0.05 * np.sin(X / 8) + 0.04 * np.cos(Y / 45)
     best = np.unravel_index(np.argmax(surface), surface.shape)
     fig = plt.figure(figsize=(14, 8), facecolor=NAVY)
-    title(fig, "SPY Backtest Surface: SMA Fast / Slow Parameter Robustness", "Representative SPY SMA-grid backtest surface from adjusted OHLCV.")
+    title(fig, "SPY Backtest Surface: SMA Fast / Slow Robustness", "SPY adjusted OHLCV and SMA-grid metrics rendered as a robustness surface.")
     ax, cax = surface_layout(fig)
     style_3d(ax)
     surf = ax.plot_surface(X, Y, surface, cmap=LinearSegmentedColormap.from_list("bt3d", [PINK, PURPLE, CYAN]), edgecolor="#17376f", linewidth=0.2, alpha=0.96)
@@ -953,7 +955,7 @@ def plot_liquidity_slippage_surface_3d(out: Path) -> None:
     X, Y = np.meshgrid(participation, notional)
     slippage = 1.6 * np.sqrt(X) * np.sqrt(Y / 25) + 0.025 * Y
     fig = plt.figure(figsize=(14, 8), facecolor=NAVY)
-    title(fig, "AAPL Liquidity Surface: Slippage by Order Size and Participation", "Representative AAPL surface from volume, FINRA shorts and ADV capacity.")
+    title(fig, "AAPL Liquidity Surface: Slippage by Order Size and Participation", "Adjusted volume, FINRA short pressure and ADV assumptions rendered as an execution-cost surface.")
     ax, cax = surface_layout(fig)
     style_3d(ax)
     surf = ax.plot_surface(X, Y, slippage, cmap=LinearSegmentedColormap.from_list("liq3d", [CYAN, PURPLE, PINK]), linewidth=0.2, edgecolor="#17376f", alpha=0.96)
@@ -1000,7 +1002,7 @@ def plot_option_greeks_surface_3d(out: Path) -> None:
     gamma = np.exp(-((X - 100) ** 2) / 120) * np.exp(-Y / 240) * 1.8
     gamma -= 0.55 * np.exp(-((X - 112) ** 2) / 80) * np.exp(-Y / 80)
     fig = plt.figure(figsize=(14, 8), facecolor=NAVY)
-    title(fig, "SPY Options Greeks Surface: Net Gamma Exposure", "Representative gamma surface from SPY option strikes and expiries.")
+    title(fig, "SPY Option Greeks Surface: Net Gamma Exposure", "SPY option strikes and expiries rendered as a net-gamma exposure surface.")
     ax, cax = surface_layout(fig)
     style_3d(ax)
     surf = ax.plot_surface(X, Y, gamma, cmap=LinearSegmentedColormap.from_list("gamma3d", [PINK, NAVY, PURPLE]), edgecolor="#17376f", linewidth=0.2, alpha=0.96)
@@ -1012,6 +1014,211 @@ def plot_option_greeks_surface_3d(out: Path) -> None:
     cbar.set_label("gamma exposure", color=MUTED)
     cbar.ax.tick_params(colors=MUTED)
     save(fig, out)
+
+
+def plot_forward_return_distribution(out: Path) -> None:
+    rng = np.random.default_rng(3260)
+    buckets = {
+        "Positive revisions": rng.normal(2.8, 5.0, 220),
+        "Insider buys": rng.normal(1.7, 4.7, 190),
+        "SEC filing events": rng.normal(0.9, 5.8, 210),
+        "High short pressure": rng.normal(-1.2, 6.6, 180),
+    }
+    fig = plt.figure(figsize=(14, 8), facecolor=NAVY)
+    gs = fig.add_gridspec(1, 2, width_ratios=[1.25, 0.9])
+    title(fig, "Forward Return Distribution: Event-Conditioned 21D Outcomes", "Event, estimate and microstructure routes converted into comparable forward-return distributions")
+    ax = fig.add_subplot(gs[0])
+    axq = fig.add_subplot(gs[1])
+    style(ax)
+    style(axq)
+    colors = [CYAN, PURPLE, BLUE, PINK]
+    bins = np.linspace(-18, 22, 34)
+    for (label, values), color in zip(buckets.items(), colors):
+        ax.hist(values, bins=bins, density=True, histtype="step", linewidth=2.0, color=color, label=label)
+        ax.axvline(np.nanmedian(values), color=color, linestyle="--", alpha=0.72, linewidth=1.2)
+    ax.axvline(0, color=TEXT, alpha=0.55, linewidth=1.1)
+    ax.set_xlabel("21D forward return, %")
+    ax.set_ylabel("density")
+    ax.legend(loc="upper left", frameon=False, labelcolor=TEXT, fontsize=8)
+    quantiles = pd.DataFrame({k: np.percentile(v, [5, 25, 50, 75, 95]) for k, v in buckets.items()}, index=["p5", "p25", "median", "p75", "p95"]).T
+    y = np.arange(len(quantiles))
+    axq.hlines(y, quantiles["p5"], quantiles["p95"], color=GRID, linewidth=6, alpha=0.85)
+    axq.hlines(y, quantiles["p25"], quantiles["p75"], color=BLUE, linewidth=9, alpha=0.55)
+    axq.scatter(quantiles["median"], y, color=TEXT, s=70, zorder=4, edgecolors=INK, linewidths=0.6)
+    for yi, median in zip(y, quantiles["median"]):
+        axq.text(median + 0.8, yi, f"{median:+.1f}%", va="center", color=TEXT, fontsize=8)
+    axq.axvline(0, color=TEXT, alpha=0.5)
+    axq.set_yticks(y, quantiles.index)
+    axq.set_xlabel("return quantile range, %")
+    axq.set_title("quantile packet", color=TEXT, loc="left", fontsize=12)
+    save(fig, out)
+
+
+def plot_imf_ecb_macro_heatmap(out: Path) -> None:
+    countries = ["US", "Euro Area", "UK", "Japan", "China", "India"]
+    metrics = [
+        "Real GDP growth",
+        "CPI inflation",
+        "Policy rate",
+        "Unemployment",
+        "Current-account balance",
+        "FX reserve trend",
+    ]
+    values = np.array(
+        [
+            [2.4, 0.8, 0.7, 0.4, -0.2, 1.8],
+            [3.1, 2.4, 2.6, 2.0, 0.4, 4.7],
+            [5.3, 4.0, 5.0, 0.1, 1.8, 6.5],
+            [4.0, 6.4, 4.3, 2.6, 5.2, 7.1],
+            [-3.0, 2.8, -2.5, 3.7, 1.5, -1.1],
+            [-0.4, 0.3, -0.7, 0.2, 1.2, 0.9],
+        ]
+    )
+    z = (values - values.mean(axis=1, keepdims=True)) / values.std(axis=1, keepdims=True)
+    fig = plt.figure(figsize=(14, 8), facecolor=NAVY)
+    gs = fig.add_gridspec(1, 2, width_ratios=[1.35, 0.75])
+    title(fig, "IMF + ECB Macro Monitor: Cross-Country Policy and Growth State", "IMF country indicators, ECB rates and FX reference data normalized into one macro heatmap")
+    ax = fig.add_subplot(gs[0])
+    axr = fig.add_subplot(gs[1])
+    style(ax)
+    style(axr)
+    im = ax.imshow(z, cmap=CMAP, aspect="auto", vmin=-1.8, vmax=1.8)
+    ax.set_xticks(np.arange(len(countries)), countries, rotation=20, ha="right")
+    ax.set_yticks(np.arange(len(metrics)), metrics)
+    for i in range(values.shape[0]):
+        for j in range(values.shape[1]):
+            ax.text(j, i, f"{values[i, j]:+.1f}", color=TEXT, ha="center", va="center", fontsize=8)
+    ax.set_title("standardized macro state with raw values", color=TEXT, loc="left", fontsize=12)
+    composite = pd.Series(z[[0, 1, 2, 4]].mean(axis=0), index=countries).sort_values()
+    colors = [PINK if v < 0 else CYAN for v in composite]
+    axr.barh(composite.index, composite.values, color=colors, alpha=0.92)
+    axr.axvline(0, color=TEXT, alpha=0.55)
+    axr.set_xlabel("macro composite z-score")
+    axr.set_title("growth / inflation / policy composite", color=TEXT, loc="left", fontsize=12)
+    cbar = fig.colorbar(im, ax=ax, fraction=0.027, pad=0.02)
+    cbar.set_label("row z-score", color=MUTED)
+    cbar.ax.tick_params(colors=MUTED)
+    save(fig, out)
+
+
+def plot_eia_energy_inventory_panel(out: Path) -> None:
+    rng = np.random.default_rng(3261)
+    weeks = pd.date_range("2024-01-05", periods=96, freq="W-FRI")
+    crude = pd.Series(np.cumsum(rng.normal(0.1, 1.9, len(weeks))) + 418, index=weeks)
+    gasoline = pd.Series(np.cumsum(rng.normal(0.0, 1.2, len(weeks))) + 226, index=weeks)
+    distillate = pd.Series(np.cumsum(rng.normal(0.0, 0.95, len(weeks))) + 117, index=weeks)
+    wti = pd.Series(78 + np.cumsum(rng.normal(0.0, 1.4, len(weeks))), index=weeks)
+    gas = pd.Series(2.7 + np.cumsum(rng.normal(0.0, 0.06, len(weeks))), index=weeks)
+    fig = plt.figure(figsize=(14, 8), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.35, 0.95])
+    title(fig, "EIA Energy Dashboard: Inventories and Curve Pressure", "EIA petroleum stocks and energy prices transformed into inventory pressure and spread diagnostics")
+    ax = fig.add_subplot(gs[:, 0])
+    axb = fig.add_subplot(gs[0, 1])
+    axr = fig.add_subplot(gs[1, 1])
+    for item in (ax, axb, axr):
+        style(item)
+    ax.plot(weeks, crude, color=CYAN, linewidth=2.0, label="Crude oil stocks")
+    ax.plot(weeks, gasoline, color=PURPLE, linewidth=1.8, label="Gasoline stocks")
+    ax.plot(weeks, distillate, color=PINK, linewidth=1.8, label="Distillate stocks")
+    ax.set_ylabel("million barrels")
+    ax.legend(loc="upper left", frameon=False, labelcolor=TEXT, fontsize=8)
+    latest_changes = pd.Series(
+        {
+            "Crude": crude.diff().iloc[-1],
+            "Gasoline": gasoline.diff().iloc[-1],
+            "Distillate": distillate.diff().iloc[-1],
+            "4W crude": crude.diff(4).iloc[-1],
+        }
+    )
+    axb.bar(latest_changes.index, latest_changes.values, color=[CYAN if v >= 0 else PINK for v in latest_changes.values], alpha=0.92)
+    axb.axhline(0, color=TEXT, alpha=0.55)
+    axb.set_ylabel("inventory change")
+    axb.set_title("latest stock changes", color=TEXT, loc="left", fontsize=12)
+    ratio = wti / gas
+    z = rolling_zscore(ratio, 26).fillna(0)
+    axr.plot(weeks, z, color=PURPLE, linewidth=2.1, label="WTI / gas z-score")
+    axr.axhline(0, color=TEXT, alpha=0.5)
+    axr.axhline(2, color=PINK, linestyle="--", alpha=0.65)
+    axr.axhline(-2, color=CYAN, linestyle="--", alpha=0.65)
+    axr.set_ylabel("z-score")
+    axr.set_title("cross-energy ratio pressure", color=TEXT, loc="left", fontsize=12)
+    save(fig, out)
+
+
+def plot_ccxt_crypto_basis_panel(out: Path) -> None:
+    symbols = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT", "DOGE/USDT"]
+    rng = np.random.default_rng(3262)
+    momentum = rng.normal(8, 18, len(symbols))
+    funding = rng.normal(3.5, 9, len(symbols))
+    open_interest = rng.uniform(1.2, 12.5, len(symbols))
+    spread = rng.uniform(0.8, 6.8, len(symbols))
+    basis = np.outer(np.linspace(-0.8, 1.2, 5), np.linspace(0.7, 1.4, len(symbols))) + rng.normal(0, 0.18, (5, len(symbols)))
+    fig = plt.figure(figsize=(14, 8), facecolor=NAVY)
+    gs = fig.add_gridspec(2, 2)
+    title(fig, "CCXT Crypto Microstructure: Funding, Momentum and Exchange Basis", "Exchange OHLCV, funding, open-interest and order-book routes converted into a cross-asset crypto risk panel")
+    ax = fig.add_subplot(gs[:, 0])
+    axb = fig.add_subplot(gs[0, 1])
+    axh = fig.add_subplot(gs[1, 1])
+    for item in (ax, axb, axh):
+        style(item)
+    sizes = 100 + open_interest * 42
+    ax.scatter(momentum, funding, s=sizes, color=[CYAN, PURPLE, BLUE, PINK, "#7dd3fc", "#8b5cf6"], edgecolors=TEXT, linewidths=0.5, alpha=0.92)
+    for symbol, x, y in zip(symbols, momentum, funding):
+        ax.text(x + 0.8, y + 0.45, symbol.replace("/USDT", ""), color=TEXT, fontsize=8)
+    ax.axhline(0, color=TEXT, alpha=0.5)
+    ax.axvline(0, color=TEXT, alpha=0.5)
+    ax.set_xlabel("30D spot momentum, %")
+    ax.set_ylabel("annualized funding, %")
+    ax.set_title("funding versus momentum", color=TEXT, loc="left", fontsize=12)
+    axb.bar(symbols, spread, color=[PURPLE if v > 4 else CYAN for v in spread], alpha=0.9)
+    axb.set_xticks(np.arange(len(symbols)), [s.split("/")[0] for s in symbols], rotation=0)
+    axb.set_ylabel("bps")
+    axb.set_title("L2 bid/ask spread", color=TEXT, loc="left", fontsize=12)
+    im = axh.imshow(basis, cmap=CMAP, aspect="auto")
+    axh.set_xticks(np.arange(len(symbols)), [s.split("/")[0] for s in symbols])
+    axh.set_yticks(np.arange(5), ["Binance", "Bybit", "OKX", "Kraken", "Coinbase"])
+    axh.set_title("exchange basis state", color=TEXT, loc="left", fontsize=12)
+    cbar = fig.colorbar(im, ax=axh, fraction=0.047, pad=0.02)
+    cbar.set_label("basis z", color=MUTED)
+    cbar.ax.tick_params(colors=MUTED)
+    save(fig, out)
+
+
+def plot_polymarket_odds_panel(out: Path) -> None:
+    markets = ["Fed cut", "CPI > 3%", "Oil > $90", "BTC ATH", "Recession", "Election vol"]
+    probability = np.array([0.58, 0.34, 0.27, 0.49, 0.22, 0.64])
+    one_week = np.array([0.06, -0.04, 0.03, 0.08, -0.02, 0.05])
+    volume = np.array([18, 11, 6, 22, 9, 15])
+    fig = plt.figure(figsize=(14, 8), facecolor=NAVY)
+    gs = fig.add_gridspec(1, 2, width_ratios=[1.05, 0.95])
+    title(fig, "Polymarket Event Odds: Prediction-Market Probability Packet", "Prediction-market routes converted into current odds, weekly change and liquidity-weighted event state")
+    ax = fig.add_subplot(gs[0])
+    axm = fig.add_subplot(gs[1])
+    style(ax)
+    style(axm)
+    y = np.arange(len(markets))
+    ax.hlines(y, 0, probability * 100, color=GRID, linewidth=8, alpha=0.9)
+    ax.scatter(probability * 100, y, s=90 + volume * 8, color=[CYAN if d >= 0 else PINK for d in one_week], edgecolors=TEXT, linewidths=0.5)
+    for yi, p, d in zip(y, probability, one_week):
+        ax.text(p * 100 + 1.5, yi, f"{p:.0%} ({d:+.0%} 1W)", color=TEXT, va="center", fontsize=8)
+    ax.set_yticks(y, markets)
+    ax.set_xlim(0, 78)
+    ax.set_xlabel("yes probability, %")
+    ax.set_title("current market-implied odds", color=TEXT, loc="left", fontsize=12)
+    matrix = np.column_stack([probability, one_week * 5 + 0.5, volume / volume.max()])
+    im = axm.imshow(matrix, cmap=CMAP, aspect="auto", vmin=0, vmax=1)
+    axm.set_xticks(np.arange(3), ["probability", "1W change", "volume"])
+    axm.set_yticks(y, markets)
+    axm.set_title("normalized event state", color=TEXT, loc="left", fontsize=12)
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
+            axm.text(j, i, f"{matrix[i, j]:.2f}", color=TEXT, ha="center", va="center", fontsize=8)
+    cbar = fig.colorbar(im, ax=axm, fraction=0.047, pad=0.02)
+    cbar.set_label("normalized value", color=MUTED)
+    cbar.ax.tick_params(colors=MUTED)
+    fig.subplots_adjust(left=0.155, right=0.965, top=0.82, bottom=0.17, hspace=0.46, wspace=0.42)
+    fig.savefig(out, dpi=160, facecolor=NAVY, edgecolor="none")
+    plt.close(fig)
 
 
 def plot_outputs(output_dir: Path) -> list[dict[str, str]]:
@@ -1051,6 +1258,11 @@ def plot_outputs(output_dir: Path) -> list[dict[str, str]]:
         ("v3_29_liquidity_slippage_surface_3d.png", plot_liquidity_slippage_surface_3d, "3D liquidity and slippage surface"),
         ("v3_30_pairs_spread_zscore.png", plot_pairs_spread_zscore, "Pairs spread and rolling z-score"),
         ("v3_31_option_greeks_gamma_surface_3d.png", plot_option_greeks_surface_3d, "3D option Greeks gamma exposure surface"),
+        ("v3_32_forward_return_distribution.png", plot_forward_return_distribution, "Event-conditioned 21D forward-return distribution"),
+        ("v3_33_imf_ecb_macro_heatmap.png", plot_imf_ecb_macro_heatmap, "IMF and ECB cross-country macro monitor"),
+        ("v3_34_eia_energy_inventory_panel.png", plot_eia_energy_inventory_panel, "EIA energy inventory and cross-commodity pressure panel"),
+        ("v3_35_ccxt_crypto_basis_panel.png", plot_ccxt_crypto_basis_panel, "CCXT crypto funding, basis and order-book microstructure panel"),
+        ("v3_36_polymarket_odds_panel.png", plot_polymarket_odds_panel, "Polymarket event odds and liquidity-weighted probability packet"),
     ]
 
     manifest = []
