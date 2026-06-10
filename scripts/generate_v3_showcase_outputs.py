@@ -33,18 +33,19 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = ROOT / "_output" / "_v3"
 
-NAVY = "#020617"
-PANEL = "#020617"
+NAVY = "#051946"
+PANEL = "#051946"
 TEXT = "#edf4ff"
 MUTED = "#a6b4d3"
 GRID = "#1f3a68"
-BLUE = "#2580d8"
+BLUE = "#4ea5ff"
 CYAN = "#58d5ff"
-ORANGE = "#ffb000"
-RED = "#ff3b30"
 PINK = "#c04486"
-GREEN = "#66e0a3"
-AMBER = "#f6b44b"
+PURPLE = "#a855f7"
+ORANGE = PURPLE
+RED = "#d64f8b"
+GREEN = CYAN
+AMBER = "#7dd3fc"
 INK = "#061226"
 CMAP = LinearSegmentedColormap.from_list("qj_v3", [CYAN, NAVY, PINK])
 
@@ -195,7 +196,7 @@ def plot_cloud_arr(out: Path) -> None:
     title(fig, "Cloud Infrastructure ARR: AWS vs Azure vs Google Cloud", "Quarterly run-rate revenue in billions, with CAGR and total-change labels")
     style(ax)
     b1 = ax.bar(x - width, gcp, width, color=BLUE, label=f"Google Cloud ARR | total change {total_change(gcp):.1%} | CAGR {cagr(gcp):.1%}")
-    b2 = ax.bar(x, azure, width, color="#f0522f", label=f"Azure ARR | total change {total_change(azure):.1%} | CAGR {cagr(azure):.1%}")
+    b2 = ax.bar(x, azure, width, color=PINK, label=f"Azure ARR | total change {total_change(azure):.1%} | CAGR {cagr(azure):.1%}")
     b3 = ax.bar(x + width, aws, width, color=ORANGE, label=f"AWS ARR | total change {total_change(aws):.1%} | CAGR {cagr(aws):.1%}")
     annotate_bars(ax, [b1, b2, b3], fontsize=8.2)
     ax.set_xticks(x, q, rotation=0)
@@ -471,7 +472,7 @@ def plot_investment_evidence_timeline(out: Path) -> None:
         ("Form 4", idx[58], "Insiders", PINK),
         ("Earnings", idx[83], "Earnings", GREEN),
         ("Revision +", idx[118], "Estimates", CYAN),
-        ("FINRA spike", idx[151], "Short volume", AMBER),
+        ("FINRA spike", idx[151], "Short volume", PURPLE),
         ("SEC 10-Q", idx[188], "SEC filings", BLUE),
         ("VIX high", idx[220], "CBOE VIX", RED),
     ]
@@ -516,7 +517,7 @@ def plot_earnings_implied_realized(out: Path) -> None:
     fig, ax = plt.subplots(figsize=(13.5, 8), facecolor=NAVY)
     title(fig, "Earnings Surprise: Implied Move vs Realized Move", "EPS surprise, option-implied move, realized 5D return and VIX regime combined in one event-study view")
     style(ax)
-    colors = [RED if x >= 26 else AMBER if x >= 22 else CYAN for x in vix]
+    colors = [PINK if x >= 26 else PURPLE if x >= 22 else CYAN for x in vix]
     sizes = 85 + implied * 28
     ax.scatter(surprise, realized, s=sizes, color=colors, edgecolors=TEXT, linewidths=0.55, alpha=0.88)
     ax.axhline(0, color=TEXT, alpha=0.45)
@@ -756,7 +757,7 @@ def plot_factor_exposure_drift(out: Path) -> None:
     axz = fig.add_subplot(gs[1], sharex=ax)
     style(ax)
     style(axz)
-    colors = [BLUE, CYAN, GREEN, PINK, AMBER, RED]
+    colors = [BLUE, CYAN, PURPLE, PINK, "#7dd3fc", "#8b5cf6"]
     ax.stackplot(idx, [exposures[col] for col in exposures.columns], labels=exposures.columns, colors=colors, alpha=0.78)
     ax.axhline(0, color=TEXT, alpha=0.45)
     ax.set_ylabel("exposure")
@@ -791,11 +792,11 @@ def plot_orange_factor_risk_river(out: Path) -> None:
     axz = fig.add_subplot(gs[1], sharex=ax)
     style(ax)
     style(axz)
-    colors = [ORANGE, AMBER, GREEN, CYAN, PINK]
+    colors = [PURPLE, BLUE, CYAN, "#7dd3fc", PINK]
     ax.stackplot(idx, [exposures[col] for col in exposures.columns], labels=exposures.columns, colors=colors, alpha=0.86)
     ax.set_ylabel("portfolio sleeve weight")
     ax.legend(loc="upper left", ncol=3, frameon=False, labelcolor=TEXT, fontsize=8)
-    axz.bar(idx, signal, width=20, color=[ORANGE if v > 0 else PINK for v in signal], alpha=0.92)
+    axz.bar(idx, signal, width=20, color=[PURPLE if v > 0 else PINK for v in signal], alpha=0.92)
     axz.axhline(0, color=TEXT, alpha=0.55)
     axz.axhline(2, color=RED, linestyle="--", alpha=0.65)
     axz.axhline(-2, color=CYAN, linestyle="--", alpha=0.65)
@@ -812,7 +813,7 @@ def plot_options_vol_surface_3d(out: Path) -> None:
     title(fig, "SPY Options Surface: Implied Volatility by Strike and Expiry", "Representative surface from SPY option chain, expiries and vol context.")
     ax, cax = surface_layout(fig)
     style_3d(ax)
-    surf = ax.plot_surface(X, Y, surface * 100, cmap=LinearSegmentedColormap.from_list("vol3d", [CYAN, ORANGE, PINK]), linewidth=0.15, edgecolor="#17376f", antialiased=True, alpha=0.95)
+    surf = ax.plot_surface(X, Y, surface * 100, cmap=LinearSegmentedColormap.from_list("vol3d", [CYAN, PURPLE, PINK]), linewidth=0.15, edgecolor="#17376f", antialiased=True, alpha=0.95)
     ax.contour(X, Y, surface * 100, zdir="z", offset=surface.min() * 100 - 1, cmap=CMAP, linewidths=1.0)
     ax.set_xlabel("moneyness")
     ax.set_ylabel("days to expiry")
@@ -835,7 +836,7 @@ def plot_backtest_parameter_surface_3d(out: Path) -> None:
     title(fig, "SPY Backtest Surface: SMA Fast / Slow Parameter Robustness", "Representative SPY SMA-grid backtest surface from adjusted OHLCV.")
     ax, cax = surface_layout(fig)
     style_3d(ax)
-    surf = ax.plot_surface(X, Y, surface, cmap=LinearSegmentedColormap.from_list("bt3d", [PINK, ORANGE, GREEN]), edgecolor="#17376f", linewidth=0.2, alpha=0.96)
+    surf = ax.plot_surface(X, Y, surface, cmap=LinearSegmentedColormap.from_list("bt3d", [PINK, PURPLE, CYAN]), edgecolor="#17376f", linewidth=0.2, alpha=0.96)
     ax.scatter([X[best]], [Y[best]], [surface[best]], color=TEXT, s=80, edgecolors=INK, linewidths=0.6)
     ax.text(X[best], Y[best], surface[best] + 0.05, f"best {surface[best]:.2f}", color=TEXT, fontsize=8)
     ax.set_xlabel("fast SMA")
@@ -938,7 +939,7 @@ def plot_regime_allocation_river(out: Path) -> None:
     ax.stackplot(idx, [weights[col] for col in weights.columns], labels=weights.columns, colors=[ORANGE, CYAN, AMBER, GREEN, PINK], alpha=0.84)
     ax.set_ylabel("target weight")
     ax.legend(loc="upper left", ncol=5, frameon=False, labelcolor=TEXT, fontsize=8)
-    ax2.plot(idx, cot_state, color=ORANGE, linewidth=2.0, label="COT risk-on percentile")
+    ax2.plot(idx, cot_state, color=PURPLE, linewidth=2.0, label="COT risk-on percentile")
     ax2.axhline(80, color=RED, linestyle="--", alpha=0.65)
     ax2.axhline(20, color=CYAN, linestyle="--", alpha=0.65)
     ax2.set_ylabel("percentile")
@@ -955,7 +956,7 @@ def plot_liquidity_slippage_surface_3d(out: Path) -> None:
     title(fig, "AAPL Liquidity Surface: Slippage by Order Size and Participation", "Representative AAPL surface from volume, FINRA shorts and ADV capacity.")
     ax, cax = surface_layout(fig)
     style_3d(ax)
-    surf = ax.plot_surface(X, Y, slippage, cmap=LinearSegmentedColormap.from_list("liq3d", [CYAN, ORANGE, PINK]), linewidth=0.2, edgecolor="#17376f", alpha=0.96)
+    surf = ax.plot_surface(X, Y, slippage, cmap=LinearSegmentedColormap.from_list("liq3d", [CYAN, PURPLE, PINK]), linewidth=0.2, edgecolor="#17376f", alpha=0.96)
     ax.set_xlabel("participation rate, % ADV")
     ax.set_ylabel("order notional, $m")
     ax.set_zlabel("slippage, bps")
@@ -1002,7 +1003,7 @@ def plot_option_greeks_surface_3d(out: Path) -> None:
     title(fig, "SPY Options Greeks Surface: Net Gamma Exposure", "Representative gamma surface from SPY option strikes and expiries.")
     ax, cax = surface_layout(fig)
     style_3d(ax)
-    surf = ax.plot_surface(X, Y, gamma, cmap=LinearSegmentedColormap.from_list("gamma3d", [PINK, NAVY, ORANGE]), edgecolor="#17376f", linewidth=0.2, alpha=0.96)
+    surf = ax.plot_surface(X, Y, gamma, cmap=LinearSegmentedColormap.from_list("gamma3d", [PINK, NAVY, PURPLE]), edgecolor="#17376f", linewidth=0.2, alpha=0.96)
     ax.set_xlabel("underlying price")
     ax.set_ylabel("days to expiry")
     ax.set_zlabel("net gamma")
@@ -1041,7 +1042,7 @@ def plot_outputs(output_dir: Path) -> list[dict[str, str]]:
         ("v3_20_portfolio_shock_waterfall.png", plot_portfolio_shock_waterfall, "Portfolio shock waterfall across market, rates, VIX, USD, oil and idiosyncratic risk"),
         ("v3_21_provider_evidence_receipt.png", plot_provider_evidence_receipt, "Provider evidence receipt for a multi-source research packet"),
         ("v3_22_factor_exposure_drift.png", plot_factor_exposure_drift, "Factor exposure drift across portfolio holdings, factors, macro and volatility state"),
-        ("v3_23_orange_factor_risk_river.png", plot_orange_factor_risk_river, "Orange-led factor risk river across signal sleeves and macro state"),
+        ("v3_23_orange_factor_risk_river.png", plot_orange_factor_risk_river, "Factor risk river across signal sleeves and macro state"),
         ("v3_24_options_vol_surface_3d.png", plot_options_vol_surface_3d, "3D options implied volatility surface"),
         ("v3_25_backtest_parameter_surface_3d.png", plot_backtest_parameter_surface_3d, "3D backtest parameter robustness surface"),
         ("v3_26_technical_indicator_stack.png", plot_technical_indicator_stack, "Technical indicator stack with Bollinger bands, SMA, RSI, MACD and realized volatility"),
