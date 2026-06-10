@@ -865,7 +865,7 @@ def plot_technical_indicator_stack(out: Path) -> None:
     macd = ema12 - ema26
     signal = macd.ewm(span=9).mean()
     vol = ret.rolling(21).std() * np.sqrt(252) * 100
-    fig = plt.figure(figsize=(14, 9), facecolor=NAVY)
+    fig = plt.figure(figsize=(14, 8), facecolor=NAVY)
     gs = fig.add_gridspec(4, 1, height_ratios=[1.55, 0.75, 0.75, 0.75])
     title(fig, "Technical Indicator Stack: Trend, Momentum, Volatility", "Adjusted OHLCV converted into Bollinger bands, SMA trend, RSI, MACD and realized-volatility state")
     axes = [fig.add_subplot(gs[i]) for i in range(4)]
